@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/srl_fragment_standings"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.v4.widget.NestedScrollView
+        android:id="@+id/nsv_standings"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- ******************************************************************************* -->
+            <TextView
+                android:id="@+id/tv_group_a"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="20dp"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#ffffff"
+                android:text="@string/group_a"/>
+
+            <include layout="@layout/list_item_group"
+                android:id="@+id/tv_group_header_a"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_below="@id/tv_group_a"
+                android:textStyle="bold"/>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/lv_group_a"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tv_group_header_a"
+                android:layout_gravity="center_horizontal"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+            <!-- ******************************************************************************* -->
+            <TextView
+                android:id="@+id/tv_group_b"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/lv_group_a"
+                android:layout_marginTop="20dp"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#ffffff"
+                android:text="@string/group_b"/>
+
+            <include layout="@layout/list_item_group"
+                android:id="@+id/tv_group_header_b"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_below="@id/tv_group_b"
+                android:textStyle="bold"/>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/lv_group_b"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tv_group_header_b"
+                android:layout_gravity="center_horizontal"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+            <!-- ******************************************************************************* -->
+            <TextView
+                android:id="@+id/tv_group_c"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/lv_group_b"
+                android:layout_marginTop="20dp"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#ffffff"
+                android:text="@string/group_c"/>
+
+            <include layout="@layout/list_item_group"
+                android:id="@+id/tv_group_header_c"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_below="@id/tv_group_c"
+                android:textStyle="bold"/>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/lv_group_c"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tv_group_header_c"
+                android:layout_gravity="center_horizontal"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+            <!-- ******************************************************************************* -->
+            <TextView
+                android:id="@+id/tv_group_d"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/lv_group_c"
+                android:layout_marginTop="20dp"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#ffffff"
+                android:text="@string/group_d"/>
+
+            <include layout="@layout/list_item_group"
+                android:id="@+id/tv_group_header_d"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_below="@id/tv_group_d"
+                android:textStyle="bold"/>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/lv_group_d"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tv_group_header_d"
+                android:layout_gravity="center_horizontal"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+            <!-- ******************************************************************************* -->
+            <TextView
+                android:id="@+id/tv_group_e"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/lv_group_d"
+                android:layout_marginTop="20dp"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#ffffff"
+                android:text="@string/group_e"/>
+
+            <include layout="@layout/list_item_group"
+                android:id="@+id/tv_group_header_e"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_below="@id/tv_group_e"
+                android:textStyle="bold"/>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/lv_group_e"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tv_group_header_e"
+                android:layout_gravity="center_horizontal"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"  />
+
+            <!-- ******************************************************************************* -->
+            <TextView
+                android:id="@+id/tv_group_f"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/lv_group_e"
+                android:layout_marginTop="20dp"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#ffffff"
+                android:text="@string/group_f"/>
+
+            <include layout="@layout/list_item_group"
+                android:id="@+id/tv_group_header_f"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_below="@id/tv_group_f"
+                android:textStyle="bold"/>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/lv_group_f"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tv_group_header_f"
+                android:layout_gravity="center_horizontal"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"  />
+
+            <!-- ******************************************************************************* -->
+
+            <TextView
+                android:id="@+id/tv_round_of_16"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/lv_group_f"
+                android:gravity="center_horizontal"
+                android:layout_marginTop="50dp"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textColor="#ffffff"
+                android:text="@string/round_of_16"/>
+
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/lv_round_of_16"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tv_round_of_16"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"  />
+
+            <!-- ******************************************************************************* -->
+
+            <TextView
+                android:id="@+id/tv_quarter_finals"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/lv_round_of_16"
+                android:layout_marginTop="50dp"
+                android:gravity="center_horizontal"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textColor="#ffffff"
+                android:text="@string/quarter_finals"/>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/lv_quarter_finals"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tv_quarter_finals"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"  />
+
+            <!-- ******************************************************************************* -->
+            <TextView
+                android:id="@+id/tv_semi_finals"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/lv_quarter_finals"
+                android:layout_marginTop="50dp"
+                android:gravity="center_horizontal"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textColor="#ffffff"
+                android:text="@string/semi_finals"/>
+
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/lv_semi_finals"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tv_semi_finals"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"  />
+
+            <!-- ******************************************************************************* -->
+
+            <TextView
+                android:id="@+id/tv_final"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/lv_semi_finals"
+                android:layout_marginTop="50dp"
+                android:gravity="center_horizontal"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textColor="#ffffff"
+                android:text="@string/final_"/>
+
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/lv_final"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tv_final"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+            <!--
+                android:nestedScrollingEnabled="false"
+                tools:targetApi="lollipop"  -->
+
+        </RelativeLayout>
+    </android.support.v4.widget.NestedScrollView>
+</android.support.v4.widget.SwipeRefreshLayout>

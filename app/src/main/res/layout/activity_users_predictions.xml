@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/euro2016_background"
+    android:id="@+id/activity_users_predictions">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_margin="10dp"
+        android:id="@+id/tv_username"
+        android:textColor="@android:color/white"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
+
+
+    <android.support.v7.widget.RecyclerView
+        android:layout_below="@id/tv_username"
+        android:id="@+id/rv_all_predictions"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal" />
+
+</RelativeLayout>

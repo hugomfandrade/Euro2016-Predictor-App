@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Euro 2016</string>
+    <string name="sign_up">Sign up</string>
+    <string name="login">Login</string>
+    <string name="hint_username">Username</string>
+    <string name="hint_password">Password</string>
+    <string name="hint_confirm_password">Confirm Password</string>
+    <string name="group_a">Group A</string>
+    <string name="group_b">Group B</string>
+    <string name="group_c">Group C</string>
+    <string name="group_d">Group D</string>
+    <string name="group_e">Group E</string>
+    <string name="group_f">Group F</string>
+    <string name="round_of_16">Round of 16</string>
+    <string name="quarter_finals">Quarter Finals</string>
+    <string name="semi_finals">Semi Finals</string>
+    <string name="final_">Final</string>
+    <string name="scores">Scores</string>
+    <string name="n_a">n/a</string>
+</resources>
