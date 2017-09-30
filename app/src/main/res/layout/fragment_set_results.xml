@@ -11,7 +11,7 @@
     <!--ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/listView_all_matches"
+        android:mID="@+mID/listView_all_matches"
         android:layout_gravity="center_horizontal" /-->
 
 </RelativeLayout>

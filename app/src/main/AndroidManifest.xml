@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="hugoandrade.euro2016backend">
+    package="org.hugoandrade.euro2016.backend">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name="hugoandrade.euro2016backend.view.MainActivity"
+            android:name=".view.MainActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:configChanges="orientation|screenSize">
             <intent-filter>
@@ -26,11 +26,11 @@
             android:theme="@style/AppTheme.NoActionBarNoTitle">
         </activity>
 
-        <service android:name="hugoandrade.euro2016backend.model.MobileService" android:enabled="true"/>
+        <service android:name=".model.service.MobileService" android:enabled="true"/>
 
         <provider
             android:name=".cloudsim.CloudDatabaseSimProvider"
-            android:authorities="hugoandrade.euro2016app.CloudDatabaseSimProvider"
+            android:authorities="org.hugoandrade.euro_2016.sim_provider"
             android:exported="true"
             android:multiprocess="true"/>
     </application>

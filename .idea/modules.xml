@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Euro2016BackEnd.iml" filepath="$PROJECT_DIR$/Euro2016BackEnd.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Euro2016-BackEnd-App.iml" filepath="$PROJECT_DIR$/Euro2016-BackEnd-App.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
