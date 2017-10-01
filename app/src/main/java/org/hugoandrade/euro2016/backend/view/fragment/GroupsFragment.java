@@ -3,22 +3,22 @@ package org.hugoandrade.euro2016.backend.view.fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.hugoandrade.euro2016.backend.FragmentCommunication;
 import org.hugoandrade.euro2016.backend.R;
 import org.hugoandrade.euro2016.backend.object.Country;
-import org.hugoandrade.euro2016.backend.utils.Utility;
 import org.hugoandrade.euro2016.backend.view.EditSystemDataDialog;
-import org.hugoandrade.euro2016.backend.view.MainActivity;
 import org.hugoandrade.euro2016.backend.view.listadapter.GroupListAdapter;
 
 public class GroupsFragment
@@ -29,22 +29,21 @@ public class GroupsFragment
     private static final String TAG = GroupsFragment.class.getSimpleName();
 
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
-    private MainActivity mCommChListener;
+    private FragmentCommunication.ProvidedParentActivityOps mCommChListener;
 
-    public GroupListAdapter mAdapterA, mAdapterB, mAdapterC, mAdapterD, mAdapterE, mAdapterF;
-    public ListView listViewA, listViewB, listViewC, listViewD, listViewE, listViewF;
-    private ArrayList<Country>
-            mGroupAList = new ArrayList<>(),
-            mGroupBList = new ArrayList<>(),
-            mGroupCList = new ArrayList<>(),
-            mGroupDList = new ArrayList<>(),
-            mGroupEList = new ArrayList<>(),
-            mGroupFList = new ArrayList<>();
+    private HashMap<String, ViewStruct> mViewStructMap = new HashMap<String, ViewStruct>() {{
+        put("A", new ViewStruct(R.string.group_a));
+        put("B", new ViewStruct(R.string.group_b));
+        put("C", new ViewStruct(R.string.group_c));
+        put("D", new ViewStruct(R.string.group_d));
+        put("E", new ViewStruct(R.string.group_e));
+        put("F", new ViewStruct(R.string.group_f));
+    }};
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        mCommChListener = (MainActivity) context;
+        mCommChListener = (FragmentCommunication.ProvidedParentActivityOps) context;
     }
 
     @Override
@@ -57,75 +56,67 @@ public class GroupsFragment
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
 
-        listViewA = (ListView) view.findViewById(R.id.listView_groupA);
-        listViewB = (ListView) view.findViewById(R.id.listView_groupB);
-        listViewC = (ListView) view.findViewById(R.id.listView_groupC);
-        listViewD = (ListView) view.findViewById(R.id.listView_groupD);
-        listViewE = (ListView) view.findViewById(R.id.listView_groupE);
-        listViewF = (ListView) view.findViewById(R.id.listView_groupF);
+        initializeUI(view);
+    }
 
-        FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.fab_update_matches_1);
-        fab.setVisibility(View.INVISIBLE);
+    @Override
+    public void setGroups(HashMap<String, List<Country>> allGroups) {
+        updateViewStruct(mViewStructMap.get("A"), allGroups.get("A"));
+        updateViewStruct(mViewStructMap.get("B"), allGroups.get("B"));
+        updateViewStruct(mViewStructMap.get("C"), allGroups.get("C"));
+        updateViewStruct(mViewStructMap.get("D"), allGroups.get("D"));
+        updateViewStruct(mViewStructMap.get("E"), allGroups.get("E"));
+        updateViewStruct(mViewStructMap.get("F"), allGroups.get("F"));
+    }
 
-        view.findViewById(R.id.tv_edit_system_data).setOnClickListener(new View.OnClickListener() {
+    private void initializeUI(View view) {
+        setupGroupLayout(view.findViewById(R.id.layout_group_a), mViewStructMap.get("A"));
+        setupGroupLayout(view.findViewById(R.id.layout_group_b), mViewStructMap.get("B"));
+        setupGroupLayout(view.findViewById(R.id.layout_group_c), mViewStructMap.get("C"));
+        setupGroupLayout(view.findViewById(R.id.layout_group_d), mViewStructMap.get("D"));
+        setupGroupLayout(view.findViewById(R.id.layout_group_e), mViewStructMap.get("E"));
+        setupGroupLayout(view.findViewById(R.id.layout_group_f), mViewStructMap.get("F"));
+
+        View editSystemData = view.findViewById(R.id.tv_edit_system_data);
+        editSystemData.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 popUpEditSystemDataDialog();
             }
         });
+    }
 
-        mAdapterA = new GroupListAdapter(getActivity(), R.layout.list_item_group, mGroupAList);
-        mAdapterB = new GroupListAdapter(getActivity(), R.layout.list_item_group, mGroupBList);
-        mAdapterC = new GroupListAdapter(getActivity(), R.layout.list_item_group, mGroupCList);
-        mAdapterD = new GroupListAdapter(getActivity(), R.layout.list_item_group, mGroupDList);
-        mAdapterE = new GroupListAdapter(getActivity(), R.layout.list_item_group, mGroupEList);
-        mAdapterF = new GroupListAdapter(getActivity(), R.layout.list_item_group, mGroupFList);
+    private void setupGroupLayout(View view, ViewStruct viewStruct) {
+        // Setup title
+        TextView tvGroupTitle = (TextView) view.findViewById(R.id.tv_group);
+        tvGroupTitle.setText(getString(viewStruct.titleResID));
 
-        listViewA.setAdapter(mAdapterA);
-        listViewB.setAdapter(mAdapterB);
-        listViewC.setAdapter(mAdapterC);
-        listViewD.setAdapter(mAdapterD);
-        listViewE.setAdapter(mAdapterE);
-        listViewF.setAdapter(mAdapterF);
+        // Setup recycler view
+        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.rv_group);
+        viewStruct.adapter = new GroupListAdapter(viewStruct.countryList);
+        recyclerView.setAdapter(viewStruct.adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
+    }
 
-        updateListViewHeight();
+    private void updateViewStruct(ViewStruct viewStruct, List<Country> countryList) {
+        viewStruct.countryList.clear();
+        viewStruct.countryList.addAll(countryList);
+
+        if (viewStruct.adapter != null)
+            viewStruct.adapter.setAll(viewStruct.countryList);
     }
 
     private void popUpEditSystemDataDialog() {
         startActivityForResult(EditSystemDataDialog.makeIntent(getActivity()), 0);
     }
 
-    @Override
-    public void setGroups(HashMap<String, ArrayList<Country>> allGroups) {
-        mGroupAList.clear();
-        mGroupAList.addAll(allGroups.get("A"));
-        mGroupBList.clear();
-        mGroupBList.addAll(allGroups.get("B"));
-        mGroupCList.clear();
-        mGroupCList.addAll(allGroups.get("C"));
-        mGroupDList.clear();
-        mGroupDList.addAll(allGroups.get("D"));
-        mGroupEList.clear();
-        mGroupEList.addAll(allGroups.get("E"));
-        mGroupFList.clear();
-        mGroupFList.addAll(allGroups.get("F"));
+    private class ViewStruct {
+        private int titleResID;
+        private GroupListAdapter adapter;
+        private List<Country> countryList = new ArrayList<>();
 
-        if (mAdapterA != null) mAdapterA.setAll(mGroupAList);
-        if (mAdapterB != null) mAdapterB.setAll(mGroupBList);
-        if (mAdapterC != null) mAdapterC.setAll(mGroupCList);
-        if (mAdapterD != null) mAdapterD.setAll(mGroupDList);
-        if (mAdapterE != null) mAdapterE.setAll(mGroupEList);
-        if (mAdapterF != null) mAdapterF.setAll(mGroupFList);
-
-        updateListViewHeight();
-    }
-
-    public void updateListViewHeight() {
-        Utility.setListViewHeightBasedOnChildren(listViewA);
-        Utility.setListViewHeightBasedOnChildren(listViewB);
-        Utility.setListViewHeightBasedOnChildren(listViewC);
-        Utility.setListViewHeightBasedOnChildren(listViewD);
-        Utility.setListViewHeightBasedOnChildren(listViewE);
-        Utility.setListViewHeightBasedOnChildren(listViewF);
+        ViewStruct(int titleResID) {
+            this.titleResID = titleResID;
+        }
     }
 }

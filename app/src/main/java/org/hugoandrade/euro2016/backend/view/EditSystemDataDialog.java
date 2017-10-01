@@ -28,10 +28,11 @@ import org.hugoandrade.euro2016.backend.presenter.EditSystemDataPresenter;
 import org.hugoandrade.euro2016.backend.utils.ISO8601;
 
 public class EditSystemDataDialog extends ActivityBase<MVP.RequiredEditSystemDataViewOps,
-                                                          MVP.ProvidedEditSystemDataPresenterOps,
-                                                          EditSystemDataPresenter>
+                                                       MVP.ProvidedEditSystemDataPresenterOps,
+                                                       EditSystemDataPresenter>
         implements MVP.RequiredEditSystemDataViewOps {
 
+    @SuppressWarnings("unused")
     private static final String TAG = EditSystemDataDialog.class.getSimpleName();
 
     private Switch switchAppEnabled;

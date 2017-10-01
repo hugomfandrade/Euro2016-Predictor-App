@@ -9,8 +9,8 @@ import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.widget.LinearLayout;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.hugoandrade.euro2016.backend.FragmentCommunication;
 import org.hugoandrade.euro2016.backend.MVP;
@@ -22,10 +22,9 @@ import org.hugoandrade.euro2016.backend.view.fragment.GroupsFragment;
 import org.hugoandrade.euro2016.backend.view.fragment.SetResultsFragment;
 
 
-public class MainActivity extends ActivityBase<
-            MVP.RequiredViewOps,
-            MVP.ProvidedPresenterOps,
-            MainPresenter>
+public class MainActivity extends ActivityBase<MVP.RequiredViewOps,
+                                               MVP.ProvidedPresenterOps,
+                                               MainPresenter>
         implements MVP.RequiredViewOps, FragmentCommunication.ProvidedParentActivityOps {
 
     @SuppressWarnings("unused") private final static String TAG = MainActivity.class.getSimpleName();
@@ -72,7 +71,7 @@ public class MainActivity extends ActivityBase<
     }
 
     @Override
-    public void setAllMatches(ArrayList<Match> allMatchesList) {
+    public void setAllMatches(List<Match> allMatchesList) {
         for (Fragment fragment : mFragmentArray)
             if (fragment instanceof FragmentCommunication.ProvidedSetResultsChildFragmentOps)
                 ((FragmentCommunication.ProvidedSetResultsChildFragmentOps) fragment)
@@ -88,7 +87,7 @@ public class MainActivity extends ActivityBase<
     }
 
     @Override
-    public void setGroups(HashMap<String, ArrayList<Country>> allGroups) {
+    public void setGroups(HashMap<String, List<Country>> allGroups) {
         for (Fragment fragment : mFragmentArray)
             if (fragment instanceof FragmentCommunication.ProvidedGroupsChildFragmentOps)
                 ((FragmentCommunication.ProvidedGroupsChildFragmentOps) fragment)

@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.hugoandrade.euro2016.backend.FragmentCommunication;
 import org.hugoandrade.euro2016.backend.R;
@@ -26,9 +27,9 @@ public class SetResultsFragment
 
     private FragmentCommunication.ProvidedParentActivityOps mCommChListener;
 
-    private MatchListAdapter mAdapter;
-    private ArrayList<Match> mMatchList = new ArrayList<>();
     private RecyclerView lvAllMatches;
+    private MatchListAdapter mAdapter;
+    private List<Match> mMatchList = new ArrayList<>();
     private int selection = 0;
 
     @Override
@@ -46,7 +47,7 @@ public class SetResultsFragment
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        lvAllMatches = (RecyclerView) view.findViewById(R.id.listView_all_matches);
+        lvAllMatches = (RecyclerView) view.findViewById(R.id.rv_all_matches);
         lvAllMatches.setLayoutManager(
                 new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 
@@ -63,7 +64,7 @@ public class SetResultsFragment
     }
 
     @Override
-    public void setAllMatches(ArrayList<Match> allMatchesList) {
+    public void setAllMatches(List<Match> allMatchesList) {
         mMatchList.clear();
         mMatchList.addAll(allMatchesList);
         if (mAdapter != null)

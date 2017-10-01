@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,11 +17,10 @@ import org.hugoandrade.euro2016.backend.object.Match;
 import org.hugoandrade.euro2016.backend.model.MainModel;
 
 public class MainPresenter
-        extends PresenterBase<
-                    MVP.RequiredViewOps,
-                    MVP.RequiredPresenterOps,
-                    MVP.ProvidedModelOps,
-                    MainModel>
+        extends PresenterBase<MVP.RequiredViewOps,
+                              MVP.RequiredPresenterOps,
+                              MVP.ProvidedModelOps,
+                              MainModel>
         implements MVP.ProvidedPresenterOps, MVP.RequiredPresenterOps {
 
     private static final String TAG = MainPresenter.class.getSimpleName();
@@ -50,9 +50,9 @@ public class MainPresenter
             35.138f , 25.388f, 30.932f, 27.142f
     };
 
-    private ArrayList<Match> allMatches = new ArrayList<>();
+    private List<Match> allMatches = new ArrayList<>();
     private HashMap<String, Country> allCountries = new HashMap<>();
-    private HashMap<String, ArrayList<Country> > allGroups = new HashMap<>();
+    private HashMap<String, List<Country> > allGroups = new HashMap<>();
 
     @Override
     public void onCreate(MVP.RequiredViewOps view) {
@@ -104,7 +104,7 @@ public class MainPresenter
     }
 
     @Override
-    public void reportGetAllCountriesRequestResult(String message, ArrayList<Country> allCountriesList) {
+    public void reportGetAllCountriesRequestResult(String message, List<Country> allCountriesList) {
         if (message != null)
             getView().reportMessage(message);
         if (allCountriesList != null) {
@@ -117,7 +117,7 @@ public class MainPresenter
     }
 
     @Override
-    public void reportGetAllMatchesRequestResult(String message, ArrayList<Match> allMatchesList) {
+    public void reportGetAllMatchesRequestResult(String message, List<Match> allMatchesList) {
         if (message != null)
             getView().reportMessage(message);
         if (allMatchesList != null) {
@@ -150,10 +150,10 @@ public class MainPresenter
 
     private void updateAllGroups() {
         // Do processing asynchronously
-        new AsyncTask<Void, Void, HashMap<String, ArrayList<Country>> >() {
+        new AsyncTask<Void, Void, HashMap<String, List<Country>> >() {
 
             @Override
-            protected HashMap<String, ArrayList<Country>>  doInBackground(Void... params) {
+            protected HashMap<String, List<Country>>  doInBackground(Void... params) {
 
                 // Create List of countries object, and group them by Group
                 updateCountries();
@@ -187,7 +187,7 @@ public class MainPresenter
 
 
             @Override
-            protected void onPostExecute(HashMap<String, ArrayList<Country>>  allGroups) {
+            protected void onPostExecute(HashMap<String, List<Country>>  allGroups) {
                 super.onPostExecute(allGroups);
 
                 getView().setGroups(allGroups);
@@ -245,10 +245,11 @@ public class MainPresenter
         }
     }
 
-    private void updateKnockOutMatchUpWhenAllGroupStageMatchesHaveBeenPlayed(HashMap<String, ArrayList<Country>> allGroups) {
+    private void updateKnockOutMatchUpWhenAllGroupStageMatchesHaveBeenPlayed(
+            HashMap<String, List<Country>> allGroups) {
         // Check if all countries in each group have played 3 (all) mGroup mStage matches.
         // If not, return
-        for (HashMap.Entry<String, ArrayList<Country>> entry : allGroups.entrySet())
+        for (HashMap.Entry<String, List<Country>> entry : allGroups.entrySet())
             for (Country country : entry.getValue())
                 if (country.getMatchesPlayed() != 3) {
                     // Do not compute third-tied tiebreaker. Set to default!
@@ -342,11 +343,11 @@ public class MainPresenter
         }
     }
 
-    private void updateKnockOutMatchUpWhenAllGroupMatchesHaveBeenPlayed(ArrayList<Country> countries,
+    private void updateKnockOutMatchUpWhenAllGroupMatchesHaveBeenPlayed(List<Country> countryList,
                                                                         String group) {
         // Check if all countries have played 3 matches
         boolean areAllMatchesPlayed = true;
-        for (Country c : countries)
+        for (Country c : countryList)
             if (c.getMatchesPlayed() != 3)
                 areAllMatchesPlayed = false;
 
@@ -354,8 +355,8 @@ public class MainPresenter
         switch (group) {
             case "A": {
                 if (areAllMatchesPlayed) {
-                    updateMatchUpInCloud(allMatches.get(40 - 1), countries.get(0).getName(), "HOME");
-                    updateMatchUpInCloud(allMatches.get(37 - 1), countries.get(1).getName(), "HOME");
+                    updateMatchUpInCloud(allMatches.get(40 - 1), countryList.get(0).getName(), "HOME");
+                    updateMatchUpInCloud(allMatches.get(37 - 1), countryList.get(1).getName(), "HOME");
                 } else {
                     updateMatchUpInCloud(allMatches.get(40 - 1), "Winner Group " + group, "HOME");
                     updateMatchUpInCloud(allMatches.get(37 - 1), "Runner-up Group " + group, "HOME");
@@ -364,8 +365,8 @@ public class MainPresenter
             }
             case "B": {
                 if (areAllMatchesPlayed) {
-                    updateMatchUpInCloud(allMatches.get(38 - 1), countries.get(0).getName(), "HOME");
-                    updateMatchUpInCloud(allMatches.get(44 - 1), countries.get(1).getName(), "HOME");
+                    updateMatchUpInCloud(allMatches.get(38 - 1), countryList.get(0).getName(), "HOME");
+                    updateMatchUpInCloud(allMatches.get(44 - 1), countryList.get(1).getName(), "HOME");
                 } else {
                     updateMatchUpInCloud(allMatches.get(38 - 1), "Winner Group " + group, "HOME");
                     updateMatchUpInCloud(allMatches.get(44 - 1), "Runner-up Group " + group, "HOME");
@@ -374,8 +375,8 @@ public class MainPresenter
             }
             case "C": {
                 if (areAllMatchesPlayed) {
-                    updateMatchUpInCloud(allMatches.get(41 - 1), countries.get(0).getName(), "HOME");
-                    updateMatchUpInCloud(allMatches.get(37 - 1), countries.get(1).getName(), "AWAY");
+                    updateMatchUpInCloud(allMatches.get(41 - 1), countryList.get(0).getName(), "HOME");
+                    updateMatchUpInCloud(allMatches.get(37 - 1), countryList.get(1).getName(), "AWAY");
                 } else {
                     updateMatchUpInCloud(allMatches.get(41 - 1), "Winner Group " + group, "HOME");
                     updateMatchUpInCloud(allMatches.get(37 - 1), "Runner-up Group " + group, "AWAY");
@@ -384,8 +385,8 @@ public class MainPresenter
             }
             case "D": {
                 if (areAllMatchesPlayed) {
-                    updateMatchUpInCloud(allMatches.get(39 - 1), countries.get(0).getName(), "HOME");
-                    updateMatchUpInCloud(allMatches.get(43 - 1), countries.get(1).getName(), "AWAY");
+                    updateMatchUpInCloud(allMatches.get(39 - 1), countryList.get(0).getName(), "HOME");
+                    updateMatchUpInCloud(allMatches.get(43 - 1), countryList.get(1).getName(), "AWAY");
                 } else {
                     updateMatchUpInCloud(allMatches.get(39 - 1), "Winner Group " + group, "HOME");
                     updateMatchUpInCloud(allMatches.get(43 - 1), "Runner-up Group " + group, "AWAY");
@@ -394,8 +395,8 @@ public class MainPresenter
             }
             case "E": {
                 if (areAllMatchesPlayed) {
-                    updateMatchUpInCloud(allMatches.get(43 - 1), countries.get(0).getName(), "HOME");
-                    updateMatchUpInCloud(allMatches.get(42 - 1), countries.get(1).getName(), "AWAY");
+                    updateMatchUpInCloud(allMatches.get(43 - 1), countryList.get(0).getName(), "HOME");
+                    updateMatchUpInCloud(allMatches.get(42 - 1), countryList.get(1).getName(), "AWAY");
                 } else {
                     updateMatchUpInCloud(allMatches.get(43 - 1), "Winner Group " + group, "HOME");
                     updateMatchUpInCloud(allMatches.get(42 - 1), "Runner-up Group " + group, "AWAY");
@@ -404,8 +405,8 @@ public class MainPresenter
             }
             case "F": {
                 if (areAllMatchesPlayed) {
-                    updateMatchUpInCloud(allMatches.get(42 - 1), countries.get(0).getName(), "HOME");
-                    updateMatchUpInCloud(allMatches.get(44 - 1), countries.get(1).getName(), "AWAY");
+                    updateMatchUpInCloud(allMatches.get(42 - 1), countryList.get(0).getName(), "HOME");
+                    updateMatchUpInCloud(allMatches.get(44 - 1), countryList.get(1).getName(), "AWAY");
                 } else {
                     updateMatchUpInCloud(allMatches.get(42 - 1), "Winner Group " + group, "HOME");
                     updateMatchUpInCloud(allMatches.get(44 - 1), "Runner-up Group " + group, "AWAY");
@@ -415,7 +416,7 @@ public class MainPresenter
         }
     }
 
-    private void putCountriesInDatabase(HashMap<String, ArrayList<Country>> allGroups) {
+    private void putCountriesInDatabase(HashMap<String, List<Country>> allGroups) {
         for (Country country : allGroups.get("A"))
             if (!country.equalsInstance(allCountries.get(country.getName()))) {
                 allCountries.get(country.getName()).set(country);
@@ -471,7 +472,7 @@ public class MainPresenter
         getModel().updateMatchUp(match);//, country, matchUpPosition);
     }
 
-    private ArrayList<Country> orderGroup(ArrayList<Country> group) {
+    private List<Country> orderGroup(List<Country> group) {
         // Sort Group
         Collections.sort(group, Collections.<Country>reverseOrder());
 
@@ -683,8 +684,8 @@ public class MainPresenter
         }
     }
 
-    private static ArrayList<Match> getGroupStageMatches(ArrayList<Match> allMatches) {
-        ArrayList<Match> allGroupStageMatches = new ArrayList<>();
+    private static List<Match> getGroupStageMatches(List<Match> allMatches) {
+        List<Match> allGroupStageMatches = new ArrayList<>();
         for (Match match : allMatches)
             if (match.getStage().equals("Group Stage"))
                 allGroupStageMatches.add(match);

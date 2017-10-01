@@ -13,6 +13,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.hugoandrade.euro2016.backend.R;
 import org.hugoandrade.euro2016.backend.object.Match;
@@ -24,10 +25,10 @@ public class MatchListAdapter extends RecyclerView.Adapter<MatchListAdapter.View
     private static int COLOR_CORAL_RED = Color.parseColor("#ffff4444");
     private static int COLOR_BLACK = Color.parseColor("#ff000000");
 
-    private ArrayList<Match> mAllMatchesList;
+    private List<Match> mAllMatchesList;
     private OnButtonClickedListener mListener;
 
-    public MatchListAdapter(ArrayList<Match> allMatchesList) {
+    public MatchListAdapter(List<Match> allMatchesList) {
         this.mAllMatchesList = new ArrayList<>();
         this.mAllMatchesList.addAll(allMatchesList);
     }
@@ -92,7 +93,7 @@ public class MatchListAdapter extends RecyclerView.Adapter<MatchListAdapter.View
         return mAllMatchesList.size();
     }
 
-    public void setAll(ArrayList<Match> matchCollection) {
+    public void setAll(List<Match> matchCollection) {
         mAllMatchesList.clear();
         mAllMatchesList.addAll(matchCollection);
         notifyDataSetChanged();
