@@ -1,9 +1,7 @@
 package org.hugoandrade.euro2016.backend.view.fragment;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -19,24 +17,16 @@ import org.hugoandrade.euro2016.backend.object.Match;
 import org.hugoandrade.euro2016.backend.view.listadapter.MatchListAdapter;
 
 public class SetResultsFragment
-        extends Fragment
+        extends FragmentBase<FragmentCommunication.ProvidedParentActivityOps>
         implements FragmentCommunication.ProvidedSetResultsChildFragmentOps {
 
     @SuppressWarnings("unused")
     private static final String TAG = SetResultsFragment.class.getSimpleName();
 
-    private FragmentCommunication.ProvidedParentActivityOps mCommChListener;
-
-    private RecyclerView lvAllMatches;
+    private RecyclerView rvAllMatches;
     private MatchListAdapter mAdapter;
     private List<Match> mMatchList = new ArrayList<>();
     private int selection = 0;
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        mCommChListener = (FragmentCommunication.ProvidedParentActivityOps) context;
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -47,20 +37,20 @@ public class SetResultsFragment
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        lvAllMatches = (RecyclerView) view.findViewById(R.id.rv_all_matches);
-        lvAllMatches.setLayoutManager(
+        rvAllMatches = (RecyclerView) view.findViewById(R.id.rv_all_matches);
+        rvAllMatches.setLayoutManager(
                 new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 
         mAdapter = new MatchListAdapter(mMatchList);
         mAdapter.setOnButtonClickedListener(new MatchListAdapter.OnButtonClickedListener() {
             @Override
             public void onClick(Match match) {
-                mCommChListener.updateMatch(match);
+                getParentActivity().updateMatch(match);
             }
         });
 
-        lvAllMatches.setAdapter(mAdapter);
-        lvAllMatches.scrollToPosition(selection);
+        rvAllMatches.setAdapter(mAdapter);
+        rvAllMatches.scrollToPosition(selection);
     }
 
     @Override
@@ -69,8 +59,8 @@ public class SetResultsFragment
         mMatchList.addAll(allMatchesList);
         if (mAdapter != null)
             mAdapter.setAll(mMatchList);
-        if (lvAllMatches != null)
-            lvAllMatches.scrollToPosition(getStartingItemPosition());
+        if (rvAllMatches != null)
+            rvAllMatches.scrollToPosition(getStartingItemPosition());
     }
 
     @Override

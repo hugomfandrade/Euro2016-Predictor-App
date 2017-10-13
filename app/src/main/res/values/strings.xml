@@ -11,11 +11,14 @@
     <string name="edit_system_data"><u>Edit System Data</u></string>
     <string name="app_enabled"><u>App enabled?</u></string>
     <string name="rules"><u>Rules:</u></string>
-    <string name="set_system_date"><u>Set System Date:</u></string>
+    <string name="set_system_date"><u>System Date:</u></string>
     <string name="correct_prediction">Correct prediction</string>
     <string name="correct_outcome">Correct outcome</string>
     <string name="correct_outcome_via_penalties">Correct outcome via penalty shootout</string>
     <string name="incorrect_prediction_and_outcome">Incorrect prediction and outcome</string>
     <string name="set">Set</string>
     <string name="zero_value">0</string>
+    <string name="action_cancel">cancel</string>
+    <string name="action_confirm">confirm</string>
+    <string name="double_dots">:</string>
 </resources>

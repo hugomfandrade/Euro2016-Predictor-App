@@ -19,6 +19,7 @@ import org.hugoandrade.euro2016.backend.model.parser.MessageBase;
 import org.hugoandrade.euro2016.backend.model.service.MobileService;
 import org.hugoandrade.euro2016.backend.object.Country;
 import org.hugoandrade.euro2016.backend.object.Match;
+import org.hugoandrade.euro2016.backend.object.SystemData;
 
 
 public class MainModel implements MVP.ProvidedModelOps {
@@ -147,6 +148,28 @@ public class MainModel implements MVP.ProvidedModelOps {
     }
 
     @Override
+    public void getSystemData() {
+        if (mRequestMessengerRef == null) {
+            Log.e(TAG, "mRequestMessengerRef is null when requesting");
+            return;
+        }
+        if (mReplyMessage == null) {
+            Log.e(TAG, "replyMessage is null when requesting");
+            return;
+        }
+
+        MessageBase requestMessage = MessageBase.makeMessage(
+                MessageBase.OperationType.GET_SYSTEM_DATA.ordinal(),
+                mReplyMessage);
+
+        try {
+            mRequestMessengerRef.send(requestMessage.getMessage());
+        } catch (Exception e) {
+            Log.e(TAG, "Exception while sending message back to Activity.", e);
+        }
+    }
+
+    @Override
     public void updateMatchUp(Match match) {
         if (mRequestMessengerRef == null) {
             Log.e(TAG, "mRequestMessengerRef is null when requesting");
@@ -217,6 +240,29 @@ public class MainModel implements MVP.ProvidedModelOps {
         }
     }
 
+    @Override
+    public void setSystemData(SystemData systemData) {
+        if (mRequestMessengerRef == null) {
+            Log.e(TAG, "mRequestMessengerRef is null when requesting");
+            return;
+        }
+        if (mReplyMessage == null) {
+            Log.e(TAG, "replyMessage is null when requesting");
+            return;
+        }
+
+        MessageBase requestMessage = MessageBase.makeMessage(
+                MessageBase.OperationType.SET_SYSTEM_DATA.ordinal(),
+                mReplyMessage);
+        requestMessage.setSystemData(systemData);
+
+        try {
+            mRequestMessengerRef.send(requestMessage.getMessage());
+        } catch (Exception e) {
+            Log.e(TAG, "Exception while sending message back to Activity.", e);
+        }
+    }
+
     private static class ReplyHandler extends android.os.Handler {
 
         private WeakReference<MainModel> mModel;
@@ -240,59 +286,91 @@ public class MainModel implements MVP.ProvidedModelOps {
                 switch (requestResult) {
                     case MessageBase.REQUEST_RESULT_SUCCESS:
                         mModel.get().addAllMatchesRequestResult(
+                                true,
                                 null,
                                 requestMessage.getMatchList());
                         break;
                     case MessageBase.REQUEST_RESULT_FAILURE:
                         mModel.get().addAllMatchesRequestResult(
+                                false,
                                 requestMessage.getErrorMessage(),
                                 null);
                         break;
                     default:
                         mModel.get().addAllMatchesRequestResult(
+                                false,
                                 "No RequestResult provided",
                                 null);
                         break;
                 }
             }
-            if (requestCode == MessageBase.OperationType.GET_ALL_COUNTRIES.ordinal()) {
+            else if (requestCode == MessageBase.OperationType.GET_ALL_COUNTRIES.ordinal()) {
                 switch (requestResult) {
                     case MessageBase.REQUEST_RESULT_SUCCESS:
                         mModel.get().reportAllCountriesRequestResult(
+                                true,
                                 null,
                                 requestMessage.getCountryList());
                         break;
                     case MessageBase.REQUEST_RESULT_FAILURE:
                         mModel.get().reportAllCountriesRequestResult(
+                                false,
                                 requestMessage.getErrorMessage(),
                                 null);
                         break;
                     default:
                         mModel.get().reportAllCountriesRequestResult(
+                                false,
                                 "No RequestResult provided",
                                 null);
                         break;
                 }
             }
-            if (requestCode == MessageBase.OperationType.UPDATE_MATCH_RESULT.ordinal()) {
+            else if (requestCode == MessageBase.OperationType.UPDATE_MATCH_RESULT.ordinal() ||
+                    requestCode == MessageBase.OperationType.UPDATE_MATCH_UP.ordinal()) {
                 switch (requestResult) {
                     case MessageBase.REQUEST_RESULT_SUCCESS:
                         mModel.get().updateMatchRequestResult(
+                                true,
                                 null,
                                 requestMessage.getMatch());
                         break;
                     case MessageBase.REQUEST_RESULT_FAILURE:
                         mModel.get().addAllMatchesRequestResult(
+                                false,
                                 requestMessage.getErrorMessage(),
                                 null);
                         break;
                     default:
                         mModel.get().addAllMatchesRequestResult(
+                                false,
                                 "No RequestResult provided",
                                 null);
                         break;
                 }
-
+            }
+            else if (requestCode == MessageBase.OperationType.GET_SYSTEM_DATA.ordinal() ||
+                    requestCode == MessageBase.OperationType.SET_SYSTEM_DATA.ordinal()) {
+                switch (requestResult) {
+                    case MessageBase.REQUEST_RESULT_SUCCESS:
+                        mModel.get().reportSystemDataRequestResult(
+                                true,
+                                null,
+                                requestMessage.getSystemData());
+                        break;
+                    case MessageBase.REQUEST_RESULT_FAILURE:
+                        mModel.get().reportSystemDataRequestResult(
+                                false,
+                                requestMessage.getErrorMessage(),
+                                null);
+                        break;
+                    default:
+                        mModel.get().addAllMatchesRequestResult(
+                                false,
+                                "No RequestResult provided",
+                                null);
+                        break;
+                }
             }
         }
         void shutdown() {
@@ -300,16 +378,20 @@ public class MainModel implements MVP.ProvidedModelOps {
         }
     }
 
-    private void reportAllCountriesRequestResult(String message, ArrayList<Country> allCountriesList) {
-        mPresenter.get().reportGetAllCountriesRequestResult(message, allCountriesList);
+    private void reportSystemDataRequestResult(boolean isRetrieved, String message, SystemData systemData) {
+        mPresenter.get().reportSystemDataRequestResult(isRetrieved, message, systemData);
     }
 
-    private void updateMatchRequestResult(String message, Match match) {
-        mPresenter.get().reportUpdateMatchRequestResult(message, match);
+    private void reportAllCountriesRequestResult(boolean isRetrieved, String message, ArrayList<Country> allCountriesList) {
+        mPresenter.get().reportGetAllCountriesRequestResult(isRetrieved, message, allCountriesList);
+    }
+
+    private void updateMatchRequestResult(boolean isRetrieved, String message, Match match) {
+        mPresenter.get().reportUpdateMatchRequestResult(isRetrieved, message, match);
 
     }
 
-    private void addAllMatchesRequestResult(String message, ArrayList<Match> allMatchesList) {
-        mPresenter.get().reportGetAllMatchesRequestResult(message, allMatchesList);
+    private void addAllMatchesRequestResult(boolean isRetrieved, String message, ArrayList<Match> allMatchesList) {
+        mPresenter.get().reportGetAllMatchesRequestResult(isRetrieved, message, allMatchesList);
     }
 }

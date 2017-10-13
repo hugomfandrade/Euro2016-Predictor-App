@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.UriMatcher;
 import android.database.ContentObserver;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
@@ -24,6 +25,8 @@ import org.hugoandrade.euro2016.backend.object.Match;
 import org.hugoandrade.euro2016.backend.object.Prediction;
 import org.hugoandrade.euro2016.backend.object.SystemData;
 import org.hugoandrade.euro2016.backend.utils.ISO8601;
+import org.hugoandrade.euro2016.backend.utils.MatchUtils;
+import org.hugoandrade.euro2016.backend.utils.PredictionUtils;
 
 public class CloudDatabaseSimProvider extends ContentProvider {
 
@@ -130,7 +133,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
         switch (mUriMatcher.match(uri)) {
             case Match.Entry.PATH_TOKEN: {
                 if (sortOrder == null || sortOrder.isEmpty())
-                    updatedSortOrder = Match.Entry.COLUMN__ID + " ASC";
+                    updatedSortOrder = Match.Entry.Cols._ID + " ASC";
 
                 tableName = Match.Entry.TABLE_NAME;
 
@@ -138,7 +141,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
             }
 
             case Match.Entry.PATH_FOR_ID_TOKEN: {
-                String idSelection = Match.Entry.COLUMN__ID + " = " + uri.getLastPathSegment();
+                String idSelection = Match.Entry.Cols._ID + " = " + uri.getLastPathSegment();
                 if (selection == null)
                     modifiedSelection = idSelection;
                 else
@@ -151,7 +154,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
 
             case Country.Entry.PATH_TOKEN: {
                 if (sortOrder == null || sortOrder.isEmpty())
-                    updatedSortOrder = Country.Entry.COLUMN__ID + " ASC";
+                    updatedSortOrder = Country.Entry.Cols._ID + " ASC";
 
                 tableName = Country.Entry.TABLE_NAME;
 
@@ -159,7 +162,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
             }
 
             case Country.Entry.PATH_FOR_ID_TOKEN: {
-                String idSelection = Country.Entry.COLUMN__ID + " = " + uri.getLastPathSegment();
+                String idSelection = Country.Entry.Cols._ID + " = " + uri.getLastPathSegment();
                 if (selection == null)
                     modifiedSelection = idSelection;
                 else
@@ -172,7 +175,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
 
             case Account.Entry.PATH_TOKEN: {
                 if (sortOrder == null || sortOrder.isEmpty())
-                    updatedSortOrder = Account.Entry.COLUMN__ID + " ASC";
+                    updatedSortOrder = Account.Entry.Cols._ID + " ASC";
 
                 tableName = Account.Entry.TABLE_NAME;
 
@@ -180,7 +183,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
             }
 
             case Account.Entry.PATH_FOR_ID_TOKEN: {
-                String idSelection = Account.Entry.COLUMN__ID + " = " + uri.getLastPathSegment();
+                String idSelection = Account.Entry.Cols._ID + " = " + uri.getLastPathSegment();
                 if (selection == null)
                     modifiedSelection = idSelection;
                 else
@@ -193,7 +196,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
 
             case SystemData.Entry.PATH_TOKEN: {
                 if (sortOrder == null || sortOrder.isEmpty())
-                    updatedSortOrder = SystemData.Entry.COLUMN__ID + " ASC";
+                    updatedSortOrder = SystemData.Entry.Cols._ID + " ASC";
 
                 tableName = SystemData.Entry.TABLE_NAME;
 
@@ -201,7 +204,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
             }
 
             case SystemData.Entry.PATH_FOR_ID_TOKEN: {
-                String idSelection = SystemData.Entry.COLUMN__ID + " = " + uri.getLastPathSegment();
+                String idSelection = SystemData.Entry.Cols._ID + " = " + uri.getLastPathSegment();
                 if (selection == null)
                     modifiedSelection = idSelection;
                 else
@@ -214,7 +217,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
 
             case Prediction.Entry.PATH_TOKEN: {
                 if (sortOrder == null || sortOrder.isEmpty())
-                    updatedSortOrder = Prediction.Entry.COLUMN__ID + " ASC";
+                    updatedSortOrder = Prediction.Entry.Cols._ID + " ASC";
 
                 tableName = Prediction.Entry.TABLE_NAME;
 
@@ -222,7 +225,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
             }
 
             case Prediction.Entry.PATH_FOR_ID_TOKEN: {
-                String idSelection = Prediction.Entry.COLUMN__ID + " = " + uri.getLastPathSegment();
+                String idSelection = Prediction.Entry.Cols._ID + " = " + uri.getLastPathSegment();
                 if (selection == null)
                     modifiedSelection = idSelection;
                 else
@@ -294,7 +297,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
     @Override
     synchronized public Uri insert(@NonNull Uri uri, ContentValues values) {
 
-        values.remove(Prediction.Entry.COLUMN__ID);
+        values.remove(Prediction.Entry.Cols._ID);
 
         // switch on the results of 'mUriMatcher' matching the Uri passed in,
         switch (mUriMatcher.match(uri)) {
@@ -323,7 +326,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
 
                     int count = db.update(Prediction.Entry.TABLE_NAME,
                                           values,
-                                          Prediction.Entry.COLUMN__ID + " = " + predictionID,
+                                          Prediction.Entry.Cols._ID + " = " + predictionID,
                                           null);
 
                     if (count <= 0)
@@ -384,19 +387,19 @@ public class CloudDatabaseSimProvider extends ContentProvider {
 
                     case Account.Entry.REQUEST_TYPE_SIGN_UP: {
 
+                        Account dbAccount = getAccount(account.getUsername());
+
+                        if (dbAccount != null)
+                            return Uri.parse("Username \'" + account.getUsername() + "\' already exists.");
+
                         account.setScore(0);
 
                         // Insert
-                        try {
-                            long rowID = db.insert(Account.Entry.TABLE_NAME, null, values);
+                        long rowID = db.insert(Account.Entry.TABLE_NAME, null, cvFormatter.getAsContentValues(account));
 
-                            Uri url = ContentUris.withAppendedId(Account.Entry.CONTENT_URI, rowID);
+                        Uri url = ContentUris.withAppendedId(Account.Entry.CONTENT_URI, rowID);
 
-                            notifyChanges(url, null);
-
-                        } catch (android.database.sqlite.SQLiteConstraintException e) {
-                            return Uri.parse("Username \'" + account.getUsername() + "\' already exists.");
-                        }
+                        notifyChanges(url, null);
 
                         return Uri.parse("Failed to sign up into " + uri);
                     }
@@ -463,21 +466,21 @@ public class CloudDatabaseSimProvider extends ContentProvider {
         switch (mUriMatcher.match(uri)) {
             case Country.Entry.PATH_FOR_ID_TOKEN: {
                 if (whereClause == null)
-                    modifiedWhereClause = Country.Entry.COLUMN__ID + " = " + uri.getLastPathSegment();
+                    modifiedWhereClause = Country.Entry.Cols._ID + " = " + uri.getLastPathSegment();
                 else
-                    modifiedWhereClause += " AND " + Country.Entry.COLUMN__ID + " = " + uri.getLastPathSegment();
+                    modifiedWhereClause += " AND " + Country.Entry.Cols._ID + " = " + uri.getLastPathSegment();
 
                 return updateAndNotify(uri,
-                        Country.Entry.TABLE_NAME,
-                        values,
-                        modifiedWhereClause,
-                        whereArgs);
+                                       Country.Entry.TABLE_NAME,
+                                       values,
+                                       modifiedWhereClause,
+                                       whereArgs);
             }
             case Match.Entry.PATH_FOR_ID_TOKEN: {
                 if (whereClause == null)
-                    modifiedWhereClause = Match.Entry.COLUMN__ID + " = " + uri.getLastPathSegment();
+                    modifiedWhereClause = Match.Entry.Cols._ID + " = " + uri.getLastPathSegment();
                 else
-                    modifiedWhereClause += " AND " + Match.Entry.COLUMN__ID + " = " + uri.getLastPathSegment();
+                    modifiedWhereClause += " AND " + Match.Entry.Cols._ID + " = " + uri.getLastPathSegment();
 
                 SystemData systemData = getSystemData();
 
@@ -498,16 +501,15 @@ public class CloudDatabaseSimProvider extends ContentProvider {
             case SystemData.Entry.PATH_FOR_ID_TOKEN: {
 
                 if (whereClause == null)
-                    modifiedWhereClause = SystemData.Entry.COLUMN__ID + " = " + uri.getLastPathSegment();
+                    modifiedWhereClause = SystemData.Entry.Cols._ID + " = " + uri.getLastPathSegment();
                 else
-                    modifiedWhereClause += " AND " + SystemData.Entry.COLUMN__ID + " = " + uri.getLastPathSegment();
+                    modifiedWhereClause += " AND " + SystemData.Entry.Cols._ID + " = " + uri.getLastPathSegment();
 
                 SystemData preSystemData = getSystemData();
                 SystemData newSystemData = cvParser.parseSystemData(values);
 
-
                 boolean haveRulesChanged =
-                        !preSystemData.getRules().equals(newSystemData.getRules());
+                        !preSystemData.getRawRules().equals(newSystemData.getRawRules());
 
                 int count = updateAndNotify(uri,
                                             SystemData.Entry.TABLE_NAME,
@@ -517,6 +519,8 @@ public class CloudDatabaseSimProvider extends ContentProvider {
 
                 if (count > 0 && haveRulesChanged)
                     updateAllPredictionScores();
+
+                return count;
             }
             case Prediction.Entry.PATH_FOR_ID_TOKEN:
             case Prediction.Entry.PATH_TOKEN:
@@ -533,7 +537,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
     private SystemData getSystemData() {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         qb.setTables(SystemData.Entry.TABLE_NAME);
-        Cursor c = qb.query(db,	null, null, null, null, null, SystemData.Entry.COLUMN__ID);
+        Cursor c = qb.query(db,	null, null, null, null, null, SystemData.Entry.Cols._ID);
 
         SystemData systemData = null;
         if (c.getCount() > 0 && c.moveToFirst()) {
@@ -548,9 +552,9 @@ public class CloudDatabaseSimProvider extends ContentProvider {
         qb.setTables(Match.Entry.TABLE_NAME);
         Cursor c = qb.query(db,
                 null,
-                Match.Entry.COLUMN_MATCH_NO +  " = \"" + matchNo + "\"",
+                Match.Entry.Cols.MATCH_NO +  " = \"" + matchNo + "\"",
                 null, null, null,
-                Match.Entry.COLUMN__ID);
+                Match.Entry.Cols._ID);
 
         if (c.getCount() > 0 && c.moveToFirst()) {
             Calendar calendar = Calendar.getInstance();
@@ -569,10 +573,10 @@ public class CloudDatabaseSimProvider extends ContentProvider {
 
         Cursor c = qb.query(db,
                 null,
-                Prediction.Entry.COLUMN_USER_ID + " = \"" + userID + "\" AND " +
-                        Prediction.Entry.COLUMN_MATCH_NO + " = \"" + matchNo + "\"",
+                Prediction.Entry.Cols.USER_ID + " = \"" + userID + "\" AND " +
+                        Prediction.Entry.Cols.MATCH_NO + " = \"" + matchNo + "\"",
                 null, null, null,
-                Prediction.Entry.COLUMN__ID);
+                Prediction.Entry.Cols._ID);
 
 
         if (c.getCount() > 0 && c.moveToFirst()) {
@@ -588,7 +592,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
     private Calendar getSystemDate() {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         qb.setTables(SystemData.Entry.TABLE_NAME);
-        Cursor c = qb.query(db,	null, null, null, null, null, SystemData.Entry.COLUMN__ID);
+        Cursor c = qb.query(db,	null, null, null, null, null, SystemData.Entry.Cols._ID);
 
         if (c != null && c.getCount() > 0) {
             if (c.moveToFirst()) {
@@ -616,9 +620,9 @@ public class CloudDatabaseSimProvider extends ContentProvider {
 
         Cursor c = qb.query(db,
                 null,
-                Account.Entry.COLUMN_USERNAME + " = \"" + username + "\"",
+                Account.Entry.Cols.USERNAME + " = \"" + username + "\"",
                 null, null, null,
-                Account.Entry.COLUMN__ID);
+                Account.Entry.Cols._ID);
 
 
         if (c.getCount() > 0 && c.moveToFirst()) {
@@ -648,10 +652,10 @@ public class CloudDatabaseSimProvider extends ContentProvider {
 
         Cursor c = qb.query(db,
                 null,
-                Prediction.Entry.COLUMN_USER_ID + " = \"" + prediction.getUserID() + "\" AND " +
-                        Prediction.Entry.COLUMN_MATCH_NO + " = \"" + prediction.getMatchNumber() + "\"",
+                Prediction.Entry.Cols.USER_ID + " = \"" + prediction.getUserID() + "\" AND " +
+                        Prediction.Entry.Cols.MATCH_NO + " = \"" + prediction.getMatchNumber() + "\"",
                 null, null, null,
-                Prediction.Entry.COLUMN__ID);
+                Prediction.Entry.Cols._ID);
 
         boolean isPredictionInDatabase = c.getCount() != 0;
         c.close();
@@ -666,7 +670,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
         // Query by all Matches and update predictions scores of matches
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         qb.setTables(Match.Entry.TABLE_NAME);
-        Cursor c = qb.query(db,	null, null, null, null, null, Match.Entry.COLUMN__ID);
+        Cursor c = qb.query(db,	null, null, null, null, null, Match.Entry.Cols._ID);
 
         if (c.moveToFirst()) {
             do {
@@ -686,9 +690,9 @@ public class CloudDatabaseSimProvider extends ContentProvider {
         // Get all Predictions with the MATCH_NUMBER
         Cursor c = qb.query(db,
                 null,
-                Prediction.Entry.COLUMN_MATCH_NO + " = " + Integer.toString(match.getMatchNumber()),
+                Prediction.Entry.Cols.MATCH_NO + " = " + Integer.toString(match.getMatchNumber()),
                 null, null, null,
-                Prediction.Entry.COLUMN_MATCH_NO);
+                Prediction.Entry.Cols.MATCH_NO);
 
         if (c.moveToFirst()) {
             do{
@@ -704,11 +708,11 @@ public class CloudDatabaseSimProvider extends ContentProvider {
 
                 // Update entry
                 ContentValues predictionValues = cvFormatter.getAsContentValues(prediction);
-                predictionValues.remove(Prediction.Entry.COLUMN__ID);
+                predictionValues.remove(Prediction.Entry.Cols._ID);
                 int count = db.update(
                         Prediction.Entry.TABLE_NAME,
                         predictionValues,
-                        Prediction.Entry.COLUMN__ID + " = " + Integer.toString(prediction.getID()),
+                        Prediction.Entry.Cols._ID + " = " + Integer.toString(prediction.getID()),
                         null);
 
                 // If there was a row updated, update account score
@@ -731,9 +735,9 @@ public class CloudDatabaseSimProvider extends ContentProvider {
         qb.setTables(Account.Entry.TABLE_NAME);
         Cursor c = qb.query(db,
                 null,
-                Account.Entry.COLUMN__ID + " = " + userID,
+                Account.Entry.Cols._ID + " = " + userID,
                 null, null, null,
-                Account.Entry.COLUMN__ID);
+                Account.Entry.Cols._ID);
 
         if (c.moveToFirst()) {
             do {
@@ -743,7 +747,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
 
                 db.update(Account.Entry.TABLE_NAME,
                           cvFormatter.getAsContentValues(account),
-                          Account.Entry.COLUMN__ID + " = " + account.getID(),
+                          Account.Entry.Cols._ID + " = " + account.getID(),
                           null);
             } while (c.moveToNext());
         }
@@ -779,107 +783,58 @@ public class CloudDatabaseSimProvider extends ContentProvider {
         if (resolver == null) {
             return;
         }
-        resolver.notifyChange(uri, null);
+        resolver.notifyChange(uri, contentObserver);
     }
 
     private Prediction computePredictionScore(Match match, Prediction prediction, SystemData systemData) {
 
-        int incorrectPrediction = Integer.parseInt(systemData.getRules().split(",")[0]);
-        int correctOutcomeViaPenalties = Integer.parseInt(systemData.getRules().split(",")[1]);
-        int correctOutcome = Integer.parseInt(systemData.getRules().split(",")[2]);
-        int correctPrediction = Integer.parseInt(systemData.getRules().split(",")[3]);
+        int incorrectPrediction = systemData.getRules().getRuleIncorrectPrediction();
+        int correctOutcomeViaPenalties = systemData.getRules().getRuleCorrectOutcomeViaPenalties();
+        int correctOutcome = systemData.getRules().getRuleCorrectOutcome();
+        int correctPrediction = systemData.getRules().getRuleCorrectPrediction();
 
-        if (!isMatchPlayed(match)) {
+        if (!MatchUtils.isMatchPlayed(match)) {
             prediction.setScore(-1);
             return prediction;
         }
-        if (!isPredictionSet(prediction)) {
+        if (!PredictionUtils.isPredictionSet(prediction)) {
             prediction.setScore(incorrectPrediction);
             return prediction;
         }
 
         // Both (match and prediction) home teams win
-        if (didHomeTeamWin(match) && didPredictHomeTeamWin(prediction)) {
-            if (isPredictionCorrect(match, prediction))
+        if (MatchUtils.didHomeTeamWin(match) && PredictionUtils.didPredictHomeTeamWin(prediction)) {
+            if (PredictionUtils.isPredictionCorrect(match, prediction))
                 prediction.setScore(correctPrediction);
             else
                 prediction.setScore(correctOutcome);
             return prediction;
         }
-        else if (didAwayTeamWin(match) && didPredictAwayTeamWin(prediction)) {
-            if (isPredictionCorrect(match, prediction))
+        else if (MatchUtils.didAwayTeamWin(match) && PredictionUtils.didPredictAwayTeamWin(prediction)) {
+            if (PredictionUtils.isPredictionCorrect(match, prediction))
                 prediction.setScore(correctPrediction);
             else
                 prediction.setScore(correctOutcome);
             return prediction;
         }
-        else if (didTeamsTied(match) && didPredictTie(prediction) && !wasThereAPenaltyShootout(match)) {
-            if (isPredictionCorrect(match, prediction))
+        else if (MatchUtils.didTeamsTied(match) && PredictionUtils.didPredictTie(prediction) && !MatchUtils.wasThereAPenaltyShootout(match)) {
+            if (PredictionUtils.isPredictionCorrect(match, prediction))
                 prediction.setScore(correctPrediction);
             else
                 prediction.setScore(correctOutcome);
             return prediction;
         }
-        else if (didTeamsTied(match) && wasThereAPenaltyShootout(match)) {
-            if (didHomeTeamWinByPenaltyShootout(match) && didPredictHomeTeamWin(prediction)) {
+        else if (MatchUtils.didTeamsTied(match) && MatchUtils.wasThereAPenaltyShootout(match)) {
+            if (MatchUtils.didHomeTeamWinByPenaltyShootout(match) && PredictionUtils.didPredictHomeTeamWin(prediction)) {
                 prediction.setScore(correctOutcomeViaPenalties);
                 return prediction;
             }
-            if (didAwayTeamWinByPenaltyShootout(match) && didPredictAwayTeamWin(prediction)) {
+            if (MatchUtils.didAwayTeamWinByPenaltyShootout(match) && PredictionUtils.didPredictAwayTeamWin(prediction)) {
                 prediction.setScore(correctOutcomeViaPenalties);
                 return prediction;
             }
         }
         prediction.setScore(incorrectPrediction);
         return prediction;
-    }
-
-    private boolean isPredictionSet(Prediction prediction) {
-        return prediction.getHomeTeamGoals() != -1 && prediction.getAwayTeamGoals() != -1;
-    }
-
-    private boolean isMatchPlayed(Match match) {
-        return match.getHomeTeamGoals() != -1 && match.getAwayTeamGoals() != -1;
-    }
-
-    private boolean didHomeTeamWin(Match match) {
-        return match.getHomeTeamGoals() > match.getAwayTeamGoals();
-    }
-
-    private boolean didPredictHomeTeamWin(Prediction prediction) {
-        return prediction.getHomeTeamGoals() > prediction.getAwayTeamGoals();
-    }
-
-    private boolean didAwayTeamWin(Match match) {
-        return match.getAwayTeamGoals() > match.getHomeTeamGoals();
-    }
-
-    private boolean didPredictAwayTeamWin(Prediction prediction) {
-        return prediction.getAwayTeamGoals() > prediction.getHomeTeamGoals();
-    }
-
-    private boolean isPredictionCorrect(Match match, Prediction prediction) {
-        return prediction.getHomeTeamGoals() == match.getHomeTeamGoals()
-                && prediction.getAwayTeamGoals() == match.getAwayTeamGoals();
-    }
-
-    private boolean didTeamsTied(Match match) {
-        return match.getHomeTeamGoals() == match.getAwayTeamGoals();
-    }
-
-    private boolean didPredictTie(Prediction prediction) {
-        return prediction.getHomeTeamGoals() == prediction.getAwayTeamGoals();
-    }
-
-    private boolean wasThereAPenaltyShootout(Match match) {
-        return match.getHomeTeamNotes().equals("p") || match.getAwayTeamNotes().equals("p");
-    }
-
-    private boolean didHomeTeamWinByPenaltyShootout(Match match) {
-        return match.getHomeTeamNotes() != null && match.getHomeTeamNotes().equals("p");
-    }
-
-    private boolean didAwayTeamWinByPenaltyShootout(Match match) {
-        return match.getAwayTeamNotes() != null && match.getAwayTeamNotes().equals("p");
     }
 }

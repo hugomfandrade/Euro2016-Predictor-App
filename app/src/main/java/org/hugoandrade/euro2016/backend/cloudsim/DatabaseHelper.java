@@ -26,61 +26,61 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String CREATE_DB_TABLE_MATCH =
             " CREATE TABLE " + Match.Entry.TABLE_NAME + " (" +
-                    " " + Match.Entry.COLUMN__ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    " " + Match.Entry.COLUMN_MATCH_NO + " INTEGER UNIQUE NOT NULL, " +
-                    " " + Match.Entry.COLUMN_HOME_TEAM + " TEXT NOT NULL, " +
-                    " " + Match.Entry.COLUMN_AWAY_TEAM + " TEXT NOT NULL, " +
-                    " " + Match.Entry.COLUMN_HOME_TEAM_GOALS + " INTEGER NULL, " +
-                    " " + Match.Entry.COLUMN_AWAY_TEAM_GOALS + " INTEGER NULL, " +
-                    " " + Match.Entry.COLUMN_HOME_TEAM_NOTES + " TEXT NULL, " +
-                    " " + Match.Entry.COLUMN_AWAY_TEAM_NOTES + " TEXT NULL, " +
-                    " " + Match.Entry.COLUMN_DATE_AND_TIME + " TEXT NOT NULL, " +
-                    " " + Match.Entry.COLUMN_STADIUM + " TEXT NOT NULL, " +
-                    " " + Match.Entry.COLUMN_GROUP + " TEXT NULL, " +
-                    " " + Match.Entry.COLUMN_STAGE + " TEXT NOT NULL " +
+                    " " + Match.Entry.Cols._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    " " + Match.Entry.Cols.MATCH_NO + " INTEGER UNIQUE NOT NULL, " +
+                    " " + Match.Entry.Cols.HOME_TEAM + " TEXT NOT NULL, " +
+                    " " + Match.Entry.Cols.AWAY_TEAM + " TEXT NOT NULL, " +
+                    " " + Match.Entry.Cols.HOME_TEAM_GOALS + " INTEGER NULL, " +
+                    " " + Match.Entry.Cols.AWAY_TEAM_GOALS + " INTEGER NULL, " +
+                    " " + Match.Entry.Cols.HOME_TEAM_NOTES + " TEXT NULL, " +
+                    " " + Match.Entry.Cols.AWAY_TEAM_NOTES + " TEXT NULL, " +
+                    " " + Match.Entry.Cols.DATE_AND_TIME + " TEXT NOT NULL, " +
+                    " " + Match.Entry.Cols.STADIUM + " TEXT NOT NULL, " +
+                    " " + Match.Entry.Cols.GROUP + " TEXT NULL, " +
+                    " " + Match.Entry.Cols.STAGE + " TEXT NOT NULL " +
                     " );";
 
     private static final String CREATE_DB_TABLE_SYSTEM_DATA =
             " CREATE TABLE " + SystemData.Entry.TABLE_NAME + " (" +
-                    " " + SystemData.Entry.COLUMN__ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    " " + SystemData.Entry.COLUMN_SYSTEM_DATE + " TEXT NOT NULL, " +
-                    " " + SystemData.Entry.COLUMN_DATE_OF_CHANGE + " TEXT NOT NULL, " +
-                    " " + SystemData.Entry.COLUMN_APP_STATE + " BOOLEAN NOT NULL, " +
-                    " " + SystemData.Entry.COLUMN_RULES + " TEXT NOT NULL " +
+                    " " + SystemData.Entry.Cols._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    " " + SystemData.Entry.Cols.SYSTEM_DATE + " TEXT NOT NULL, " +
+                    " " + SystemData.Entry.Cols.DATE_OF_CHANGE + " TEXT NOT NULL, " +
+                    " " + SystemData.Entry.Cols.APP_STATE + " BOOLEAN NOT NULL, " +
+                    " " + SystemData.Entry.Cols.RULES + " TEXT NOT NULL " +
                     " );";
 
     private static final String CREATE_DB_TABLE_PREDICTION =
             " CREATE TABLE " + Prediction.Entry.TABLE_NAME + " (" +
-                    " " + Prediction.Entry.COLUMN__ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    " " + Prediction.Entry.COLUMN_USER_ID + " TEXT NOT NULL, " +
-                    " " + Prediction.Entry.COLUMN_MATCH_NO + " INTEGER NOT NULL, " +
-                    " " + Prediction.Entry.COLUMN_HOME_TEAM_GOALS + " INTEGER NULL, " +
-                    " " + Prediction.Entry.COLUMN_AWAY_TEAM_GOALS + " INTEGER NULL, " +
-                    " " + Prediction.Entry.COLUMN_SCORE + " INTEGER NULL" +
+                    " " + Prediction.Entry.Cols._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    " " + Prediction.Entry.Cols.USER_ID + " TEXT NOT NULL, " +
+                    " " + Prediction.Entry.Cols.MATCH_NO + " INTEGER NOT NULL, " +
+                    " " + Prediction.Entry.Cols.HOME_TEAM_GOALS + " INTEGER NULL, " +
+                    " " + Prediction.Entry.Cols.AWAY_TEAM_GOALS + " INTEGER NULL, " +
+                    " " + Prediction.Entry.Cols.SCORE + " INTEGER NULL" +
                     " );";
 
     private static final String CREATE_DB_TABLE_COUNTRY =
             " CREATE TABLE " + Country.Entry.TABLE_NAME + " (" +
-                    " " + Country.Entry.COLUMN__ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    " " + Country.Entry.COLUMN_NAME + " TEXT UNIQUE NOT NULL, " +
-                    " " + Country.Entry.COLUMN_MATCHES_PLAYED + " INTEGER NOT NULL, " +
-                    " " + Country.Entry.COLUMN_GOALS_FOR + " INTEGER NOT NULL, " +
-                    " " + Country.Entry.COLUMN_GOALS_AGAINST + " INTEGER NOT NULL, " +
-                    " " + Country.Entry.COLUMN_GOALS_DIFFERENCE + " INTEGER NOT NULL, " +
-                    " " + Country.Entry.COLUMN_VICTORIES + " INTEGER NOT NULL, " +
-                    " " + Country.Entry.COLUMN_DRAWS + " INTEGER NOT NULL, " +
-                    " " + Country.Entry.COLUMN_DEFEATS + " INTEGER NOT NULL, " +
-                    " " + Country.Entry.COLUMN_GROUP + " TEXT NOT NULL, " +
-                    " " + Country.Entry.COLUMN_POSITION + " INTEGER NOT NULL, " +
-                    " " + Country.Entry.COLUMN_POINTS + " INTEGER NOT NULL" +
+                    " " + Country.Entry.Cols._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    " " + Country.Entry.Cols.NAME + " TEXT UNIQUE NOT NULL, " +
+                    " " + Country.Entry.Cols.MATCHES_PLAYED + " INTEGER NOT NULL, " +
+                    " " + Country.Entry.Cols.GOALS_FOR + " INTEGER NOT NULL, " +
+                    " " + Country.Entry.Cols.GOALS_AGAINST + " INTEGER NOT NULL, " +
+                    " " + Country.Entry.Cols.GOALS_DIFFERENCE + " INTEGER NOT NULL, " +
+                    " " + Country.Entry.Cols.VICTORIES + " INTEGER NOT NULL, " +
+                    " " + Country.Entry.Cols.DRAWS + " INTEGER NOT NULL, " +
+                    " " + Country.Entry.Cols.DEFEATS + " INTEGER NOT NULL, " +
+                    " " + Country.Entry.Cols.GROUP + " TEXT NOT NULL, " +
+                    " " + Country.Entry.Cols.POSITION + " INTEGER NOT NULL, " +
+                    " " + Country.Entry.Cols.POINTS + " INTEGER NOT NULL" +
                     " );";
 
     private static final String CREATE_DB_TABLE_ACCOUNT =
             " CREATE TABLE " + Account.Entry.TABLE_NAME + " (" +
-                    " " + Account.Entry.COLUMN__ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    " " + Account.Entry.COLUMN_USERNAME + " TEXT UNIQUE NOT NULL, " +
-                    " " + Account.Entry.COLUMN_PASSWORD + " TEXT NOT NULL, " +
-                    " " + Account.Entry.COLUMN_SCORE + " INTEGER NOT NULL" +
+                    " " + Account.Entry.Cols._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    " " + Account.Entry.Cols.USERNAME + " TEXT UNIQUE NOT NULL, " +
+                    " " + Account.Entry.Cols.PASSWORD + " TEXT NOT NULL, " +
+                    " " + Account.Entry.Cols.SCORE + " INTEGER NOT NULL" +
                     " );";
 
     @SuppressWarnings("unused")
@@ -198,36 +198,36 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private ContentValues getAccountContentValue(int id, String username, String password, int score) {
         ContentValues values = new ContentValues();
-        values.put(Account.Entry.COLUMN__ID,  id);
-        values.put(Account.Entry.COLUMN_USERNAME, username);
-        values.put(Account.Entry.COLUMN_PASSWORD, password);
-        values.put(Account.Entry.COLUMN_SCORE, score);
+        values.put(Account.Entry.Cols._ID,  id);
+        values.put(Account.Entry.Cols.USERNAME, username);
+        values.put(Account.Entry.Cols.PASSWORD, password);
+        values.put(Account.Entry.Cols.SCORE, score);
         return values;
     }
 
     private ContentValues getSystemDataContentValue(Calendar date, String rules, boolean appState) {
         ContentValues values = new ContentValues();
-        values.put(SystemData.Entry.COLUMN_SYSTEM_DATE, ISO8601.fromCalendar(date));
-        values.put(SystemData.Entry.COLUMN_DATE_OF_CHANGE, ISO8601.fromCalendar(date));
-        values.put(SystemData.Entry.COLUMN_APP_STATE, appState);
-        values.put(SystemData.Entry.COLUMN_RULES, rules);
+        values.put(SystemData.Entry.Cols.SYSTEM_DATE, ISO8601.fromCalendar(date));
+        values.put(SystemData.Entry.Cols.DATE_OF_CHANGE, ISO8601.fromCalendar(date));
+        values.put(SystemData.Entry.Cols.APP_STATE, appState);
+        values.put(SystemData.Entry.Cols.RULES, rules);
         return values;
     }
 
     private ContentValues getCountryContentValue(String name, String group) {
 
         ContentValues values = new ContentValues();
-        values.put(Country.Entry.COLUMN_NAME,  name);
-        values.put(Country.Entry.COLUMN_MATCHES_PLAYED, 0);
-        values.put(Country.Entry.COLUMN_VICTORIES, 0);
-        values.put(Country.Entry.COLUMN_DRAWS, 0);
-        values.put(Country.Entry.COLUMN_DEFEATS, 0);
-        values.put(Country.Entry.COLUMN_GOALS_FOR, 0);
-        values.put(Country.Entry.COLUMN_GOALS_AGAINST, 0);
-        values.put(Country.Entry.COLUMN_GOALS_DIFFERENCE, 0);
-        values.put(Country.Entry.COLUMN_GROUP, group);
-        values.put(Country.Entry.COLUMN_POSITION, 0);
-        values.put(Country.Entry.COLUMN_POINTS, 0);
+        values.put(Country.Entry.Cols.NAME,  name);
+        values.put(Country.Entry.Cols.MATCHES_PLAYED, 0);
+        values.put(Country.Entry.Cols.VICTORIES, 0);
+        values.put(Country.Entry.Cols.DRAWS, 0);
+        values.put(Country.Entry.Cols.DEFEATS, 0);
+        values.put(Country.Entry.Cols.GOALS_FOR, 0);
+        values.put(Country.Entry.Cols.GOALS_AGAINST, 0);
+        values.put(Country.Entry.Cols.GOALS_DIFFERENCE, 0);
+        values.put(Country.Entry.Cols.GROUP, group);
+        values.put(Country.Entry.Cols.POSITION, 0);
+        values.put(Country.Entry.Cols.POINTS, 0);
         return values;
     }
 
@@ -452,15 +452,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                                              String date, String stadium, String group,
                                              String stage) {
         ContentValues values = new ContentValues();
-        values.put(Match.Entry.COLUMN_MATCH_NO, matchNo);
-        values.put(Match.Entry.COLUMN_HOME_TEAM,  homeTeam);
-        values.put(Match.Entry.COLUMN_AWAY_TEAM, awayTeam);
-        values.put(Match.Entry.COLUMN_HOME_TEAM_GOALS, (String) null);
-        values.put(Match.Entry.COLUMN_AWAY_TEAM_GOALS, (String) null);
-        values.put(Match.Entry.COLUMN_DATE_AND_TIME, date);
-        values.put(Match.Entry.COLUMN_STADIUM, stadium);
-        values.put(Match.Entry.COLUMN_GROUP, group);
-        values.put(Match.Entry.COLUMN_STAGE, stage);
+        values.put(Match.Entry.Cols.MATCH_NO, matchNo);
+        values.put(Match.Entry.Cols.HOME_TEAM,  homeTeam);
+        values.put(Match.Entry.Cols.AWAY_TEAM, awayTeam);
+        values.put(Match.Entry.Cols.HOME_TEAM_GOALS, (String) null);
+        values.put(Match.Entry.Cols.AWAY_TEAM_GOALS, (String) null);
+        values.put(Match.Entry.Cols.DATE_AND_TIME, date);
+        values.put(Match.Entry.Cols.STADIUM, stadium);
+        values.put(Match.Entry.Cols.GROUP, group);
+        values.put(Match.Entry.Cols.STAGE, stage);
         return values;
     }
 
@@ -469,23 +469,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                                              String date, String stadium, String group,
                                              String stage) {
         ContentValues values = new ContentValues();
-        values.put(Match.Entry.COLUMN_MATCH_NO, matchNo);
-        values.put(Match.Entry.COLUMN_HOME_TEAM,  homeTeam);
-        values.put(Match.Entry.COLUMN_AWAY_TEAM, awayTeam);
-        values.put(Match.Entry.COLUMN_HOME_TEAM_GOALS, homeTeamGoalsScored);
-        values.put(Match.Entry.COLUMN_AWAY_TEAM_GOALS, awayTeamGoalsScored);
-        values.put(Match.Entry.COLUMN_DATE_AND_TIME, date);
-        values.put(Match.Entry.COLUMN_STADIUM, stadium);
-        values.put(Match.Entry.COLUMN_GROUP, group);
-        values.put(Match.Entry.COLUMN_STAGE, stage);
+        values.put(Match.Entry.Cols.MATCH_NO, matchNo);
+        values.put(Match.Entry.Cols.HOME_TEAM,  homeTeam);
+        values.put(Match.Entry.Cols.AWAY_TEAM, awayTeam);
+        values.put(Match.Entry.Cols.HOME_TEAM_GOALS, homeTeamGoalsScored);
+        values.put(Match.Entry.Cols.AWAY_TEAM_GOALS, awayTeamGoalsScored);
+        values.put(Match.Entry.Cols.DATE_AND_TIME, date);
+        values.put(Match.Entry.Cols.STADIUM, stadium);
+        values.put(Match.Entry.Cols.GROUP, group);
+        values.put(Match.Entry.Cols.STAGE, stage);
         return values;
     }
     private ContentValues getPredictionContentValue(int userID, int matchNo, int homeGoals, int awayGoals) {
         ContentValues values = new ContentValues();
-        values.put(Prediction.Entry.COLUMN_USER_ID,  userID);
-        values.put(Prediction.Entry.COLUMN_MATCH_NO, matchNo);
-        values.put(Prediction.Entry.COLUMN_HOME_TEAM_GOALS, homeGoals);
-        values.put(Prediction.Entry.COLUMN_AWAY_TEAM_GOALS, awayGoals);
+        values.put(Prediction.Entry.Cols.USER_ID,  userID);
+        values.put(Prediction.Entry.Cols.MATCH_NO, matchNo);
+        values.put(Prediction.Entry.Cols.HOME_TEAM_GOALS, homeGoals);
+        values.put(Prediction.Entry.Cols.AWAY_TEAM_GOALS, awayGoals);
         return values;
     }
 }

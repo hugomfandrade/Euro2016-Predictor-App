@@ -12,39 +12,6 @@ public class Country implements Comparable<Country>, Parcelable {
 
     @SuppressWarnings("unused") private static final String TAG = Country.class.getSimpleName();
 
-    public static class Entry {
-        public static final String TABLE_NAME = "Country";
-
-        public static final String COLUMN__ID = "_id";
-        public static final String COLUMN_NAME = "Name";
-        public static final String COLUMN_MATCHES_PLAYED = "MatchesPlayed";
-        public static final String COLUMN_VICTORIES = "Victories";
-        public static final String COLUMN_DRAWS = "Draws";
-        public static final String COLUMN_DEFEATS = "Defeats";
-        public static final String COLUMN_GOALS_FOR = "GoalsFor";
-        public static final String COLUMN_GOALS_AGAINST = "GoalsAgainst";
-        public static final String COLUMN_GOALS_DIFFERENCE = "GoalsDifference";
-        public static final String COLUMN_GROUP = "GroupLetter";
-        public static final String COLUMN_POSITION = "Position";
-        public static final String COLUMN_POINTS = "Points";
-
-        // SQLite table mName
-        // PATH & TOKEN for entire table
-        public static final String PATH = TABLE_NAME;
-        public static final int PATH_TOKEN = 150;
-
-        // PATH & TOKEN for single row of table
-        public static final String PATH_FOR_ID = PATH + "/#";
-        public static final int PATH_FOR_ID_TOKEN = 160;
-
-        // CONTENT/MIME TYPE for this content
-        private final static String MIME_TYPE_END = PATH;
-        public static final String CONTENT_TYPE_DIR = CloudDatabaseSimProvider.ORGANIZATIONAL_NAME
-                + ".cursor.dir/" + CloudDatabaseSimProvider.ORGANIZATIONAL_NAME + "." + MIME_TYPE_END;
-        public static final String CONTENT_ITEM_TYPE = CloudDatabaseSimProvider.ORGANIZATIONAL_NAME
-                + ".cursor.item/" + CloudDatabaseSimProvider.ORGANIZATIONAL_NAME + "." + MIME_TYPE_END;
-    }
-
     private int mID;
     private String mName;
     private String mGroup;
@@ -63,11 +30,48 @@ public class Country implements Comparable<Country>, Parcelable {
     private List<Integer> goalsForList;
     private List<Integer> goalsAgainstList;
     private List<String> opponentList;
+    
+    public static class Entry {
 
-    public Country(int _id, String name, int matchesPlayed, int victories, int draws, int defeats,
+        public static final String TABLE_NAME = "Country";
+
+        public static class Cols {
+            public static final String _ID = "_id";
+            public static final String NAME = "Name";
+            public static final String MATCHES_PLAYED = "MatchesPlayed";
+            public static final String VICTORIES = "Victories";
+            public static final String DRAWS = "Draws";
+            public static final String DEFEATS = "Defeats";
+            public static final String GOALS_FOR = "GoalsFor";
+            public static final String GOALS_AGAINST = "GoalsAgainst";
+            public static final String GOALS_DIFFERENCE = "GoalsDifference";
+            public static final String GROUP = "GroupLetter";
+            public static final String POSITION = "Position";
+            public static final String POINTS = "Points";
+        }
+
+
+        // SQLite table mName
+        // PATH & TOKEN for entire table
+        public static final String PATH = TABLE_NAME;
+        public static final int PATH_TOKEN = 150;
+
+        // PATH & TOKEN for single row of table
+        public static final String PATH_FOR_ID = PATH + "/#";
+        public static final int PATH_FOR_ID_TOKEN = 160;
+
+        // CONTENT/MIME TYPE for this content
+        private final static String MIME_TYPE_END = PATH;
+        public static final String CONTENT_TYPE_DIR = CloudDatabaseSimProvider.ORGANIZATIONAL_NAME
+                + ".cursor.dir/" + CloudDatabaseSimProvider.ORGANIZATIONAL_NAME + "." + MIME_TYPE_END;
+        public static final String CONTENT_ITEM_TYPE = CloudDatabaseSimProvider.ORGANIZATIONAL_NAME
+                + ".cursor.item/" + CloudDatabaseSimProvider.ORGANIZATIONAL_NAME + "." + MIME_TYPE_END;
+    }
+
+    public Country(int id, String name, int matchesPlayed, int victories, int draws, int defeats,
                     int goalsFor, int goalsAgainst, int goalsDifference, String group, int points,
                     int position) {
-        this.mID = _id;
+        this.mID = id;
         this.mName = name;
         this.mMatchesPlayed = matchesPlayed;
         this.mVictories = victories;
@@ -87,9 +91,9 @@ public class Country implements Comparable<Country>, Parcelable {
                    ArrayList<Integer> goalsForList,
                    ArrayList<Integer> goalsAgainstList,
                    ArrayList<String> opponentList){
-        this.mName = name;
-        this.mGroup = group;
-        this.mCoefficient = coefficient;
+        mName = name;
+        mGroup = group;
+        mCoefficient = coefficient;
         this.goalsForList = new ArrayList<>();
         this.goalsAgainstList = new ArrayList<>();
         this.opponentList = new ArrayList<>();
@@ -195,16 +199,16 @@ public class Country implements Comparable<Country>, Parcelable {
 
     @Override
     public int compareTo(@NonNull Country o) {
-        if (this.mPoints != o.mPoints)
-            return this.mPoints - o.mPoints;
-        if (this.mGoalsDifference != o.mGoalsDifference)
-            return this.mGoalsDifference - o.mGoalsDifference;
-        if (this.mGoalsFor != o.mGoalsFor)
-            return this.mGoalsFor - o.mGoalsFor;
-        if (this.mFairPlayPoints != o.mFairPlayPoints)
-            return this.mFairPlayPoints - o.mFairPlayPoints;
-        if (this.mCoefficient != o.mCoefficient)
-            return ((int) (this.mCoefficient - o.mCoefficient));
+        if (mPoints != o.mPoints)
+            return mPoints - o.mPoints;
+        if (mGoalsDifference != o.mGoalsDifference)
+            return mGoalsDifference - o.mGoalsDifference;
+        if (mGoalsFor != o.mGoalsFor)
+            return mGoalsFor - o.mGoalsFor;
+        if (mFairPlayPoints != o.mFairPlayPoints)
+            return mFairPlayPoints - o.mFairPlayPoints;
+        if (mCoefficient != o.mCoefficient)
+            return ((int) (mCoefficient - o.mCoefficient));
         return 0;
     }
 
@@ -224,40 +228,40 @@ public class Country implements Comparable<Country>, Parcelable {
         if (!this.mName.equals(o.mName) || !this.mGroup.equals(o.mGroup))
             return;
 
-        this.mMatchesPlayed = o.mMatchesPlayed;
-        this.mVictories = o.mVictories;
-        this.mDraws = o.mDraws;
-        this.mDefeats = o.mDefeats;
-        this.mGoalsFor = o.mGoalsFor;
-        this.mGoalsAgainst = o.mGoalsAgainst;
-        this.mGoalsDifference = o.mGoalsDifference;
-        this.mPoints = o.mPoints;
-        this.mPosition = o.mPosition;
+        mMatchesPlayed = o.mMatchesPlayed;
+        mVictories = o.mVictories;
+        mDraws = o.mDraws;
+        mDefeats = o.mDefeats;
+        mGoalsFor = o.mGoalsFor;
+        mGoalsAgainst = o.mGoalsAgainst;
+        mGoalsDifference = o.mGoalsDifference;
+        mPoints = o.mPoints;
+        mPosition = o.mPosition;
     }
 
     @SuppressWarnings("RedundantIfStatement")
     public boolean equalsInstance(Country o) {
-        if (!this.mName.equals(o.mName))
+        if (!mName.equals(o.mName))
             return false;
-        if (this.mMatchesPlayed != o.mMatchesPlayed)
+        if (mMatchesPlayed != o.mMatchesPlayed)
             return false;
-        if (this.mVictories != o.mVictories)
+        if (mVictories != o.mVictories)
             return false;
-        if (this.mDraws != o.mDraws)
+        if (mDraws != o.mDraws)
             return false;
-        if (this.mDefeats != o.mDefeats)
+        if (mDefeats != o.mDefeats)
             return false;
-        if (this.mGoalsFor != o.mGoalsFor)
+        if (mGoalsFor != o.mGoalsFor)
             return false;
-        if (this.mGoalsAgainst != o.mGoalsAgainst)
+        if (mGoalsAgainst != o.mGoalsAgainst)
             return false;
-        if (this.mGoalsDifference != o.mGoalsDifference)
+        if (mGoalsDifference != o.mGoalsDifference)
             return false;
-        if (!this.mGroup.equals(o.mGroup))
+        if (!mGroup.equals(o.mGroup))
             return false;
-        if (this.mPoints != o.mPoints)
+        if (mPoints != o.mPoints)
             return false;
-        if (this.mPosition != o.mPosition)
+        if (mPosition != o.mPosition)
             return false;
         return true;
 

@@ -29,8 +29,8 @@ public class MatchListAdapter extends RecyclerView.Adapter<MatchListAdapter.View
     private OnButtonClickedListener mListener;
 
     public MatchListAdapter(List<Match> allMatchesList) {
-        this.mAllMatchesList = new ArrayList<>();
-        this.mAllMatchesList.addAll(allMatchesList);
+        mAllMatchesList = new ArrayList<>();
+        mAllMatchesList.addAll(allMatchesList);
     }
 
     @Override

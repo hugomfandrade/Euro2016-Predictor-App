@@ -2,6 +2,7 @@ package org.hugoandrade.euro2016.backend.object;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 
 import java.util.Date;
@@ -17,18 +18,20 @@ public class Match implements Comparable<Match>, Parcelable {
 
         public static final String TABLE_NAME = "Match";
 
-        public static final String COLUMN__ID = "_id";
-        public static final String COLUMN_MATCH_NO = "MatchNo";
-        public static final String COLUMN_HOME_TEAM = "HomeTeamID";
-        public static final String COLUMN_AWAY_TEAM = "AwayTeamID";
-        public static final String COLUMN_HOME_TEAM_GOALS = "HomeTeamGoals";
-        public static final String COLUMN_AWAY_TEAM_GOALS = "AwayTeamGoals";
-        public static final String COLUMN_HOME_TEAM_NOTES = "HomeTeamNotes";
-        public static final String COLUMN_AWAY_TEAM_NOTES = "AwayTeamNotes";
-        public static final String COLUMN_GROUP = "GroupLetter";
-        public static final String COLUMN_STAGE = "Stage";
-        public static final String COLUMN_STADIUM = "Stadium";
-        public static final String COLUMN_DATE_AND_TIME = "DateAndTime";
+        public static class Cols {
+            public static final String _ID = "_id";
+            public static final String MATCH_NO = "MatchNo";
+            public static final String HOME_TEAM = "HomeTeamID";
+            public static final String AWAY_TEAM = "AwayTeamID";
+            public static final String HOME_TEAM_GOALS = "HomeTeamGoals";
+            public static final String AWAY_TEAM_GOALS = "AwayTeamGoals";
+            public static final String HOME_TEAM_NOTES = "HomeTeamNotes";
+            public static final String AWAY_TEAM_NOTES = "AwayTeamNotes";
+            public static final String GROUP = "GroupLetter";
+            public static final String STAGE = "Stage";
+            public static final String STADIUM = "Stadium";
+            public static final String DATE_AND_TIME = "DateAndTime";
+        }
 
         // SQLite table mName
         // PATH & TOKEN for entire table
@@ -67,18 +70,18 @@ public class Match implements Comparable<Match>, Parcelable {
                  String group, String stage,
                  String stadium, Date dateAndTime) {
 
-        this.mID = id;
-        this.mMatchNo = matchNo;
-        this.mHomeTeam = homeTeam;
-        this.mAwayTeam = awayTeam;
-        this.mHomeTeamGoals = homeGoals;
-        this.mAwayTeamGoals = awayGoals;
-        this.mHomeTeamNotes = homeTeamNotes;
-        this.mAwayTeamNotes = awayTeamNotes;
-        this.mGroup = group;
-        this.mStadium = stadium;
-        this.mStage = stage;
-        this.mDateAndTime = dateAndTime;
+        mID = id;
+        mMatchNo = matchNo;
+        mHomeTeam = homeTeam;
+        mAwayTeam = awayTeam;
+        mHomeTeamGoals = homeGoals;
+        mAwayTeamGoals = awayGoals;
+        mHomeTeamNotes = homeTeamNotes;
+        mAwayTeamNotes = awayTeamNotes;
+        mGroup = group;
+        mStadium = stadium;
+        mStage = stage;
+        mDateAndTime = dateAndTime;
     }
 
     public int getID() {

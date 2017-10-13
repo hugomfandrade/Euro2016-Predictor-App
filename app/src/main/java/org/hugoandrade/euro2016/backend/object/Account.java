@@ -6,13 +6,21 @@ import org.hugoandrade.euro2016.backend.cloudsim.CloudDatabaseSimProvider;
 
 public class Account {
 
+    private String mID;
+    private String mUsername;
+    private String mPassword;
+    private int mScore;
+
     public static class Entry {
+
         public static final String TABLE_NAME = "Account";
 
-        public final static String COLUMN__ID = "_id";
-        public final static String COLUMN_USERNAME = "Username";
-        public final static String COLUMN_PASSWORD = "Password";
-        public final static String COLUMN_SCORE = "Score";
+        public static class Cols {
+            public final static String _ID = "_id";
+            public final static String USERNAME = "Username";
+            public final static String PASSWORD = "Password";
+            public final static String SCORE = "Score";
+        }
 
         public final static String REQUEST_TYPE = "Parameter_RequestType";
         public final static String REQUEST_TYPE_LOG_IN = "Login";
@@ -38,11 +46,6 @@ public class Account {
         public static final String CONTENT_ITEM_TYPE = CloudDatabaseSimProvider.ORGANIZATIONAL_NAME
                 + ".cursor.item/" + CloudDatabaseSimProvider.ORGANIZATIONAL_NAME + "." + MIME_TYPE_END;
     }
-
-    private String mID;
-    private String mUsername;
-    private String mPassword;
-    private int mScore;
 
     public Account(String id, String username, String password, int score) {
         mID = id;

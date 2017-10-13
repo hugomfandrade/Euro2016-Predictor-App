@@ -12,6 +12,8 @@ import org.hugoandrade.euro2016.backend.object.SystemData;
 
 public interface MVP {
     interface RequiredViewOps extends ContextView {
+
+        void onLoadingUpdate(boolean hasCompletelyLoaded);
         void reportMessage(String message);
         void setAllMatches(List<Match> allMatchesList);
         void setMatch(Match match);
@@ -20,37 +22,24 @@ public interface MVP {
 
     interface ProvidedPresenterOps extends PresenterOps<RequiredViewOps> {
         void updateMatch(Match match);
+        SystemData getSystemData();
+        void setSystemData(SystemData systemData);
     }
 
     interface RequiredPresenterOps extends ContextView {
         void notifyServiceConnectionStatus(boolean isConnected);
-        void reportGetAllCountriesRequestResult(String message, List<Country> allCountriesList);
-        void reportGetAllMatchesRequestResult(String message, List<Match> allMatchesList);
-        void reportUpdateMatchRequestResult(String message, Match match);
-
+        void reportGetAllCountriesRequestResult(boolean isRetrieved, String message, List<Country> allCountriesList);
+        void reportGetAllMatchesRequestResult(boolean isRetrieved, String message, List<Match> allMatchesList);
+        void reportUpdateMatchRequestResult(boolean isRetrieved, String message, Match match);
+        void reportSystemDataRequestResult(boolean isRetrieved, String message, SystemData systemData);
     }
     interface ProvidedModelOps extends ModelOps<RequiredPresenterOps> {
         void getAllCountries();
         void getAllMatches();
+        void getSystemData();
         void updateMatchUp(Match match);
         void updateMatch(Match match);
         void updateCountry(Country country);
-    }
-
-    /** For SIGNUP **/
-    interface RequiredEditSystemDataViewOps extends ContextView {
-        void reportMessage(String message);
-        void reportSystemData(SystemData systemData);
-    }
-    interface ProvidedEditSystemDataPresenterOps extends PresenterOps<RequiredEditSystemDataViewOps> {
-        void setSystemData(SystemData systemData);
-    }
-    interface RequiredEditSystemDataPresenterOps extends ContextView {
-        void reportGetSystemDataOperationResult(String message, SystemData systemData);
-        void reportSetSystemDataOperationResult(String message, SystemData systemData);
-    }
-    interface ProvidedEditSystemDataModelOps extends ModelOps<RequiredEditSystemDataPresenterOps> {
-        void getSystemData();
         void setSystemData(SystemData systemData);
     }
 }

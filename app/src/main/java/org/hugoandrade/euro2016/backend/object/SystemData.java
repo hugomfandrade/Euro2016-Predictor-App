@@ -2,7 +2,6 @@ package org.hugoandrade.euro2016.backend.object;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
 import java.util.Calendar;
 
@@ -12,14 +11,23 @@ public class SystemData implements Parcelable {
 
     @SuppressWarnings("unused") private static final String TAG = SystemData.class.getSimpleName();
 
+    private int mID;
+    private String mRules;
+    private boolean mAppState;
+    private Calendar mSystemDate;
+    private Calendar mDateOfChange;
+
     public static class Entry {
+
         public static final String TABLE_NAME = "SystemData";
 
-        public static final String COLUMN__ID = "_id";
-        public static final String COLUMN_RULES = "Rules";
-        public static final String COLUMN_SYSTEM_DATE = "SystemDate";
-        public static final String COLUMN_DATE_OF_CHANGE = "DateOfChange";
-        public static final String COLUMN_APP_STATE = "AppState";
+        public static class Cols {
+            public static final String _ID = "_id";
+            public static final String RULES = "Rules";
+            public static final String SYSTEM_DATE = "SystemDate";
+            public static final String DATE_OF_CHANGE = "DateOfChange";
+            public static final String APP_STATE = "AppState";
+        }
 
         // SQLite table mName
         // PATH & TOKEN for entire table
@@ -38,47 +46,76 @@ public class SystemData implements Parcelable {
                 + ".cursor.item/" + CloudDatabaseSimProvider.ORGANIZATIONAL_NAME + "." + MIME_TYPE_END;
     }
 
-    private int mID;
-    public String rules;
-    public boolean appState;
-    public Calendar systemDate;
-    public Calendar dateOfChange;
-
-    public SystemData(int _id, String rules, boolean appState, Calendar systemDate, Calendar dateOfChange) {
-        this.mID = _id;
-        this.rules = rules;
-        this.appState = appState;
-        this.systemDate = systemDate;
-        this.dateOfChange = dateOfChange;
+    public SystemData(int id, String rules, boolean appState, Calendar systemDate, Calendar dateOfChange) {
+        mID = id;
+        mRules = rules;
+        mAppState = appState;
+        mSystemDate = systemDate;
+        mDateOfChange = dateOfChange;
     }
 
     public int getID() {
         return mID;
     }
 
-    public String getRules() {
-        return rules;
+    public String getRawRules() {
+        return mRules;
     }
 
     public boolean getAppState() {
-        return appState;
+        return mAppState;
     }
 
     public Calendar getSystemDate() {
-        return systemDate;
+        return mSystemDate;
     }
 
     public Calendar getDateOfChange() {
-        return dateOfChange;
+        return mDateOfChange;
+    }
+
+    public Rules getRules() {
+        try {
+            String[] s = mRules.split(",");
+            return new Rules(Integer.parseInt(s[0]),
+                    Integer.parseInt(s[1]),
+                    Integer.parseInt(s[2]),
+                    Integer.parseInt(s[3]));
+        } catch (Exception e) {
+            return new Rules(-1, -1, -1, -1);
+        }
+    }
+
+    public void setDateOfChange(Calendar dateOfChange) {
+        mDateOfChange = dateOfChange;
+    }
+
+    public void setAppState(boolean state) {
+        mAppState = state;
+    }
+
+    public void setRules(String rules) {
+        mRules = rules;
+    }
+
+    public void setSystemDate(int year, int month, int day, int hour, int minute) {
+        mSystemDate.set(year, month, day, hour, minute);
+    }
+
+    public void setSystemDate(int year, int month, int day) {
+        mSystemDate.set(year, month, day);
+    }
+
+    public void setSystemDate(int field, int val) {
+        mSystemDate.set(field, val);
     }
 
     private SystemData(Parcel in) {
-        Log.e(TAG, Boolean.toString(appState));
         mID = in.readInt();
-        rules = in.readString();
-        appState = in.readByte() != 0;
-        systemDate = (Calendar) in.readSerializable();
-        dateOfChange = (Calendar) in.readSerializable();
+        mRules = in.readString();
+        mAppState = in.readByte() != 0;
+        mSystemDate = (Calendar) in.readSerializable();
+        mDateOfChange = (Calendar) in.readSerializable();
     }
 
     public static final Creator<SystemData> CREATOR = new Creator<SystemData>() {
@@ -100,17 +137,50 @@ public class SystemData implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(mID);
-        dest.writeString(rules);
-        dest.writeByte((byte) (appState ? 1 : 0));
-        dest.writeSerializable(systemDate);
-        dest.writeSerializable(dateOfChange);
-        Log.e(TAG, Boolean.toString(appState));
+        dest.writeString(mRules);
+        dest.writeByte((byte) (mAppState ? 1 : 0));
+        dest.writeSerializable(mSystemDate);
+        dest.writeSerializable(mDateOfChange);
     }
 
     public Calendar getDate() {
         Calendar c = Calendar.getInstance();
-        long diff = c.getTimeInMillis() - dateOfChange.getTimeInMillis();
-        c.setTimeInMillis(systemDate.getTimeInMillis() + diff);
+        long diff = c.getTimeInMillis() - mDateOfChange.getTimeInMillis();
+        c.setTimeInMillis(mDateOfChange.getTimeInMillis() + diff);
         return c;
+    }
+
+    public class Rules {
+
+        private final int mRuleCorrectPrediction;
+        private final int mRuleCorrectOutcome;
+        private final int mRuleCorrectOutcomeViaPenalties;
+        private final int mRuleIncorrectPrediction;
+
+        public Rules(int incorrectPrediction,
+                     int correctOutcomeViaPenalties,
+                     int correctOutcome,
+                     int correctPrediction) {
+            mRuleIncorrectPrediction = incorrectPrediction;
+            mRuleCorrectOutcomeViaPenalties = correctOutcomeViaPenalties;
+            mRuleCorrectOutcome = correctOutcome;
+            mRuleCorrectPrediction = correctPrediction;
+        }
+
+        public int getRuleCorrectPrediction() {
+            return mRuleCorrectPrediction;
+        }
+
+        public int getRuleCorrectOutcome() {
+            return mRuleCorrectOutcome;
+        }
+
+        public int getRuleCorrectOutcomeViaPenalties() {
+            return mRuleCorrectOutcomeViaPenalties;
+        }
+
+        public int getRuleIncorrectPrediction() {
+            return mRuleIncorrectPrediction;
+        }
     }
 }

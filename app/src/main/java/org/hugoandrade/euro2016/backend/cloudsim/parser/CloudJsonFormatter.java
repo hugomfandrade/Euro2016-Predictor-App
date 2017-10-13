@@ -19,7 +19,7 @@ public class CloudJsonFormatter {
         JsonObjectBuilder builder = JsonObjectBuilder.instance();
         for (String columnName : c.getColumnNames()) {
             // Because it is a boolean
-            if (columnName.equals(SystemData.Entry.COLUMN_APP_STATE)) {
+            if (columnName.equals(SystemData.Entry.Cols.APP_STATE)) {
                 builder.addProperty(columnName, c.getInt(c.getColumnIndex(columnName)) == 1);
             }
             else {

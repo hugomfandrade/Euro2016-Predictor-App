@@ -1,7 +1,6 @@
 package org.hugoandrade.euro2016.backend.cloudsim;
 
 import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -11,11 +10,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import java.util.Map;
-
+import org.hugoandrade.euro2016.backend.cloudsim.parser.CloudContentValuesFormatter;
 import org.hugoandrade.euro2016.backend.cloudsim.parser.CloudJsonFormatter;
-import org.hugoandrade.euro2016.backend.object.SystemData;
-import org.hugoandrade.euro2016.backend.utils.NetworkUtils;
+import org.hugoandrade.euro2016.backend.model.parser.MobileClientDataJsonParser;
 
 class CloudDatabaseSimImpl {
 
@@ -65,6 +62,11 @@ class CloudDatabaseSimImpl {
         private static final int TASK_GET = 1;
         private static final int TASK_UPDATE = 2;
 
+        private static final String COL_ID = "_id";
+
+        private MobileClientDataJsonParser parser = new MobileClientDataJsonParser();
+        private CloudContentValuesFormatter cvFormatter = new CloudContentValuesFormatter();
+
         private final String tableName;
         private final JsonObject jsonObjectToUpdate;
         private final int taskType;
@@ -97,9 +99,16 @@ class CloudDatabaseSimImpl {
 
         @SuppressWarnings("unchecked")
         private void updateOperation(String URL) {
-            Uri url = Uri.parse(URL + "/" + tableName + "/" + NetworkUtils.getJsonPrimitive(jsonObjectToUpdate, "_id", null));
+            Uri url = Uri.parse(URL +
+                                "/" +
+                                tableName +
+                                "/" +
+                                parser.parseString(jsonObjectToUpdate, COL_ID));
 
-            int c = provider.update(url, fromJsonObjectToContentValues(jsonObjectToUpdate), null, null);
+            int c = provider.update(url,
+                                    cvFormatter.getAsContentValues(jsonObjectToUpdate),
+                                    null,
+                                    null);
             if (future == null)
                 return;
             if (c == 0)
@@ -128,19 +137,6 @@ class CloudDatabaseSimImpl {
             } catch (ClassCastException e) {
                 future.onFailure("Cursor not found");
             }
-        }
-
-        private ContentValues fromJsonObjectToContentValues(JsonObject jsonObject) {
-            ContentValues values = new ContentValues();
-            for (Map.Entry<String, JsonElement> entry: jsonObject.entrySet())
-                // Because it is a boolean
-                if (entry.getKey().equals(SystemData.Entry.COLUMN_APP_STATE)) {
-                    values.put(entry.getKey(),
-                            NetworkUtils.getJsonPrimitive(jsonObject, entry.getKey(), false)? 1 : 0);
-                }
-                else
-                    values.put(entry.getKey(), NetworkUtils.getJsonPrimitive(jsonObject, entry.getKey(), null));
-            return values;
         }
 
         void addListener(Callback<V> future) {

@@ -6,7 +6,7 @@ import java.lang.ref.WeakReference;
 
 import org.hugoandrade.euro2016.backend.common.ModelOps;
 
-public class PresenterBase<ProvidedViewOps,
+abstract class PresenterBase<ProvidedViewOps,
                               RequiredPresenterOps,
                               ProvidedModelOps,
                               ModelType extends ModelOps<RequiredPresenterOps>> {
