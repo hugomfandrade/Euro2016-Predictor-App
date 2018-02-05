@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="@dimen/activity_horizontal_margin"
+    android:background="@drawable/euro2016_background" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:orientation="vertical"
+        android:layout_margin="10dp">
+
+        <EditText
+            android:id="@+id/et_email_login"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:padding="8dp"
+            android:background="#33ffffff"
+            android:gravity="center"
+            android:inputType="textEmailAddress"
+            android:textColor="@android:color/white"
+            android:textColorHint="@android:color/white"
+            android:hint="@string/email"
+            android:maxLines="1" />
+
+        <EditText
+            android:id="@+id/et_password_login"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:background="#33ffffff"
+            android:gravity="center"
+            android:inputType="textPassword"
+            android:textColor="@android:color/white"
+            android:textColorHint="@android:color/white"
+            android:hint="@string/password"
+            android:maxLines="1" />
+
+        <RelativeLayout
+            android:padding="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:id="@+id/bt_login"
+            android:background="@android:drawable/btn_default">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="@string/login"
+                android:textSize="18sp"
+                android:textAllCaps="true"/>
+
+            <ProgressBar
+                android:layout_centerVertical="true"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:id="@+id/progressBar_login"
+                android:visibility="visible"/>
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+</RelativeLayout>

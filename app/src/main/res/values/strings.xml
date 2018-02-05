@@ -1,6 +1,5 @@
 <resources>
-    <string name="app_name">Euro2016 Back-End</string>
-    <string name="title_activity_main_activity_temp">MainActivity</string>
+    <string name="app_name">Euro 2016 Predictor Admin</string>
     <string name="action_settings">Settings</string>
     <string name="group_a">Group A</string>
     <string name="group_b">Group B</string>
@@ -8,7 +7,8 @@
     <string name="group_d">Group D</string>
     <string name="group_e">Group E</string>
     <string name="group_f">Group F</string>
-    <string name="edit_system_data"><u>Edit System Data</u></string>
+    <string name="reset">Reset</string>
+    <string name="edit_system_data">Edit System Data</string>
     <string name="app_enabled"><u>App enabled?</u></string>
     <string name="rules"><u>Rules:</u></string>
     <string name="set_system_date"><u>System Date:</u></string>
@@ -21,4 +21,9 @@
     <string name="action_cancel">cancel</string>
     <string name="action_confirm">confirm</string>
     <string name="double_dots">:</string>
+    <string name="login">login</string>
+    <string name="password">password</string>
+    <string name="username">username</string>
+    <string name="email">email</string>
+    <string name="action_done">Done</string>
 </resources>
