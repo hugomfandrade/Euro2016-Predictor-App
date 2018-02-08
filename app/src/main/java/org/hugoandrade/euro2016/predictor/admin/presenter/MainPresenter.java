@@ -77,7 +77,7 @@ public class MainPresenter
     @Override
     public void setNewMatch(Match match) {
         if (!getModel().updateMatch(match))
-            getView().updateMatch(match);
+            getView().updateFailedMatch(match);
     }
 
     @Override
@@ -88,6 +88,7 @@ public class MainPresenter
         if (isRetrieved) {
             mMatchList = matchList;
             mGroupMap = setupGroups(countryList);
+
 
             // Set countries to each match
             for (Country c : countryList) {
@@ -168,7 +169,6 @@ public class MainPresenter
             for (int i = 0; i < mMatchList.size() ; i++)
                 if (mMatchList.get(i).getID().equals(match.getID())) {
                     mMatchList.set(i, match);
-                    Log.e(TAG, "match List updated");
 
                     for (Group group : mGroupMap.values()) {
                         for (Country country : group.getCountryList()) {
@@ -183,9 +183,6 @@ public class MainPresenter
                     break;
                 }
 
-            // set in UI
-            getView().updateMatch(match);
-
             // Start processing with updated match list
             if (mBackEndProcessing != null)
                 mBackEndProcessing.cancel();
@@ -193,6 +190,9 @@ public class MainPresenter
             mBackEndProcessing.startUpdateGroupsProcessing(mMatchList);
 
         } else {
+            // set in UI
+            getView().updateFailedMatch(match);
+
             getView().reportMessage(message);
         }
     }

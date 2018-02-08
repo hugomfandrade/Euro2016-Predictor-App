@@ -7,14 +7,15 @@ import org.hugoandrade.euro2016.predictor.admin.common.ContextView;
 import org.hugoandrade.euro2016.predictor.admin.object.Group;
 import org.hugoandrade.euro2016.predictor.admin.object.Match;
 
-public interface FragmentCommunication {
+public interface FragComm {
     interface ProvidedGroupsChildFragmentOps {
         void setGroups(HashMap<String, Group> allGroups);
     }
 
-    interface ProvidedSetResultsChildFragmentOps {
+    interface ProvidedMatchesFragmentOps {
         void setMatches(List<Match> matchList);
         void updateMatch(Match match);
+        void updateFailedMatch(Match match);
     }
 
     interface ProvidedParentActivityOps extends ProvidedParentBaseActivityOps {

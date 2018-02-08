@@ -16,7 +16,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import org.hugoandrade.euro2016.predictor.admin.FragmentCommunication;
+import org.hugoandrade.euro2016.predictor.admin.FragComm;
 import org.hugoandrade.euro2016.predictor.admin.GlobalData;
 import org.hugoandrade.euro2016.predictor.admin.MVP;
 import org.hugoandrade.euro2016.predictor.admin.R;
@@ -35,7 +35,7 @@ import java.util.List;
 public class MainActivity extends ActivityBase<MVP.RequiredViewOps,
                                                MVP.ProvidedPresenterOps,
                                                MainPresenter>
-        implements MVP.RequiredViewOps, FragmentCommunication.ProvidedParentActivityOps {
+        implements MVP.RequiredViewOps, FragComm.ProvidedParentActivityOps {
 
     @SuppressWarnings("unused") private final static String TAG = MainActivity.class.getSimpleName();
 
@@ -139,24 +139,32 @@ public class MainActivity extends ActivityBase<MVP.RequiredViewOps,
     @Override
     public void setMatches(List<Match> matchList) {
         for (Fragment fragment : mFragmentArray)
-            if (fragment instanceof FragmentCommunication.ProvidedSetResultsChildFragmentOps)
-                ((FragmentCommunication.ProvidedSetResultsChildFragmentOps) fragment)
+            if (fragment instanceof FragComm.ProvidedMatchesFragmentOps)
+                ((FragComm.ProvidedMatchesFragmentOps) fragment)
                         .setMatches(matchList);
     }
 
     @Override
     public void updateMatch(Match match) {
         for (Fragment fragment : mFragmentArray)
-            if (fragment instanceof FragmentCommunication.ProvidedSetResultsChildFragmentOps)
-                ((FragmentCommunication.ProvidedSetResultsChildFragmentOps) fragment)
+            if (fragment instanceof FragComm.ProvidedMatchesFragmentOps)
+                ((FragComm.ProvidedMatchesFragmentOps) fragment)
                         .updateMatch(match);
+    }
+
+    @Override
+    public void updateFailedMatch(Match match) {
+        for (Fragment fragment : mFragmentArray)
+            if (fragment instanceof FragComm.ProvidedMatchesFragmentOps)
+                ((FragComm.ProvidedMatchesFragmentOps) fragment)
+                        .updateFailedMatch(match);
     }
 
     @Override
     public void setGroups(HashMap<String, Group> allGroups) {
         for (Fragment fragment : mFragmentArray)
-            if (fragment instanceof FragmentCommunication.ProvidedGroupsChildFragmentOps)
-                ((FragmentCommunication.ProvidedGroupsChildFragmentOps) fragment)
+            if (fragment instanceof FragComm.ProvidedGroupsChildFragmentOps)
+                ((FragComm.ProvidedGroupsChildFragmentOps) fragment)
                         .setGroups(allGroups);
     }
 

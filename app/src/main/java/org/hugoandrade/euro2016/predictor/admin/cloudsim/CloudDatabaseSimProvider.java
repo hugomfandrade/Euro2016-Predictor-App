@@ -13,7 +13,6 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import java.util.Calendar;
 
@@ -150,7 +149,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
                 break;
             }
             case SystemData.Entry.PATH_FOR_ID_TOKEN: {
-                String idSelection = "_" + Match.Entry.Cols.ID + " = " + uri.getLastPathSegment();
+                String idSelection = "_" + SystemData.Entry.Cols.ID + " = " + uri.getLastPathSegment();
 
                 if (selection == null)
                     modifiedSelection = idSelection;
@@ -273,19 +272,17 @@ public class CloudDatabaseSimProvider extends ContentProvider {
      * <p>
      * This method makes use of SQLiteQueryBuilder to build a simple query.
      */
-    synchronized private Cursor query(final Uri uri, final String tableName,
+    synchronized private Cursor query(@SuppressWarnings("unused") final Uri uri,
+                                      final String tableName,
                                       final String[] projection, final String selection,
                                       final String[] selectionArgs, final String sortOrder) {
         // Make a new SQLiteQueryBuilder object.
-        // TODO -- you fill in here.
         SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
 
         // set the table(s) to be queried upon.
-        // TODO -- you fill in here.
         builder.setTables(tableName);
 
         // return the builder.query(....) result, after passing the appropriate values.
-        // TODO -- you fill in here.
         return builder.query(db,
                              projection,
                              selection,
@@ -317,11 +314,13 @@ public class CloudDatabaseSimProvider extends ContentProvider {
                 SystemData preSystemData = getSystemData();
                 SystemData newSystemData = cvParser.parseSystemData(values);
 
-                boolean haveRulesChanged =
-                        !preSystemData.getRawRules().equals(newSystemData.getRawRules());
+                boolean haveRulesChanged = preSystemData == null
+                        || !preSystemData.getRawRules().equals(newSystemData.getRawRules());
 
                 // Delete all
                 db.delete(SystemData.Entry.TABLE_NAME, null, null);
+
+                values.remove("_" + SystemData.Entry.Cols.ID);
 
                 // Insert new SystemData
                 long id = db.insert(SystemData.Entry.TABLE_NAME, null, values);
@@ -332,7 +331,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
                 }
 
                 if (haveRulesChanged)
-                    updateAllPredictionScores();
+                    updateScoresOfPredictionsOfAllMatches();
 
                 return ContentUris.withAppendedId(SystemData.Entry.CONTENT_URI, id);
             }
@@ -376,22 +375,26 @@ public class CloudDatabaseSimProvider extends ContentProvider {
 
                 // Check if Past Server Time
                 Calendar systemDate = getSystemDate();
-                Calendar matchDate = getMatchDate(prediction.getMatchNumber());
 
                 if (systemDate == null)
                     return Uri.parse("Failed to retrieve systemDate.");
 
+                Calendar matchDate = getMatchDate(prediction.getMatchNumber());
+
                 if (matchDate == null)
                     return Uri.parse("Failed to retrieve date of match.");
-
-                if (matchDate.before(systemDate))
+                else if (matchDate.before(systemDate))
                     return Uri.parse("Past match date:\t" + ISO8601.fromCalendar(systemDate));
 
+                Prediction oldPrediction
+                        = getPrediction(prediction.getUserID(), prediction.getMatchNumber());
+
                 // Insert or update prediction
-                if (isPredictionInDatabase(prediction)) {
+                if (oldPrediction != null) {
                     // Update
-                    int predictionID = getPrediction(prediction.getUserID(),
-                                                     prediction.getMatchNumber()).getID();
+                    String predictionID = oldPrediction.getID();
+
+                    values.remove("_" + Prediction.Entry.Cols.ID);
 
                     int count = db.update(Prediction.Entry.TABLE_NAME,
                                           values,
@@ -401,13 +404,15 @@ public class CloudDatabaseSimProvider extends ContentProvider {
                     if (count <= 0)
                         return Uri.parse("Failed to insert prediction into " + uri);
 
-                    Uri url = ContentUris.withAppendedId(Prediction.Entry.CONTENT_URI, predictionID);
+                    Uri url = ContentUris.withAppendedId(Prediction.Entry.CONTENT_URI, Long.parseLong(predictionID));
 
                     notifyChanges(url, null);
 
                     return url;
                 }
                 else {
+
+                    values.remove("_" + Prediction.Entry.Cols.ID);
 
                     // Insert
                     long rowID = db.insert(Prediction.Entry.TABLE_NAME, null, values);
@@ -422,58 +427,8 @@ public class CloudDatabaseSimProvider extends ContentProvider {
                     return url;
                 }
             }
-
-            case User.Entry.PATH_TOKEN: {
-                String requestType = getRequestType(values);
-
-                if (requestType == null)
-                    return Uri.parse("Request type not provided.");
-
-                values.remove(User.Entry.REQUEST_TYPE);
-
-                User user = cvParser.parseAccount(values);
-
-                switch (requestType) {
-                    case User.Entry.REQUEST_TYPE_LOG_IN: {
-
-                        User dbUser = getAccount(user.getEmail());
-
-                        if (dbUser == null)
-                            return Uri.parse("Username \'" + user.getEmail() + "\' does not exist.");
-
-                        //if (!dbUser.getPassword().equals(user.getPassword())) return Uri.parse("Password incorrect.");
-
-                        // TODO Optional: hashing
-
-                        return ContentUris.withAppendedId(User.Entry.CONTENT_URI,
-                                Long.parseLong(dbUser.getID()));
-                    }
-
-                    case User.Entry.REQUEST_TYPE_SIGN_UP: {
-
-                        User dbUser = getAccount(user.getEmail());
-
-                        if (dbUser != null)
-                            return Uri.parse("Username \'" + user.getEmail() + "\' already exists.");
-
-                        user.setScore(0);
-
-                        // Insert
-                        long rowID = db.insert(User.Entry.TABLE_NAME, null, cvFormatter.getAsContentValues(user));
-
-                        Uri url = ContentUris.withAppendedId(User.Entry.CONTENT_URI, rowID);
-
-                        notifyChanges(url, null);
-
-                        return Uri.parse("Failed to sign up into " + uri);
-                    }
-
-                    default:
-                        return Uri.parse("Request type not recognized.");
-                }
-            }
-
             case Prediction.Entry.PATH_FOR_ID_TOKEN:
+            case User.Entry.PATH_TOKEN:
             case User.Entry.PATH_FOR_ID_TOKEN:
             case Match.Entry.PATH_TOKEN:
             case Match.Entry.PATH_FOR_ID_TOKEN:
@@ -529,15 +484,10 @@ public class CloudDatabaseSimProvider extends ContentProvider {
 
         switch (mUriMatcher.match(uri)) {
             case Country.Entry.PATH_FOR_ID_TOKEN: {
-                Log.e(TAG, "PathForID Country: " + values.toString());
                 if (whereClause == null)
                     modifiedWhereClause = "_" + Country.Entry.Cols.ID + " = " + uri.getLastPathSegment();
                 else
                     modifiedWhereClause += " AND " + "_" + Country.Entry.Cols.ID + " = " + uri.getLastPathSegment();
-                /*if (whereClause == null)
-                    modifiedWhereClause = Country.Entry.Cols._ID + " = " + uri.getLastPathSegment();
-                else
-                    modifiedWhereClause += " AND " + Country.Entry.Cols._ID + " = " + uri.getLastPathSegment();/**/
 
                 values.remove("_" + Country.Entry.Cols.ID);
 
@@ -548,16 +498,11 @@ public class CloudDatabaseSimProvider extends ContentProvider {
                                        whereArgs);
             }
             case Match.Entry.PATH_FOR_ID_TOKEN: {
-                /*if (whereClause == null)
-                    modifiedWhereClause = "_" + Match.Entry.Cols.ID + " = " + Integer.toString(values.getAsInteger("_" + Match.Entry.Cols.MATCH_NUMBER));
-                else
-                    modifiedWhereClause += " AND " + "_" + Match.Entry.Cols.ID + " = " + Integer.toString(values.getAsInteger("_" + Match.Entry.Cols.ID));
 
-                /**/
                 if (whereClause == null)
                     modifiedWhereClause = "_" + Match.Entry.Cols.ID + " = " + uri.getLastPathSegment();
                 else
-                    modifiedWhereClause += " AND " + "_" + Match.Entry.Cols.ID + " = " + uri.getLastPathSegment();/**/
+                    modifiedWhereClause += " AND " + "_" + Match.Entry.Cols.ID + " = " + uri.getLastPathSegment();
 
                 Match match = cvParser.parseMatch(values);
 
@@ -570,7 +515,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
                                             whereArgs);
 
                 if (count > 0)
-                    updatePredictionScoresOfMatch(match, getSystemData());
+                    updateScoresOfPredictionsOfMatch(match, getSystemData());
 
                 return count;
             }
@@ -586,17 +531,49 @@ public class CloudDatabaseSimProvider extends ContentProvider {
         }
     }
 
+    /*
+     * private update function that updates based on parameters, then notifies
+     * change
+     */
+    private int updateAndNotify(@NonNull final Uri uri,
+                                final String tableName,
+                                final ContentValues values,
+                                final String whereClause,
+                                final String[] whereArgs) {
+        // call update(...) on the DBAdapter instance variable, and store the count of rows updated.
+        int count = db.update(tableName, values, whereClause, whereArgs);
+
+        // if count > 0 then call notifyChanges(...) on the Uri (null observer), and return the
+        // count.
+        if (count > 0)
+            notifyChanges(uri, null);
+
+        return count;
+    }
+
+    private void notifyChanges(Uri uri, @SuppressWarnings("SameParameterValue") ContentObserver contentObserver) {
+        Context context = getContext();
+        if (context == null) {
+            return;
+        }
+        ContentResolver resolver = context.getContentResolver();
+        if (resolver == null) {
+            return;
+        }
+        resolver.notifyChange(uri, contentObserver);
+    }
+
     private SystemData getSystemData() {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         qb.setTables(SystemData.Entry.TABLE_NAME);
         Cursor c = qb.query(db,	null, null, null, null, null, "_" + SystemData.Entry.Cols.ID);
 
-        SystemData systemData = null;
         if (c.getCount() > 0 && c.moveToFirst()) {
-            systemData = cvParser.parseSystemData(c);
+            SystemData systemData = cvParser.parseSystemData(c);
+            c.close();
+            return systemData;
         }
-        c.close();
-        return systemData;
+        return null;
     }
 
     private Calendar getMatchDate(int matchNo) {
@@ -628,7 +605,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
                 Prediction.Entry.Cols.USER_ID + " = \"" + userID + "\" AND " +
                         Prediction.Entry.Cols.MATCH_NO + " = \"" + matchNo + "\"",
                 null, null, null,
-                Prediction.Entry.Cols._ID);
+                "_" + Prediction.Entry.Cols.ID);
 
 
         if (c.getCount() > 0 && c.moveToFirst()) {
@@ -644,38 +621,23 @@ public class CloudDatabaseSimProvider extends ContentProvider {
     private Calendar getSystemDate() {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         qb.setTables(SystemData.Entry.TABLE_NAME);
-        Cursor c = qb.query(db,	null, null, null, null, null, "_" + SystemData.Entry.Cols.ID);
 
-        if (c != null && c.getCount() > 0) {
-            if (c.moveToFirst()) {
-                SystemData systemData = cvParser.parseSystemData(c);
-                c.close();
-                return systemData.getSystemDate();
-                /*Calendar savedSystemDate = systemData.getSystemData();
-                Calendar dateOfChange = systemData.getDateOfChange();
+        Cursor c = qb.query(db, null, null, null, null, null, "_" + SystemData.Entry.Cols.ID);
 
-                if (savedSystemDate != null && dateOfChange != null) {
-                    Calendar systemDate = Calendar.getInstance();
-                    long diff = systemDate.getTimeInMillis() - dateOfChange.getTimeInMillis();
-                    systemDate.setTimeInMillis(savedSystemDate.getTimeInMillis() + diff);
-                    return systemDate;
-                }/**/
-            }
+        if (c.getCount() > 0 && c.moveToFirst()) {
+            SystemData systemData = cvParser.parseSystemData(c);
+            c.close();
+            return systemData.getSystemDate();
         }
-        c.close();
+
         return null;
     }
 
-    private User getAccount(String username) {
+    private User getAccount(String email) {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         qb.setTables(User.Entry.TABLE_NAME);
 
-        Cursor c = qb.query(db,
-                null,
-                User.Entry.Cols.EMAIL + " = \"" + username + "\"",
-                null, null, null,
-                "_" + User.Entry.Cols.ID);
-
+        Cursor c = qb.query(db, null, User.Entry.Cols.EMAIL + " = \"" + email + "\"", null, null, null, "_" + User.Entry.Cols.ID);
 
         if (c.getCount() > 0 && c.moveToFirst()) {
             User user = cvParser.parseAccount(c);
@@ -687,35 +649,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
         return null;
     }
 
-    private String getRequestType(ContentValues values) {
-        return values.getAsString(User.Entry.REQUEST_TYPE);
-        /*for (Map.Entry<String, Object> entry : values.valueSet()) {
-            if (entry.getKey().equals(Account.Entry.REQUEST_TYPE))
-                if (entry.getValue() instanceof String) {
-                    return (String) entry.getValue();
-                }
-        }
-        return null; /**/
-    }
-
-    private boolean isPredictionInDatabase(Prediction prediction) {
-        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
-        qb.setTables(Prediction.Entry.TABLE_NAME);
-
-        Cursor c = qb.query(db,
-                null,
-                Prediction.Entry.Cols.USER_ID + " = \"" + prediction.getUserID() + "\" AND " +
-                        Prediction.Entry.Cols.MATCH_NO + " = \"" + prediction.getMatchNumber() + "\"",
-                null, null, null,
-                Prediction.Entry.Cols._ID);
-
-        boolean isPredictionInDatabase = c.getCount() != 0;
-        c.close();
-
-        return isPredictionInDatabase;
-    }
-
-    private void updateAllPredictionScores() {
+    private void updateScoresOfPredictionsOfAllMatches() {
         // Get System Data
         SystemData systemData = getSystemData();
 
@@ -727,19 +661,19 @@ public class CloudDatabaseSimProvider extends ContentProvider {
         if (c.moveToFirst()) {
             do {
                 Match match = cvParser.parseMatch(c);
-                updatePredictionScoresOfMatch(match, systemData);
+                updateScoresOfPredictionsOfMatch(match, systemData);
             } while (c.moveToNext());
         }
         c.close();
     }
 
-    private void updatePredictionScoresOfMatch(@NonNull Match match,
-                                               @NonNull SystemData systemData) {
+    private void updateScoresOfPredictionsOfMatch(Match match, SystemData systemData) {
 
-        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
-        qb.setTables(Prediction.Entry.TABLE_NAME);
+        if (systemData == null) return;
 
         // Get all Predictions with the MATCH_NUMBER
+        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+        qb.setTables(Prediction.Entry.TABLE_NAME);
         Cursor c = qb.query(db,
                             null,
                             Prediction.Entry.Cols.MATCH_NO + " = " + Integer.toString(match.getMatchNumber()),
@@ -752,53 +686,51 @@ public class CloudDatabaseSimProvider extends ContentProvider {
                 Prediction prediction = cvParser.parsePrediction(c);
 
                 // Store previous score
-                int preScore = prediction.getScore() == -1? 0 : prediction.getScore();
+                int oldScore = prediction.getScore() == -1? 0 : prediction.getScore();
 
                 // Get new prediction score
-                prediction =
-                        computePredictionScore(match, prediction, systemData);
+                prediction = computePredictionScore(match, prediction, systemData);
 
                 // Update entry
                 ContentValues predictionValues = cvFormatter.getAsContentValues(prediction);
-                predictionValues.remove(Prediction.Entry.Cols._ID);
+                predictionValues.remove("_" + Prediction.Entry.Cols.ID);
+
                 int count = db.update(
                         Prediction.Entry.TABLE_NAME,
                         predictionValues,
-                        Prediction.Entry.Cols._ID + " = " + Integer.toString(prediction.getID()),
+                        "_" + Prediction.Entry.Cols.ID + " = " + prediction.getID(),
                         null);
 
                 // If there was a row updated, update account score
                 if (count > 0) {
 
                     String userID = prediction.getUserID();
-                    int newScore = prediction.getScore();
+                    int diffScore = prediction.getScore() - oldScore;
 
-                    updateAccountScore(userID, newScore - preScore);
+                    updateAccountScore(userID, diffScore);
                 }
             } while (c.moveToNext());
         }
         c.close();
     }
 
-
     private void updateAccountScore(String userID, int diffScore) {
-        // TODO
-        if (true)
-            return;
         // Query account table
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         qb.setTables(User.Entry.TABLE_NAME);
         Cursor c = qb.query(db,
                 null,
                 "_" + User.Entry.Cols.ID + " = " + userID,
-                null, null, null,
-                "_" + User.Entry.Cols.ID);
+                null, null, null, null);
 
         if (c.moveToFirst()) {
             do {
                 // Update Account score
                 User user = cvParser.parseAccount(c);
                 user.setScore(user.getScore() + diffScore);
+
+                ContentValues cvUser = cvFormatter.getAsContentValues(user);
+                cvUser.remove("_" + User.Entry.Cols.ID);
 
                 db.update(User.Entry.TABLE_NAME,
                           cvFormatter.getAsContentValues(user),
@@ -807,38 +739,6 @@ public class CloudDatabaseSimProvider extends ContentProvider {
             } while (c.moveToNext());
         }
         c.close();
-    }
-
-    /*
-     * private update function that updates based on parameters, then notifies
-     * change
-     */
-    private int updateAndNotify(@NonNull final Uri uri,
-                                final String tableName,
-                                final ContentValues values,
-                                final String whereClause,
-                                final String[] whereArgs) {
-        // call update(...) on the DBAdapter instance variable, and store the count of rows updated.
-        int count = db.update(tableName, values, whereClause, whereArgs);
-
-        // if count > 0 then call notifyChanges(...) on the Uri (null observer), and return the
-        // count.
-        if (count > 0)
-            notifyChanges(uri, null);
-
-        return count;
-    }
-
-    private void notifyChanges(Uri uri, ContentObserver contentObserver) {
-        Context context = getContext();
-        if (context == null) {
-            return;
-        }
-        ContentResolver resolver = context.getContentResolver();
-        if (resolver == null) {
-            return;
-        }
-        resolver.notifyChange(uri, contentObserver);
     }
 
     private Prediction computePredictionScore(Match match, Prediction prediction, SystemData systemData) {

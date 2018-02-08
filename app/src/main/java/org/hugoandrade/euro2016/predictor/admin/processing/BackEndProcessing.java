@@ -1,12 +1,10 @@
 package org.hugoandrade.euro2016.predictor.admin.processing;
 
-import android.content.ContentUris;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.util.SparseArray;
 
 import org.hugoandrade.euro2016.predictor.admin.object.Country;
-import org.hugoandrade.euro2016.predictor.admin.object.Group;
 import org.hugoandrade.euro2016.predictor.admin.object.Match;
 import org.hugoandrade.euro2016.predictor.admin.utils.MatchUtils;
 import org.hugoandrade.euro2016.predictor.admin.utils.StaticVariableUtils;
@@ -34,8 +32,6 @@ public class BackEndProcessing {
     }
 
     public void startUpdateGroupsProcessing(List<Match> matchList) {
-        Log.e(TAG, "startUpdateGroupsProcessing");
-
         // Do processing asynchronously
         mTask = new GroupProcessing(this, mCountryList, matchList);
         mTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -67,13 +63,6 @@ public class BackEndProcessing {
                 group.orderGroup();
                 updatedCountryList.addAll(group.getCountryList());
             }
-
-            Log.e(TAG, "updated Countries: " + updatedCountryList.size());
-            for (Country c : updatedCountryList)
-                Log.e(TAG, c.toString());
-            Log.e(TAG, "--------------------------");
-            for (Country c : mCountryMap.values())
-                Log.e(TAG, c.toString());
 
             // Find countries whose info changed from the original one.
             for (Country updatedCountry : updatedCountryList) {
@@ -115,10 +104,8 @@ public class BackEndProcessing {
 
         @Override
         protected void onProgressUpdate(ProgressContainer... progressContainers) {
-            Log.e(TAG, "onProgressUpdate");
             if (mBackEndProcessing.get() == null)
                 return;
-            Log.e(TAG, "onProgressUpdate update");
 
             for (ProgressContainer progressContainer : progressContainers) {
                 if (progressContainer.mCountry != null)
@@ -146,7 +133,6 @@ public class BackEndProcessing {
                 CountryComp countryComp = new CountryComp(c.getValue());
 
                 for (Match m : getGroupStageMatches(matchMap)) {
-                    Log.e(getClass().getSimpleName(), "match: " + m.toString());
                     if (m.getHomeTeamID().equals(countryComp.getID())
                             || m.getAwayTeamID().equals(countryComp.getID())) {
                         countryComp.add(m);
@@ -497,11 +483,9 @@ public class BackEndProcessing {
             List<Match> allGroupStageMatches = new ArrayList<>();
             for (int i = 0 ; i < matchMap.size() ; i++) {
                 Match match = matchMap.valueAt(i);
-                Log.e(TAG, "getGroupStageMatches: " + match.getStage());
                 if (match.getStage().equals(StaticVariableUtils.SStage.groupStage.name))
                     allGroupStageMatches.add(match);
             }
-            Log.e(TAG, "getGroupStageMatches: " + Integer.toString(allGroupStageMatches.size()));
             return allGroupStageMatches;
         }
     }

@@ -186,7 +186,7 @@ class CloudDatabaseSimImpl {
                     if (c.moveToFirst()) {
                         try {
                             if (future != null)
-                                future.onSuccess((V) fromCursorToJsonObject(c));
+                                future.onSuccess((V) parseUserID(fromCursorToJsonObject(c)));
                         } catch (ClassCastException e) {
                             future.onFailure("Could not cast");
                         }
@@ -194,6 +194,12 @@ class CloudDatabaseSimImpl {
                     c.close();
                 }
             }
+        }
+
+        private JsonObject parseUserID(JsonObject jsonObject) {
+            jsonObject.addProperty("UserID", jsonObject.get("id").getAsString());
+            jsonObject.remove("id");
+            return jsonObject;
         }
 
         @SuppressWarnings("unchecked")
@@ -249,7 +255,7 @@ class CloudDatabaseSimImpl {
                     jsonObject.addProperty(columnName, c.getInt(c.getColumnIndex(columnName)) == 1);
                 else {
                     if (columnName.equals("_id"))
-                        jsonObject.addProperty("id", c.getInt(c.getColumnIndex(columnName)) == 1);
+                        jsonObject.addProperty("id", Integer.toString(c.getInt(c.getColumnIndex(columnName))));
                     else
                         jsonObject.addProperty(columnName, c.getString(c.getColumnIndex(columnName)));
                 }

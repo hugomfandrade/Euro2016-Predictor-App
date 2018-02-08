@@ -59,8 +59,8 @@ public final class StaticVariableUtils {
 
         groupStage("Group Stage"),
         roundOf16("Round of 16"),
-        quarterFinals("Quarter Finals"),
-        semiFinal("Semi Final"),
+        quarterFinals("Quarter Final"),
+        semiFinals("Semi Final"),
         finals("Final");
 
         public final String name;

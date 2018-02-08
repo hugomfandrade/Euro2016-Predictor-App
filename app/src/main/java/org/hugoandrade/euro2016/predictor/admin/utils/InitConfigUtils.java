@@ -1,6 +1,8 @@
 package org.hugoandrade.euro2016.predictor.admin.utils;
 
 import android.util.Log;
+
+import org.hugoandrade.euro2016.predictor.admin.object.Country;
 import org.hugoandrade.euro2016.predictor.admin.object.Match;
 import org.hugoandrade.euro2016.predictor.admin.object.SystemData;
 
@@ -36,9 +38,9 @@ public final class InitConfigUtils {
         return new SystemData(null, "0,1,2,4", true, date, date);
     }
 
-    public static List<Match> buildInitMatchList(List<org.hugoandrade.euro2016.predictor.admin.object.Country> countryList) {
+    public static List<Match> buildInitMatchList(List<Country> countryList) {
         HashMap<String, String> countryIDs = new HashMap<>();
-        for (org.hugoandrade.euro2016.predictor.admin.object.Country c : countryList) {
+        for (Country c : countryList) {
             countryIDs.put(c.getName(), c.getID());
         }
         String idFrance = countryIDs.get(SCountry.France.name);
@@ -102,14 +104,14 @@ public final class InitConfigUtils {
 
         matchList.add(emptyMatchInstance(13, idRussia, idSlovakia, "150620161400",
                 Stadium.StadePierreMauroy.name(), SGroup.B.name(), SStage.groupStage.name));
-        matchList.add(emptyMatchInstance(14, idRomania, idSwitzerland, "1520620161700",
+        matchList.add(emptyMatchInstance(14, idRomania, idSwitzerland, "150620161700",
                 Stadium.ParcDesPrinces.name(), SGroup.A.name(), SStage.groupStage.name));
         matchList.add(emptyMatchInstance(15, idFrance, idAlbania, "150620162000",
                 Stadium.StadeVelodrome.name, SGroup.A.name, SStage.groupStage.name));
         matchList.add(emptyMatchInstance(16, idEngland, idWales, "160620161400",
                 Stadium.StadeBollaertDelelis.name, SGroup.B.name, SStage.groupStage.name));
         matchList.add(emptyMatchInstance(17, idUkraine, idNorthernIreland, "160620161700",
-                Stadium.ParcOlympiqueLyonnais.name, SGroup.C.name, SStage.groupStage.name()));
+                Stadium.ParcOlympiqueLyonnais.name, SGroup.C.name, SStage.groupStage.name));
         matchList.add(emptyMatchInstance(18, idGermany, idPoland, "160620162000",
                 Stadium.StadeDeFrance.name, SGroup.C.name, SStage.groupStage.name));
         matchList.add(emptyMatchInstance(19, idItaly, idSweden, "170620161400",
@@ -185,9 +187,9 @@ public final class InitConfigUtils {
         /* ****************************************************************************************************** */
 
         matchList.add(emptyMatchInstance(49, "Winner Match 45", "Winner Match 46",
-                "060720162000", Stadium.ParcOlympiqueLyonnais.name, null, SStage.semiFinal.name));
+                "060720162000", Stadium.ParcOlympiqueLyonnais.name, null, SStage.semiFinals.name));
         matchList.add(emptyMatchInstance(50, "Winner Match 47", "Winner Match 48",
-                "070720162000", Stadium.StadeVelodrome.name, null, SStage.semiFinal.name));
+                "070720162000", Stadium.StadeVelodrome.name, null, SStage.semiFinals.name));
 
         /* ****************************************************************************************************** */
 
@@ -196,8 +198,8 @@ public final class InitConfigUtils {
         return matchList;
     }
 
-    public static List<org.hugoandrade.euro2016.predictor.admin.object.Country> buildInitCountryList() {
-        List<org.hugoandrade.euro2016.predictor.admin.object.Country> countryList = new ArrayList<>();
+    public static List<Country> buildInitCountryList() {
+        List<Country> countryList = new ArrayList<>();
         countryList.add(emptyCountryInstance(SCountry.France.name, SGroup.A.name, 33.599f));
         countryList.add(emptyCountryInstance(SCountry.Romania.name, SGroup.A.name, 28.038f));
         countryList.add(emptyCountryInstance(SCountry.Albania.name, SGroup.A.name, 23.216f));
@@ -230,11 +232,11 @@ public final class InitConfigUtils {
         return countryList;
     }
 
-    private static org.hugoandrade.euro2016.predictor.admin.object.Country emptyCountryInstance(String name,
-                                                                                                String group,
-                                                                                                float coefficient) {
+    private static Country emptyCountryInstance(String name,
+                                                String group,
+                                                float coefficient) {
         int z = 0;
-        return new org.hugoandrade.euro2016.predictor.admin.object.Country(null, name, z, z, z, z, z, z, z, group, z, z, coefficient, z);
+        return new Country(null, name, z, z, z, z, z, z, z, group, z, z, coefficient, z);
     }
 
     private static Match emptyMatchInstance(int matchNumber, String homeTeamID, String awayTeamID,

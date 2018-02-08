@@ -24,10 +24,6 @@ public class User implements Parcelable {
             public final static String SCORE = "Score";
         }
 
-        public final static String REQUEST_TYPE = "Parameter_RequestType";
-        public final static String REQUEST_TYPE_LOG_IN = "Login";
-        public final static String REQUEST_TYPE_SIGN_UP = "Signup";
-
         // SQLite table mName
         // PATH_LOGIN & TOKEN for entire table
         public static final String PATH = TABLE_NAME;

@@ -48,5 +48,31 @@ public final class MatchUtils {
         return (match.getHomeTeamNotes() != null && match.getHomeTeamNotes().equals("p") ||
                 (match.getAwayTeamNotes() != null && match.getAwayTeamNotes().equals("p")));
     }
+
+    public static String getAsString(String value) {
+        return value == null ? "": value;
+    }
+
+    public static String getAsString(int value) {
+        return value == -1 ? "": Integer.toString(value);
+    }
+
+    public static String getString(String value) {
+        return value.equals("") ? null: value;
+    }
+
+    public static int getInt(String value) {
+        return getInt(value, -1);
+    }
+
+    public static int getInt(String value, int defaultValue) {
+        if (value == null)
+            return defaultValue;
+        try {
+            return Integer.parseInt(value);
+        } catch (Exception e) {
+            return defaultValue;
+        }
+    }
 }
 

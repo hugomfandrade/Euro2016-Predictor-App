@@ -19,7 +19,7 @@ public class MobileClientDataJsonFormatter {
     private final String TAG =
             getClass().getSimpleName();
 
-    public JsonObject getAsJsonObject(Country country) {
+    public JsonObject getAsJsonObject(Country country, String... exceptProperties) {
 
         return JsonObjectBuilder.instance()
                 .addProperty(Country.Entry.Cols.ID, country.getID())
@@ -36,10 +36,11 @@ public class MobileClientDataJsonFormatter {
                 .addProperty(Country.Entry.Cols.POINTS, country.getPoints())
                 .addProperty(Country.Entry.Cols.COEFFICIENT, country.getCoefficient())
                 .addProperty(Country.Entry.Cols.FAIR_PLAY_POINTS, country.getFairPlayPoints())
+                .removeProperties(exceptProperties)
                 .create();
     }
 
-    public JsonObject getAsJsonObject(SystemData systemData) {
+    public JsonObject getAsJsonObject(SystemData systemData, String... exceptProperties) {
 
         return JsonObjectBuilder.instance()
                 .addProperty(SystemData.Entry.Cols.ID, systemData.getID())
@@ -47,10 +48,11 @@ public class MobileClientDataJsonFormatter {
                 .addProperty(SystemData.Entry.Cols.RULES, systemData.getRawRules())
                 .addProperty(SystemData.Entry.Cols.SYSTEM_DATE, ISO8601.fromCalendar(systemData.getSystemDate()))
                 .addProperty(SystemData.Entry.Cols.DATE_OF_CHANGE, ISO8601.fromCalendar(systemData.getDateOfChange()))
+                .removeProperties(exceptProperties)
                 .create();
     }
 
-    public JsonObject getAsJsonObject(Match match) {
+    public JsonObject getAsJsonObject(Match match, String... exceptProperties) {
 
         return JsonObjectBuilder.instance()
                 .addProperty(Match.Entry.Cols.ID, match.getID())
@@ -65,6 +67,7 @@ public class MobileClientDataJsonFormatter {
                 .addProperty(Match.Entry.Cols.STAGE, match.getStage())
                 .addProperty(Match.Entry.Cols.STADIUM, match.getStadium())
                 .addProperty(Match.Entry.Cols.DATE_AND_TIME, ISO8601.fromDate(match.getDateAndTime()))
+                .removeProperties(exceptProperties)
                 .create();
     }
 
@@ -100,6 +103,12 @@ public class MobileClientDataJsonFormatter {
 
         JsonObjectBuilder addProperty(String property, Boolean value) {
             mJsonObject.addProperty(property, value);
+            return this;
+        }
+
+        JsonObjectBuilder removeProperties(String... properties) {
+            for (String property : properties)
+                mJsonObject.remove(property);
             return this;
         }
 

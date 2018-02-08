@@ -11,7 +11,20 @@ import org.hugoandrade.euro2016.predictor.admin.utils.ISO8601;
 
 public class Match implements Comparable<Match>, Parcelable {
 
-    @SuppressWarnings("unused") private static final String TAG = Match.class.getSimpleName();
+    private String mID;
+    private int mMatchNo;
+    private String mHomeTeamID;
+    private String mAwayTeamID;
+    private Country mHomeTeam;
+    private Country mAwayTeam;
+    private int mHomeTeamGoals;
+    private int mAwayTeamGoals;
+    private String mHomeTeamNotes;
+    private String mAwayTeamNotes;
+    private String mStage;
+    private String mGroup;
+    private String mStadium;
+    private Date mDateAndTime;
 
     public static class Entry {
 
@@ -48,21 +61,6 @@ public class Match implements Comparable<Match>, Parcelable {
         public static final String CONTENT_ITEM_TYPE = CloudDatabaseSimProvider.ORGANIZATIONAL_NAME
                 + ".cursor.item/" + CloudDatabaseSimProvider.ORGANIZATIONAL_NAME + "." + MIME_TYPE_END;
     }
-
-    private String mID;
-    private int mMatchNo;
-    private String mHomeTeamID;
-    private String mAwayTeamID;
-    private Country mHomeTeam;
-    private Country mAwayTeam;
-    private int mHomeTeamGoals;
-    private int mAwayTeamGoals;
-    private String mHomeTeamNotes;
-    private String mAwayTeamNotes;
-    private String mStage;
-    private String mGroup;
-    private String mStadium;
-    private Date mDateAndTime;
 
     public Match(String id,
                  int matchNo,
@@ -240,11 +238,6 @@ public class Match implements Comparable<Match>, Parcelable {
         return this.mMatchNo - o.mMatchNo;
     }
 
-    public Match cloneInstance() {
-        return new Match(mID, mMatchNo, mHomeTeamID, mAwayTeamID, mHomeTeamGoals, mAwayTeamGoals,
-                mHomeTeamNotes, mAwayTeamNotes, mGroup, mStage, mStadium, mDateAndTime);
-    }
-
     @Override
     public String toString() {
         return "_id: " + mID
@@ -259,5 +252,18 @@ public class Match implements Comparable<Match>, Parcelable {
                 + ", Stage: " + mStage
                 + ", Stadium: " + mStadium
                 + ", DateTime: " + ISO8601.fromDate(mDateAndTime);
+    }
+
+    public static Match instance(Match match) {
+        Parcel p1 = Parcel.obtain();
+        Parcel p2 = Parcel.obtain();
+        match.writeToParcel(p1, 0);
+        byte[] bytes = p1.marshall();
+        p2.unmarshall(bytes, 0, bytes.length);
+        p2.setDataPosition(0);
+        Match m = new Match(p2);
+        p1.recycle();
+        p2.recycle();
+        return m;
     }
 }

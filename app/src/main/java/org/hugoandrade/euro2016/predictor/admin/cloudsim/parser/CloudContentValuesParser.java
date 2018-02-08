@@ -113,18 +113,18 @@ public class CloudContentValuesParser {
     public Prediction parsePrediction(Cursor c) {
 
         return new Prediction(
-                getColumnValue(c, "_" + Prediction.Entry.Cols.ID, -1),
+                getColumnValue(c, "_" + Prediction.Entry.Cols.ID, null),
                 getColumnValue(c, Prediction.Entry.Cols.USER_ID, null),
-                getColumnValue(c, Prediction.Entry.Cols.MATCH_NO, 0),
-                getColumnValue(c, Prediction.Entry.Cols.HOME_TEAM_GOALS, 0),
-                getColumnValue(c, Prediction.Entry.Cols.AWAY_TEAM_GOALS, 0),
-                getColumnValue(c, Prediction.Entry.Cols.SCORE, 0));
+                getColumnValue(c, Prediction.Entry.Cols.MATCH_NO, -1),
+                getColumnValue(c, Prediction.Entry.Cols.HOME_TEAM_GOALS, -1),
+                getColumnValue(c, Prediction.Entry.Cols.AWAY_TEAM_GOALS, -1),
+                getColumnValue(c, Prediction.Entry.Cols.SCORE, -1));
     }
 
     public Prediction parsePrediction(ContentValues values) {
 
         return new Prediction(
-                getColumnValue(values, "_" + Prediction.Entry.Cols.ID, -1),
+                getColumnValue(values, "_" + Prediction.Entry.Cols.ID, null),
                 getColumnValue(values, Prediction.Entry.Cols.USER_ID, null),
                 getColumnValue(values, Prediction.Entry.Cols.MATCH_NO, -1),
                 getColumnValue(values, Prediction.Entry.Cols.HOME_TEAM_GOALS, -1),
@@ -146,7 +146,8 @@ public class CloudContentValuesParser {
         }
     }
 
-    private float getColumnValue(Cursor cursor, String columnName, float defaultValue) {
+    private float getColumnValue(Cursor cursor, String columnName,
+                                 @SuppressWarnings("SameParameterValue") float defaultValue) {
         try {
             return cursor.getFloat(cursor.getColumnIndex(columnName));
         } catch (Exception e) {
@@ -154,7 +155,8 @@ public class CloudContentValuesParser {
         }
     }
 
-    private String getColumnValue(Cursor cursor, String columnName, String defaultValue) {
+    private String getColumnValue(Cursor cursor, String columnName,
+                                  @SuppressWarnings("SameParameterValue") String defaultValue) {
         try {
             return cursor.getString(cursor.getColumnIndex(columnName));
         } catch (Exception e) {
@@ -162,13 +164,15 @@ public class CloudContentValuesParser {
         }
     }
 
-    private int getColumnValue(ContentValues values, String columnName, int defaultValue) {
+    private int getColumnValue(ContentValues values, String columnName,
+                               @SuppressWarnings("SameParameterValue")  int defaultValue) {
         Integer i = values.getAsInteger(columnName);
 
         return i == null? defaultValue : i;
     }
 
-    private String getColumnValue(ContentValues values, String columnName, String defaultValue) {
+    private String getColumnValue(ContentValues values, String columnName,
+                                  @SuppressWarnings("SameParameterValue") String defaultValue) {
         String s = values.getAsString(columnName);
 
         return s == null? defaultValue : s;

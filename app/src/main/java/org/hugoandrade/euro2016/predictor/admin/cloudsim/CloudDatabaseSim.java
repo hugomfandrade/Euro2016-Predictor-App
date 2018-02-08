@@ -41,7 +41,9 @@ public class CloudDatabaseSim {
                 Log.e(TAG, result.toString());
                 MessageBase requestMessage
                         = MessageBase.makeMessage(requestCode, MessageBase.REQUEST_RESULT_SUCCESS);
-                requestMessage.setLoginData(parser.parseLoginData(result.getAsJsonObject()));
+                LoginData data = parser.parseLoginData(result.getAsJsonObject());
+                data.setPassword(loginData.getPassword());
+                requestMessage.setLoginData(data);
 
                 sendRequestMessage(replyTo, requestMessage);
             }
@@ -75,11 +77,7 @@ public class CloudDatabaseSim {
 
                         n[0]++;
                         if (n[0] == n[1])
-                            try {
-                                replyTo.send(requestMessage.getMessage());
-                            } catch (Exception e) {
-                                Log.e(TAG, "Exception while sending message back to Activity.", e);
-                            }
+                            sendRequestMessage(replyTo, requestMessage);
                     }
 
                     @Override
@@ -121,8 +119,7 @@ public class CloudDatabaseSim {
                 });
     }
 
-    public static void updateMatch(Match match, final Messenger replyTo, final int requestCode) {
-        Log.e(TAG, "Match: " + formatter.getAsJsonObject(match).toString());
+    public static void updateMatch(final Match match, final Messenger replyTo, final int requestCode) {
         CloudDatabaseSimImpl.ListenableCallback<JsonObject> future = new CloudDatabaseSimImpl(Match.Entry.TABLE_NAME)
                 .update(formatter.getAsJsonObject(match));
         CloudDatabaseSimImpl.addCallback(future, new CloudDatabaseSimImpl.Callback<JsonObject>() {
@@ -138,13 +135,16 @@ public class CloudDatabaseSim {
 
             @Override
             public void onFailure(String errorMessage) {
-                sendErrorMessage(replyTo, requestCode, errorMessage);
+                MessageBase requestMessage
+                        = MessageBase.makeMessage(requestCode, MessageBase.REQUEST_RESULT_FAILURE);
+                requestMessage.setMatch(match);
+                requestMessage.setErrorMessage(errorMessage);
+                sendRequestMessage(replyTo, requestMessage);
             }
         });
     }
 
     public static void updateCountry(Country country, final Messenger replyTo, final int requestCode) {
-        Log.e(TAG, "updateCountry: " );
         CloudDatabaseSimImpl.ListenableCallback<JsonObject> future = new CloudDatabaseSimImpl(Country.Entry.TABLE_NAME)
                 .update(formatter.getAsJsonObject(country));
         CloudDatabaseSimImpl.addCallback(future, new CloudDatabaseSimImpl.Callback<JsonObject>() {

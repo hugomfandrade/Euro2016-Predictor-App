@@ -28,7 +28,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private final static String TAG = DatabaseHelper.class.getSimpleName();
 
     private static final String DATABASE_NAME = "Euro2016Predictor";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 6;
 
     private static final String CREATE_DB_TABLE_MATCH =
             " CREATE TABLE " + Match.Entry.TABLE_NAME +

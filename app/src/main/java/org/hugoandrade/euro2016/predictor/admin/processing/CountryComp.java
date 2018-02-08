@@ -2,7 +2,6 @@ package org.hugoandrade.euro2016.predictor.admin.processing;
 
 import android.os.Parcel;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import org.hugoandrade.euro2016.predictor.admin.object.Country;
 import org.hugoandrade.euro2016.predictor.admin.object.Match;
@@ -23,7 +22,6 @@ public class CountryComp implements Comparable<CountryComp> {
     }
 
     public void add(Match match) {
-        Log.e(getClass().getSimpleName(), "addMatch: " + getCountry().getName() + " -> " + Integer.toString(mMatchList.size()));
         mMatchList.add(copy(match));
     }
 
@@ -95,7 +93,7 @@ public class CountryComp implements Comparable<CountryComp> {
     }
 
     public void compute() {
-        Log.e(getClass().getSimpleName(), "compute: " + getCountry().getName() + " -> " + Integer.toString(mMatchList.size()));
+
         int mMatchesPlayed = 0;
         int mVictories = 0;
         int mDefeats = 0;

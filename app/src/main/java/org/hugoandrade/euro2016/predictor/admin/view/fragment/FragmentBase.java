@@ -3,10 +3,10 @@ package org.hugoandrade.euro2016.predictor.admin.view.fragment;
 import android.content.Context;
 import android.support.v4.app.Fragment;
 
-import org.hugoandrade.euro2016.predictor.admin.FragmentCommunication;
+import org.hugoandrade.euro2016.predictor.admin.FragComm;
 import org.hugoandrade.euro2016.predictor.admin.common.ContextView;
 
-public abstract class FragmentBase<ParentActivityOps extends FragmentCommunication.ProvidedParentBaseActivityOps>
+public abstract class FragmentBase<ParentActivityOps extends FragComm.ProvidedParentBaseActivityOps>
         extends Fragment
         implements ContextView {
 

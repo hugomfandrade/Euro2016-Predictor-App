@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import org.hugoandrade.euro2016.predictor.admin.R;
 import org.hugoandrade.euro2016.predictor.admin.object.Match;
+import org.hugoandrade.euro2016.predictor.admin.utils.MatchUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,15 +25,12 @@ public class MatchListAdapter extends RecyclerView.Adapter<MatchListAdapter.View
     private static int COLOR_CORAL_RED = Color.parseColor("#ffff4444");
     private static int COLOR_BLACK = Color.parseColor("#ff000000");
 
-    private List<Match> mMatchList;
-    private List<Boolean> mIsMatchEnabledList;
+    private List<InputMatch> mInputMatchList;
+
     private OnSetButtonClickListener mListener;
 
     public MatchListAdapter(List<Match> matchList) {
-        mMatchList = matchList;
-        mIsMatchEnabledList = new ArrayList<>();
-        for (int i = 0 ; i < getItemCount(); i++)
-            mIsMatchEnabledList.add(true);
+        set(matchList);
     }
 
     @Override
@@ -43,22 +41,22 @@ public class MatchListAdapter extends RecyclerView.Adapter<MatchListAdapter.View
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater vi = LayoutInflater.from(parent.getContext());
-        return new ViewHolder(vi.inflate(R.layout.list_item_match, parent, false),
-                              mMatchList.get(viewType));
+        return new ViewHolder(vi.inflate(R.layout.list_item_match, parent, false));
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, int position) {
-        Match match = mMatchList.get(holder.getAdapterPosition());
-        boolean isEnabled = mIsMatchEnabledList.get(holder.getAdapterPosition());
+    public void onBindViewHolder(ViewHolder holder, int position) {
+        InputMatch inputMatch = mInputMatchList.get(holder.getAdapterPosition());
+        Match match = inputMatch.mMatch;
+        boolean isEnabled = inputMatch.mIsEnabled;
 
         holder.tvMatchNo.setText(String.valueOf(match.getMatchNumber()));
         holder.tvHomeTeam.setText(match.getHomeTeamName());
         holder.tvAwayTeam.setText(match.getAwayTeamName());
-        holder.etHomeTeamGoals.setText(holder.currentHomeTeamGoals);
-        holder.etAwayTeamGoals.setText(holder.currentAwayTeamGoals);
-        holder.etHomeTeamNotes.setText(holder.currentHomeTeamNotes);
-        holder.etAwayTeamNotes.setText(holder.currentAwayTeamNotes);
+        holder.etHomeTeamGoals.setText(inputMatch.mHomeTeamGoals);
+        holder.etAwayTeamGoals.setText(inputMatch.mAwayTeamGoals);
+        holder.etHomeTeamNotes.setText(inputMatch.mHomeTeamNotes);
+        holder.etAwayTeamNotes.setText(inputMatch.mAwayTeamNotes);
 
         holder.etHomeTeamGoals.setEnabled(isEnabled);
         holder.etAwayTeamGoals.setEnabled(isEnabled);
@@ -73,20 +71,29 @@ public class MatchListAdapter extends RecyclerView.Adapter<MatchListAdapter.View
 
     @Override
     public int getItemCount() {
-        return mMatchList.size();
+        return mInputMatchList.size();
     }
 
     public void set(List<Match> matchList) {
-        mMatchList = matchList;
-        mIsMatchEnabledList = new ArrayList<>();
-        for (int i = 0 ; i < getItemCount(); i++)
-            mIsMatchEnabledList.add(true);
+        mInputMatchList = new ArrayList<>();
+        for (int i = 0 ; i < matchList.size(); i++) {
+            mInputMatchList.add(new InputMatch(matchList.get(i)));
+        }
     }
 
     public void updateMatch(Match match) {
-        for (int i = 0; i < mMatchList.size() ; i++)
-            if (mMatchList.get(i).getID().equals(match.getID())) {
-                mIsMatchEnabledList.set(i, true);
+        for (int i = 0; i < mInputMatchList.size() ; i++)
+            if (mInputMatchList.get(i).mMatch.getID().equals(match.getID())) {
+                mInputMatchList.set(i, new InputMatch(match));
+                notifyItemChanged(i);
+                break;
+            }
+    }
+
+    public void updateFailedMatch(Match match) {
+        for (int i = 0; i < mInputMatchList.size() ; i++)
+            if (mInputMatchList.get(i).mMatch.getID().equals(match.getID())) {
+                mInputMatchList.get(i).mIsEnabled = true;
                 notifyItemChanged(i);
                 break;
             }
@@ -113,47 +120,26 @@ public class MatchListAdapter extends RecyclerView.Adapter<MatchListAdapter.View
         View progressBar;
         Button btSetResult;
 
-        Match mMatch;
-
-        String currentHomeTeamGoals;
-        String currentHomeTeamNotes;
-        String currentAwayTeamGoals;
-        String currentAwayTeamNotes;
-
-        boolean enableTextChangedListener = true;
-
-        ViewHolder(View itemView, Match match) {
+        ViewHolder(View itemView) {
             super(itemView);
-            mMatch = match;
 
             tvMatchNo = (TextView) itemView.findViewById(R.id.tv_match_no);
             tvHomeTeam = (TextView) itemView.findViewById(R.id.tv_match_home_team);
             tvAwayTeam = (TextView) itemView.findViewById(R.id.tv_match_away_team);
-            etHomeTeamGoals = (EditText) itemView.findViewById(R.id.ed_match_home_team_goals);
-            etAwayTeamGoals = (EditText) itemView.findViewById(R.id.ed_match_away_team_goals);
+            etHomeTeamGoals = (EditText) itemView.findViewById(R.id.et_match_home_team_goals);
+            etAwayTeamGoals = (EditText) itemView.findViewById(R.id.et_match_away_team_goals);
             etHomeTeamNotes = (EditText) itemView.findViewById(R.id.ed_match_home_team_notes);
-            etAwayTeamNotes = (EditText) itemView.findViewById(R.id.ed_match_away_team_notes);
+            etAwayTeamNotes = (EditText) itemView.findViewById(R.id.et_match_away_team_notes);
 
             progressBar = itemView.findViewById(R.id.progressBar_waiting_for_response);
             btSetResult = (Button) itemView.findViewById(R.id.bt_set_match);
             btSetResult.setOnClickListener(this);
 
-            currentHomeTeamGoals = mMatch.getHomeTeamGoals() == -1?
-                    "" : String.valueOf(mMatch.getHomeTeamGoals());
-            currentAwayTeamGoals = mMatch.getAwayTeamGoals() == -1?
-                    "" : String.valueOf(mMatch.getAwayTeamGoals());
-            currentHomeTeamNotes = mMatch.getHomeTeamNotes() == null?
-                    "" : mMatch.getHomeTeamNotes();
-            currentAwayTeamNotes = mMatch.getAwayTeamNotes() == null?
-                    "" : mMatch.getAwayTeamNotes();
-
             etHomeTeamGoals.addTextChangedListener(new SimpleTextWatcher() {
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    if (!enableTextChangedListener)
-                        return;
 
-                    currentHomeTeamGoals = s.toString();
+                    mInputMatchList.get(getAdapterPosition()).mHomeTeamGoals = s.toString();
 
                     checkIfThereAreNewValues();
                 }
@@ -161,10 +147,8 @@ public class MatchListAdapter extends RecyclerView.Adapter<MatchListAdapter.View
             etAwayTeamGoals.addTextChangedListener(new SimpleTextWatcher() {
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    if (!enableTextChangedListener)
-                        return;
 
-                    currentAwayTeamGoals = s.toString();
+                    mInputMatchList.get(getAdapterPosition()).mAwayTeamGoals = s.toString();
 
                     checkIfThereAreNewValues();
                 }
@@ -172,10 +156,8 @@ public class MatchListAdapter extends RecyclerView.Adapter<MatchListAdapter.View
             etHomeTeamNotes.addTextChangedListener(new SimpleTextWatcher() {
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    if (!enableTextChangedListener)
-                        return;
 
-                    currentHomeTeamNotes = s.toString();
+                    mInputMatchList.get(getAdapterPosition()).mHomeTeamNotes = s.toString();
 
                     checkIfThereAreNewValues();
                 }
@@ -183,10 +165,8 @@ public class MatchListAdapter extends RecyclerView.Adapter<MatchListAdapter.View
             etAwayTeamNotes.addTextChangedListener(new SimpleTextWatcher() {
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    if (!enableTextChangedListener)
-                        return;
 
-                    currentAwayTeamNotes = s.toString();
+                    mInputMatchList.get(getAdapterPosition()).mAwayTeamNotes = s.toString();
 
                     checkIfThereAreNewValues();
                 }
@@ -210,62 +190,27 @@ public class MatchListAdapter extends RecyclerView.Adapter<MatchListAdapter.View
 
         private void doClick() {
             if (mListener != null) {
-                mIsMatchEnabledList.set(getAdapterPosition(), false);
-                Match match = mMatchList.get(getAdapterPosition());
-                match.setHomeTeamGoals(getInt(currentHomeTeamGoals));
-                match.setAwayTeamGoals(getInt(currentAwayTeamGoals));
-                match.setHomeTeamNotes(getString(currentHomeTeamNotes.trim()));
-                match.setAwayTeamNotes(getString(currentAwayTeamNotes.trim()));
+                mInputMatchList.get(getAdapterPosition()).mIsEnabled = false;
+                Match match = Match.instance(mInputMatchList.get(getAdapterPosition()).mMatch);
+                InputMatch inputMatch = mInputMatchList.get(getAdapterPosition());
+                match.setHomeTeamGoals(MatchUtils.getInt(inputMatch.mHomeTeamGoals));
+                match.setAwayTeamGoals(MatchUtils.getInt(inputMatch.mAwayTeamGoals));
+                match.setHomeTeamNotes(MatchUtils.getString(inputMatch.mHomeTeamNotes.trim()));
+                match.setAwayTeamNotes(MatchUtils.getString(inputMatch.mAwayTeamNotes.trim()));
                 notifyItemChanged(getAdapterPosition());
                 mListener.onClick(match);
             }
         }
 
         private void checkIfThereAreNewValues() {
-            int color;
-            boolean enabled;
-            if (getInt(currentHomeTeamGoals) == mMatch.getHomeTeamGoals() &&
-                    getInt(currentAwayTeamGoals) == mMatch.getAwayTeamGoals() &&
-                    areEqual(currentHomeTeamNotes, mMatch.getHomeTeamNotes()) &&
-                    areEqual(currentAwayTeamNotes, mMatch.getAwayTeamNotes())) {
-                color = COLOR_BLACK;
-                enabled = false;
-            }
-            else {
-                color = COLOR_CORAL_RED;
-                enabled = true;
-            }
+            boolean isEnabled = mInputMatchList.get(getAdapterPosition()).haveValuesChanged();
+            int color = isEnabled? COLOR_CORAL_RED : COLOR_BLACK;
+
             etHomeTeamGoals.setTextColor(color);
             etAwayTeamGoals.setTextColor(color);
             etHomeTeamNotes.setTextColor(color);
             etAwayTeamNotes.setTextColor(color);
-            btSetResult.setEnabled(enabled);
-        }
-    }
-
-    private static boolean areEqual(String obj1, String obj2) {
-        return isNullOrEmpty(obj1) && isNullOrEmpty(obj2) || obj1.equals(obj2);
-    }
-
-    private static boolean isNullOrEmpty(String obj1) {
-        return obj1 == null || obj1.isEmpty();
-    }
-
-    private static String getString(String value) {
-        return value.equals("") ? null: value;
-    }
-
-    private static int getInt(String value) {
-        return getInt(value, -1);
-    }
-
-    private static int getInt(String value, int defaultValue) {
-        if (value == null)
-            return defaultValue;
-        try {
-            return Integer.parseInt(value);
-        } catch (Exception e) {
-            return defaultValue;
+            btSetResult.setEnabled(isEnabled);
         }
     }
 
@@ -284,6 +229,40 @@ public class MatchListAdapter extends RecyclerView.Adapter<MatchListAdapter.View
         @Override
         public void afterTextChanged(Editable s) {
             // No-ops
+        }
+    }
+
+    static class InputMatch {
+
+        Match mMatch;
+        String mHomeTeamGoals;
+        String mAwayTeamGoals;
+        String mHomeTeamNotes;
+        String mAwayTeamNotes;
+        boolean mIsEnabled;
+
+        InputMatch(Match match) {
+            mMatch = match;
+            mHomeTeamGoals = MatchUtils.getAsString(match.getHomeTeamGoals());
+            mAwayTeamGoals = MatchUtils.getAsString(match.getAwayTeamGoals());
+            mHomeTeamNotes = MatchUtils.getAsString(match.getHomeTeamNotes());
+            mAwayTeamNotes = MatchUtils.getAsString(match.getAwayTeamNotes());
+            mIsEnabled = true;
+        }
+
+        boolean haveValuesChanged() {
+            return MatchUtils.getInt(mHomeTeamGoals) != mMatch.getHomeTeamGoals() ||
+                    MatchUtils.getInt(mAwayTeamGoals) != mMatch.getAwayTeamGoals() ||
+                    !areEqual(mHomeTeamNotes, mMatch.getHomeTeamNotes()) ||
+                    !areEqual(mAwayTeamNotes, mMatch.getAwayTeamNotes());
+        }
+
+        private static boolean areEqual(String obj1, String obj2) {
+            return isNullOrEmpty(obj1) && isNullOrEmpty(obj2) || obj1.equals(obj2);
+        }
+
+        private static boolean isNullOrEmpty(String obj1) {
+            return obj1 == null || obj1.isEmpty();
         }
     }
 }

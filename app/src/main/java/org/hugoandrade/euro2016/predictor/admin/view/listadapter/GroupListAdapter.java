@@ -49,7 +49,7 @@ public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.View
         return mCountryList.size();
     }
 
-    public void setAll(@NonNull List<Country> countryList) {
+    public void set(@NonNull List<Country> countryList) {
         mCountryList = countryList;
         notifyDataSetChanged();
     }

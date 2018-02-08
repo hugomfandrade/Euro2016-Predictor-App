@@ -11,14 +11,14 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hugoandrade.euro2016.predictor.admin.FragmentCommunication;
+import org.hugoandrade.euro2016.predictor.admin.FragComm;
 import org.hugoandrade.euro2016.predictor.admin.R;
 import org.hugoandrade.euro2016.predictor.admin.object.Match;
 import org.hugoandrade.euro2016.predictor.admin.view.listadapter.MatchListAdapter;
 
 public class SetResultsFragment
-        extends FragmentBase<FragmentCommunication.ProvidedParentActivityOps>
-        implements FragmentCommunication.ProvidedSetResultsChildFragmentOps {
+        extends FragmentBase<FragComm.ProvidedParentActivityOps>
+        implements FragComm.ProvidedMatchesFragmentOps {
 
     @SuppressWarnings("unused")
     private static final String TAG = SetResultsFragment.class.getSimpleName();
@@ -67,6 +67,12 @@ public class SetResultsFragment
     public void updateMatch(Match match) {
         if (mAdapter != null)
             mAdapter.updateMatch(match);
+    }
+
+    @Override
+    public void updateFailedMatch(Match match) {
+        if (mAdapter != null)
+            mAdapter.updateFailedMatch(match);
     }
 
     public int getStartingItemPosition() {

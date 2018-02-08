@@ -54,10 +54,9 @@ public interface MVP {
     }
 
 
-    interface RequiredViewOps extends RequiredViewBaseOps {
-        void setMatches(List<Match> matchList);
-        void setGroups(HashMap<String, Group> allGroups);
-        void updateMatch(Match match);
+    interface RequiredViewOps extends RequiredViewBaseOps,
+                                      FragComm.ProvidedGroupsChildFragmentOps,
+                                      FragComm.ProvidedMatchesFragmentOps {
     }
 
     interface ProvidedPresenterOps extends PresenterOps<RequiredViewOps> {

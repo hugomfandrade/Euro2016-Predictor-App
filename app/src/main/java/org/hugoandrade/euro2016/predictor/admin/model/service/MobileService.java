@@ -153,10 +153,8 @@ public class MobileService extends Service {
         Futures.addCallback(future, new FutureCallback<JsonElement>() {
             @Override
             public void onSuccess(JsonElement jsonObject) {
-                MessageBase requestMessage = MessageBase.makeMessage(
-                        requestCode,
-                        MessageBase.REQUEST_RESULT_SUCCESS
-                );
+                MessageBase requestMessage
+                        = MessageBase.makeMessage(requestCode, MessageBase.REQUEST_RESULT_SUCCESS);
                 LoginData data = parser.parseLoginData(jsonObject.getAsJsonObject());
                 data.setPassword(loginData.getPassword());
                 requestMessage.setLoginData(data);
@@ -279,6 +277,11 @@ public class MobileService extends Service {
             return;
         }
 
+        if (mClient == null) {
+            sendNoNetworkConnectionFailureMessage(replyTo, requestCode);
+            return;
+        }
+
         final MessageBase requestMessage = MessageBase.makeMessage(
                 requestCode,
                 MessageBase.REQUEST_RESULT_SUCCESS);
@@ -338,8 +341,6 @@ public class MobileService extends Service {
     }
 
     private void updateCountry(Country country, final Messenger replyTo, final int requestCode) {
-        Log.e(TAG, "updateCountry: " + country.toString());
-        //if (true) return;
         if (DevConstants.CLOUD_DATABASE_SIM) {
             CloudDatabaseSim.updateCountry(country, replyTo, requestCode);
             return;
@@ -381,23 +382,23 @@ public class MobileService extends Service {
             return;
         }
 
-        final MessageBase requestMessage = MessageBase.makeMessage(
-                requestCode,
-                MessageBase.REQUEST_RESULT_FAILURE);
-        requestMessage.setMatch(match);
-
         ListenableFuture<JsonObject> future =
                 new MobileServiceJsonTable(Match.Entry.TABLE_NAME, mClient)
                         .update(formatter.getAsJsonObject(match));
         Futures.addCallback(future, new FutureCallback<JsonObject>() {
             @Override
             public void onSuccess(JsonObject result) {
+                MessageBase requestMessage
+                        = MessageBase.makeMessage(requestCode, MessageBase.REQUEST_RESULT_SUCCESS);
                 requestMessage.setMatch(parser.parseMatch(result));
                 sendRequestMessage(replyTo, requestMessage);
             }
 
             @Override
             public void onFailure(@NonNull Throwable t) {
+                MessageBase requestMessage
+                        = MessageBase.makeMessage(requestCode, MessageBase.REQUEST_RESULT_FAILURE);
+                requestMessage.setMatch(match);
                 requestMessage.setErrorMessage(t.getMessage());
                 sendRequestMessage(replyTo, requestMessage);
             }
@@ -665,12 +666,8 @@ public class MobileService extends Service {
             final int[] n = {0, countries.size(), 1};
 
             for (Country c : countries) {
-                JsonObject jsonObject = formatter.getAsJsonObject(c);
-                jsonObject.remove(Country.Entry.Cols.ID);
                 ListenableFuture<JsonObject> future = new MobileServiceJsonTable(Country.Entry.TABLE_NAME, mClient)
-                        .insert(formatter.getAsJsonObject(c)
-                                .remove(Country.Entry.Cols.ID)
-                                .getAsJsonObject());
+                        .insert(formatter.getAsJsonObject(c, Country.Entry.Cols.ID));
                 Futures.addCallback(future, new FutureCallback<JsonObject>() {
                     @Override
                     public void onSuccess(JsonObject jsonObject) {
@@ -761,9 +758,7 @@ public class MobileService extends Service {
 
             for (Match m : matches) {
                 ListenableFuture<JsonObject> future = new MobileServiceJsonTable(Match.Entry.TABLE_NAME, mClient)
-                        .insert(formatter.getAsJsonObject(m)
-                                .remove(Country.Entry.Cols.ID)
-                                .getAsJsonObject());
+                        .insert(formatter.getAsJsonObject(m, Match.Entry.Cols.ID));
                 Futures.addCallback(future, new FutureCallback<JsonObject>() {
                     @Override
                     public void onSuccess(JsonObject jsonObject) {

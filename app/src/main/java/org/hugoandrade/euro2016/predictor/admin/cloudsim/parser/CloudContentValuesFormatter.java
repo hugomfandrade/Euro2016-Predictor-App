@@ -21,8 +21,7 @@ public class CloudContentValuesFormatter {
 
     public ContentValues getAsContentValues(Prediction prediction) {
         return ContentValuesBuilder.instance()
-                .put(Prediction.Entry.Cols._ID, prediction.getID() == -1 ?
-                        null : prediction.getID())
+                .put("_" + Prediction.Entry.Cols.ID, prediction.getID())
                 .put(Prediction.Entry.Cols.MATCH_NO, prediction.getMatchNumber())
                 .put(Prediction.Entry.Cols.HOME_TEAM_GOALS, prediction.getHomeTeamGoals() == -1 ?
                         null : prediction.getHomeTeamGoals())
@@ -72,6 +71,7 @@ public class CloudContentValuesFormatter {
                 .put(SystemData.Entry.Cols.SYSTEM_DATE, ISO8601.fromCalendar(systemData.getSystemDate()))
                 .put(SystemData.Entry.Cols.DATE_OF_CHANGE, ISO8601.fromCalendar(systemData.getDateOfChange()))
                 .put(SystemData.Entry.Cols.RULES, systemData.getRawRules())
+                .put(SystemData.Entry.Cols.APP_STATE, systemData.getAppState())
                 .create();
     }
 

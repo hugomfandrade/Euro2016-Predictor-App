@@ -53,6 +53,7 @@ public class MobileClientDataJsonParser {
     }
 
     public Country parseCountry(JsonObject jsonObject) {
+
         return new Country(
                 getJsonPrimitive(jsonObject, Country.Entry.Cols.ID, null),
                 getJsonPrimitive(jsonObject, Country.Entry.Cols.NAME, null),
@@ -112,10 +113,6 @@ public class MobileClientDataJsonParser {
         );
     }
 
-    public String parseString(JsonObject jsonObject, String jsonMemberName) {
-        return getJsonPrimitive(jsonObject, jsonMemberName, null);
-    }
-
     private static int getJsonPrimitive(JsonObject jsonObject, String jsonMemberName, int defaultValue) {
         try {
             return (int) jsonObject.getAsJsonPrimitive(jsonMemberName).getAsFloat();
@@ -124,7 +121,8 @@ public class MobileClientDataJsonParser {
         }
     }
 
-    private static float getJsonPrimitive(JsonObject jsonObject, String jsonMemberName, float defaultValue) {
+    private static float getJsonPrimitive(JsonObject jsonObject, String jsonMemberName,
+                                          @SuppressWarnings("SameParameterValue")  float defaultValue) {
         try {
             return jsonObject.getAsJsonPrimitive(jsonMemberName).getAsFloat();
         } catch (Exception e) {
@@ -132,7 +130,8 @@ public class MobileClientDataJsonParser {
         }
     }
 
-    public static String getJsonPrimitive(JsonObject jsonObject, String jsonMemberName, String defaultValue) {
+    private static String getJsonPrimitive(JsonObject jsonObject, String jsonMemberName,
+                                           @SuppressWarnings("SameParameterValue") String defaultValue) {
         try {
             return jsonObject.getAsJsonPrimitive(jsonMemberName).getAsString();
         } catch (Exception e) {
@@ -140,7 +139,8 @@ public class MobileClientDataJsonParser {
         }
     }
 
-    public static boolean getJsonPrimitive(JsonObject jsonObject, String jsonMemberName, boolean defaultValue) {
+    private static boolean getJsonPrimitive(JsonObject jsonObject, String jsonMemberName,
+                                            @SuppressWarnings("SameParameterValue") boolean defaultValue) {
         try {
             return jsonObject.getAsJsonPrimitive(jsonMemberName).getAsBoolean();
         } catch (Exception e) {

@@ -9,7 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.hugoandrade.euro2016.predictor.admin.FragmentCommunication;
+import org.hugoandrade.euro2016.predictor.admin.FragComm;
 import org.hugoandrade.euro2016.predictor.admin.R;
 import org.hugoandrade.euro2016.predictor.admin.object.Country;
 import org.hugoandrade.euro2016.predictor.admin.object.Group;
@@ -19,11 +19,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class GroupsFragment extends FragmentBase<FragmentCommunication.ProvidedParentActivityOps>
+public class GroupsFragment extends FragmentBase<FragComm.ProvidedParentActivityOps>
 
-        implements FragmentCommunication.ProvidedGroupsChildFragmentOps {
+        implements FragComm.ProvidedGroupsChildFragmentOps {
 
-    private HashMap<String, ViewStruct> mViewStructMap = buildViewStructMap();
+    private HashMap<String, ViewStruct> mGroupViewMap = buildViewStructMap();
 
     private HashMap<String, ViewStruct> buildViewStructMap() {
         HashMap<String, ViewStruct> viewStructMap = new HashMap<>();
@@ -50,22 +50,22 @@ public class GroupsFragment extends FragmentBase<FragmentCommunication.ProvidedP
     }
 
     private void initializeUI(View view) {
-        setupGroupLayout(view.findViewById(R.id.layout_group_a), mViewStructMap.get("A"));
-        setupGroupLayout(view.findViewById(R.id.layout_group_b), mViewStructMap.get("B"));
-        setupGroupLayout(view.findViewById(R.id.layout_group_c), mViewStructMap.get("C"));
-        setupGroupLayout(view.findViewById(R.id.layout_group_d), mViewStructMap.get("D"));
-        setupGroupLayout(view.findViewById(R.id.layout_group_e), mViewStructMap.get("E"));
-        setupGroupLayout(view.findViewById(R.id.layout_group_f), mViewStructMap.get("F"));
+        setupGroupLayout(view.findViewById(R.id.layout_group_a), mGroupViewMap.get("A"));
+        setupGroupLayout(view.findViewById(R.id.layout_group_b), mGroupViewMap.get("B"));
+        setupGroupLayout(view.findViewById(R.id.layout_group_c), mGroupViewMap.get("C"));
+        setupGroupLayout(view.findViewById(R.id.layout_group_d), mGroupViewMap.get("D"));
+        setupGroupLayout(view.findViewById(R.id.layout_group_e), mGroupViewMap.get("E"));
+        setupGroupLayout(view.findViewById(R.id.layout_group_f), mGroupViewMap.get("F"));
     }
 
     @Override
-    public void setGroups(HashMap<String, Group> allGroups) {
-        updateViewStruct(mViewStructMap.get("A"), allGroups.get("A").getCountryList());
-        updateViewStruct(mViewStructMap.get("B"), allGroups.get("B").getCountryList());
-        updateViewStruct(mViewStructMap.get("C"), allGroups.get("C").getCountryList());
-        updateViewStruct(mViewStructMap.get("D"), allGroups.get("D").getCountryList());
-        updateViewStruct(mViewStructMap.get("E"), allGroups.get("E").getCountryList());
-        updateViewStruct(mViewStructMap.get("F"), allGroups.get("F").getCountryList());
+    public void setGroups(HashMap<String, Group> groupsMap) {
+        updateViewStruct(mGroupViewMap.get("A"), groupsMap.get("A").getCountryList());
+        updateViewStruct(mGroupViewMap.get("B"), groupsMap.get("B").getCountryList());
+        updateViewStruct(mGroupViewMap.get("C"), groupsMap.get("C").getCountryList());
+        updateViewStruct(mGroupViewMap.get("D"), groupsMap.get("D").getCountryList());
+        updateViewStruct(mGroupViewMap.get("E"), groupsMap.get("E").getCountryList());
+        updateViewStruct(mGroupViewMap.get("F"), groupsMap.get("F").getCountryList());
     }
 
     private void setupGroupLayout(View view, ViewStruct viewStruct) {
@@ -98,7 +98,7 @@ public class GroupsFragment extends FragmentBase<FragmentCommunication.ProvidedP
 
         void setAll(List<Country> countryList) {
             mCountryList = countryList;
-            mGroupAdapter.setAll(mCountryList);
+            mGroupAdapter.set(mCountryList);
         }
 
         RecyclerView.Adapter getGroupAdapter() {
