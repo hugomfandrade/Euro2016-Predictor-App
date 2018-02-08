@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="hugoandrade.euro2016">
+    package="org.hugoandrade.euro2016.predictor">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -12,17 +12,17 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".view.MainActivity"
+            android:name="org.hugoandrade.euro2016.predictor.view.MainActivity"
             android:configChanges="orientation|screenSize" />
         <activity
-            android:name=".view.UsersPredictionsActivity"
+            android:name="org.hugoandrade.euro2016.predictor.view.UsersPredictionsActivity"
             android:configChanges="orientation|screenSize" />
         <activity
-            android:name=".view.SignUpActivity"
+            android:name="org.hugoandrade.euro2016.predictor.view.SignUpActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/AppTheme.NoActionBarNoTitle" />
         <activity
-            android:name=".view.SplashScreenAndLoginActivity"
+            android:name="org.hugoandrade.euro2016.predictor.view.LoginActivity"
             android:configChanges="orientation|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -30,7 +30,10 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".model.AzureMobileService" android:enabled="true"/>
+        <service android:name="org.hugoandrade.euro2016.predictor.model.service.MobileService"
+            android:process=":azureService"
+            android:enabled="true"/>
+
     </application>
 
 </manifest>

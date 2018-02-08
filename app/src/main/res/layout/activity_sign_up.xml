@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_signup"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#394048"
+    android:padding="@dimen/activity_horizontal_margin"
+    android:focusableInTouchMode="true"
+    tools:context=".view.SignUpActivity">
+
+    <EditText
+        android:padding="8dp"
+        android:background="#4Dffffff"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/editext_new_username"
+        android:inputType="text"
+        android:textColor="#fff"
+        android:hint="@string/hint_username"
+        android:textColorHint="#394048"
+        android:layout_marginBottom="4dp"/>
+
+    <EditText
+        android:padding="8dp"
+        android:background="#4Dffffff"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/editext_new_password"
+        android:inputType="textPassword"
+        android:textColor="#fff"
+        android:hint="@string/hint_password"
+        android:textColorHint="#394048"
+        android:layout_marginBottom="4dp"/>
+
+    <EditText
+        android:padding="8dp"
+        android:background="#4Dffffff"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/editext_confirm_password"
+        android:inputType="textPassword"
+        android:textColor="#fff"
+        android:hint="@string/hint_confirm_password"
+        android:textColorHint="#394048"
+        android:layout_marginBottom="8dp"/>
+
+    <RelativeLayout
+        android:layout_marginTop="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:id="@+id/button_signup"
+        android:background="@android:drawable/btn_default">
+
+        <TextView
+            android:layout_centerVertical="true"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/sign_up"
+            android:textSize="18sp"
+            android:textAllCaps="true"
+            android:gravity="center" />
+
+        <ProgressBar
+            android:layout_centerVertical="true"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@+id/progressBar_signup"
+            android:visibility="visible"/>
+
+    </RelativeLayout>
+
+</LinearLayout>
