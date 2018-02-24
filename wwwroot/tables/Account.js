@@ -1,65 +1,25 @@
+
 var ValidateToken = require('../authentication_scripts/ValidateToken');
-var Q = require("q");
+var BuildQuery = require("../utils_scripts/BuildQuery");
 
 var table = module.exports = require('azure-mobile-apps').table();
 
+table.read.use(ValidateToken, table.operation);
 table.read(function (context) {
-    return context.execute().then(function(accounts) {
-        
-        var azureMobile = context.req.azureMobile;
-        
-        return getScoresOfUsers(context, accounts).then(function(accounts) {
-            
-            return accounts;
-            
-        }).catch(function(error) {
-            return error;
-    	});
-    }).catch(function(error) {
-        return error;
-	});
+    
+    var query = buildReadQuery(context.req.query);
+    
+    return context.data.execute({sql: query});
 });
 
-table.read.use(ValidateToken, table.operation);
-
-function getScoresOfUsers(context, accounts) {
-    var defer = Q.defer();
+function buildReadQuery(query) {
     
-    query = 'SELECT p.UserID, SUM(ps.Score) AS Score'
+	var fromQuery =
+           'SELECT a.id, a.Email, SUM(ps.Score) AS Score'
          + ' FROM Account a'
-         + ' INNER JOIN Prediction p ON a.id = p.UserID'
-         + ' INNER JOIN PredictionScore ps ON p.id = ps.PredictionID'
-         + ' WHERE ' + buildWhereClause(accounts)
-         + ' GROUP BY p.UserID'
-    
-    context.data.execute({sql: query})
-        .then(function (results) {
-            
-            accounts.forEach(function(account) {
-                account.Score = 0;
-                
-                results.forEach(function(result) {
-                    if (account.id === result.UserID)
-                        account.Score = result.Score;
-                });
-                delete account.Password;
-                delete account.Salt;
-            });
-            defer.resolve(accounts);
-        }).catch(function(error) {
-            defer.reject(error);
-    	});
-    
-	return defer.promise;
-}
-
-function buildWhereClause(accounts) {
-    
-    var whereClause = '';
-    accounts.forEach(function(account) {
-        if (whereClause !== '')
-            whereClause = whereClause + ' OR ';
-        whereClause = whereClause + 'p.UserID = \'' + account.id + '\''
-    });
-    return whereClause
+         + ' LEFT JOIN Prediction p ON a.id = p.UserID'
+         + ' LEFT JOIN PredictionScore ps ON p.id = ps.PredictionID'
+         + ' GROUP BY a.id, a.Email'
+      
+	return BuildQuery(query, fromQuery, null);
 }

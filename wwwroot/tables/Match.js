@@ -5,32 +5,22 @@ var queries = require('azure-mobile-apps/src/query');
 
 var table = module.exports = require('azure-mobile-apps').table();
 
-var insertMiddleware = [ValidateToken, AuthorizationAdmin, function(req, res, next) {
-    
-	var azureMobile = req.azureMobile;
-    var match = req.body;
-    var matchNumber = match.MatchNumber;
-    delete match.id;
-    
-    var matchData = azureMobile.tables('Match');
-	var query = queries.create('Match').where({ MatchNumber : matchNumber });
-   
-	matchData.read(query).then(function(results) {
-        if (results.length === 0) {
-			matchData.insert(match).then(function(results) {
-				return res.status(200).send(results);
-		    }).catch(function(error) {
-                return res.status(400).send(error);
-			});
-			return;
-		}
-        return res.status(400).send("cloud already has this match");
-    });
-}];
-
-table.insert.use(insertMiddleware, table.operation);
+table.insert.use(ValidateToken, AuthorizationAdmin, table.operation);
 table.insert(function (context) {
-    return context.execute();
+    
+    var match = context.req.body;
+    var matchNumber = match.MatchNumber;
+    
+    var matchData = context.req.azureMobile.tables('Match');
+	var q = queries.create('Match').where({ MatchNumber : matchNumber });
+	return matchData.read(q).then(function(results) {
+        if (results.length === 0) {
+            delete match.id;
+			return matchData.insert(match);
+		}
+        
+        throw Error("cloud already has this match");
+    });
 });
 
 table.delete.use(ValidateToken, AuthorizationAdmin, table.operation);
