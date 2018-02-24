@@ -1,6 +1,5 @@
 package org.hugoandrade.euro2016.predictor.view.listadapter;
 
-import android.annotation.SuppressLint;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,7 +33,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHo
     }
 
     @Override
-    public void onBindViewHolder(final UserListAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
+    public void onBindViewHolder(final UserListAdapter.ViewHolder holder, int position) {
         User user = mUserList.get(position);
 
         holder.tvUser.setText(user.getEmail());

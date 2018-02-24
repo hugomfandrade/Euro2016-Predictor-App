@@ -240,7 +240,7 @@ public class MainActivity extends ActivityBase<MVP.RequiredMainViewOps,
      */
     @Override
     public void onUserSelected(User user) {
-        getPresenter().onUserSelected(user);
+        getPresenter().getPredictionsOfSelectedUser(user);
     }
 
     /**

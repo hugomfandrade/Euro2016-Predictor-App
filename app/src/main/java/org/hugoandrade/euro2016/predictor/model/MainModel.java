@@ -1,10 +1,10 @@
 package org.hugoandrade.euro2016.predictor.model;
 
 import android.os.RemoteException;
-import android.util.Log;
 
 import org.hugoandrade.euro2016.predictor.MVP;
 import org.hugoandrade.euro2016.predictor.data.Prediction;
+import org.hugoandrade.euro2016.predictor.data.User;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
 
 public class MainModel extends MobileClientModelBase<MVP.RequiredMainPresenterOps>
@@ -42,6 +42,13 @@ public class MainModel extends MobileClientModelBase<MVP.RequiredMainPresenterOp
                     isOperationSuccessful,
                     data.getErrorMessage(),
                     data.getPrediction());
+        }
+        else if (operationType == MobileClientData.OperationType.GET_PREDICTIONS.ordinal()) {
+            getPresenter().onPredictionsFetched(
+                    isOperationSuccessful,
+                    data.getErrorMessage(),
+                    data.getUser(),
+                    data.getPredictionList());
         }
     }
 
@@ -81,6 +88,24 @@ public class MainModel extends MobileClientModelBase<MVP.RequiredMainPresenterOp
         } catch (RemoteException e) {
             e.printStackTrace();
             getPresenter().onPredictionUpdated(false, "Error sending message", prediction);
+        }
+    }
+
+    @Override
+    public void getPredictions(User user) {
+        if (getService() == null) {
+            getPresenter().onPredictionsFetched(false, "Not bound to the service", user, null);
+            return;
+        }
+
+        try {
+            boolean isPutting = getService().getPredictions(user);
+            if (!isPutting) {
+                getPresenter().onPredictionsFetched(false, "No Network Connection", user, null);
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            getPresenter().onPredictionsFetched(false, "Error sending message", user, null);
         }
     }
 }

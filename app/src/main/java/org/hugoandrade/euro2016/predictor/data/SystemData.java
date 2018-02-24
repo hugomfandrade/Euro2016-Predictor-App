@@ -15,14 +15,13 @@ public class SystemData implements Parcelable {
 
     public static class Entry {
 
-        public static final String TABLE_NAME = "SystemData";
         public static final String API_NAME = "SystemData";
 
         public static class Cols {
             public static final String ID = "id";
             public static final String RULES = "Rules";
-            public static final String SYSTEM_DATE = "SystemDate";
             public static final String APP_STATE = "AppState";
+            public static final String SYSTEM_DATE = "SystemDate";
         }
     }
 
@@ -95,6 +94,16 @@ public class SystemData implements Parcelable {
         }
     }
 
+    @Override
+    public String toString() {
+        return "SystemData{" +
+                "mID='" + mID + '\'' +
+                ", mRules='" + mRules + '\'' +
+                ", mAppState=" + mAppState +
+                ", mSystemDate=" + mSystemDate +
+                ", mDateOfLastRecordedSystemDate=" + mDateOfLastRecordedSystemDate +
+                '}';
+    }
 
     public class Rules {
 

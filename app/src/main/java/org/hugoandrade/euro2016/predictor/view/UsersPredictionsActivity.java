@@ -22,62 +22,64 @@ public class UsersPredictionsActivity extends AppCompatActivity {
 
     private final String TAG = getClass().getSimpleName();
 
-    private static final String USER = "User";
-    private static final String MATCH_LIST = "MatchList";
-    private static final String PREDICTION_LIST = "PredictionList";
+    private static final String INTENT_EXTRA_USER = "user";
+    private static final String INTENT_EXTRA_MATCH_LIST = "match_list";
+    private static final String INTENT_EXTRA_PREDICTION_LIST = "prediction_list";
 
-    private List<Match> allMatchesList;
-    private List<Prediction> allPredictionsList;
-    private User selectedUser;
+    private List<Match> mMatchList;
+    private List<Prediction> mPredictionList;
+    private User mUser;
 
     public static Intent makeIntent(Context activityContext,
                                     User selectedUser,
                                     List<Match> matchList,
                                     List<Prediction> predictionList) {
 
-        Intent intent = new Intent(activityContext, UsersPredictionsActivity.class);
-        intent.putExtra(USER, selectedUser);
-        intent.putParcelableArrayListExtra(MATCH_LIST, new ArrayList<>(matchList));
-        intent.putParcelableArrayListExtra(PREDICTION_LIST, new ArrayList<>(predictionList));
-        return intent;
+        return new Intent(activityContext, UsersPredictionsActivity.class)
+                .putExtra(INTENT_EXTRA_USER, selectedUser)
+                .putParcelableArrayListExtra(INTENT_EXTRA_MATCH_LIST, new ArrayList<>(matchList))
+                .putParcelableArrayListExtra(INTENT_EXTRA_PREDICTION_LIST, new ArrayList<>(predictionList));
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_users_predictions);
+
+        setContentView(R.layout.activity_user_predictions);
 
         if (getIntent() != null && getIntent().getExtras() != null) {
-            selectedUser = getIntent().getExtras().getParcelable(USER);
-            allMatchesList = getIntent().getExtras().getParcelableArrayList(MATCH_LIST);
-            allPredictionsList = getIntent().getExtras().getParcelableArrayList(PREDICTION_LIST);
+            mUser = getIntent().getExtras().getParcelable(INTENT_EXTRA_USER);
+            mMatchList = getIntent().getExtras().getParcelableArrayList(INTENT_EXTRA_MATCH_LIST);
+            mPredictionList = getIntent().getExtras().getParcelableArrayList(INTENT_EXTRA_PREDICTION_LIST);
         }
         else {
             finish();
             return;
         }
 
-        initializeViews();
+        initializeUI();
     }
 
-    private void initializeViews() {
-        ((TextView) findViewById(R.id.tv_username)).setText(selectedUser.getEmail());
-        RecyclerView lvAllPredictions = (RecyclerView) findViewById(R.id.rv_all_predictions);
-        lvAllPredictions.setLayoutManager(
-                new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-        PredictionListAdapter mAdapter = new PredictionListAdapter(
-                allMatchesList, allPredictionsList, PredictionListAdapter.VIEW_TYPE_DISPLAY_ONLY);
-        lvAllPredictions.setAdapter(mAdapter);
-        lvAllPredictions.scrollToPosition(getStartingItemPosition());
+    private void initializeUI() {
+        TextView tvUsername = (TextView) findViewById(R.id.tv_username);
+        tvUsername.setText(mUser.getEmail());
+
+        RecyclerView rvPredictions = (RecyclerView) findViewById(R.id.rv_all_predictions);
+        PredictionListAdapter mAdapter = new PredictionListAdapter(mMatchList,
+                                                                   mPredictionList,
+                                                                   PredictionListAdapter.VIEW_TYPE_DISPLAY_ONLY);
+        rvPredictions.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        rvPredictions.setAdapter(mAdapter);
+        rvPredictions.scrollToPosition(getStartingItemPosition());
     }
 
 
     public int getStartingItemPosition() {
         int selection = 0;
-        if (allMatchesList != null) {
+        if (mMatchList != null) {
             selection = 0;
-            for (int i = 0; i < allMatchesList.size(); i++) {
-                if (allMatchesList.get(i).getDateAndTime().after(GlobalData.getServerTime().getTime())) {
+            for (int i = 0; i < mMatchList.size(); i++) {
+                if (mMatchList.get(i).getDateAndTime().after(GlobalData.getServerTime().getTime())) {
                     selection = i;
                     break;
                 }
@@ -92,10 +94,5 @@ public class UsersPredictionsActivity extends AppCompatActivity {
         super.onBackPressed();
         finish();
         overridePendingTransition(R.anim.left_to_center, R.anim.center_to_right);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
     }
 }

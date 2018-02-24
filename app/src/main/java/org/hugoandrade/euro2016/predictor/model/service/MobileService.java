@@ -14,7 +14,6 @@ import android.util.Log;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
@@ -270,81 +269,94 @@ public class MobileService extends LifecycleLoggingService
                     1 /* isOk flag */};
 
 
-            Futures.addCallback(MobileServiceHelper.queryAll(Country.Entry.TABLE_NAME, mMobileServiceClient),
-                    new FutureCallback<JsonElement>() {
-                        @Override
-                        public void onSuccess(JsonElement jsonElement) {
-                            if (n[2] == 0) return; // An error occurred
-
-                            m.setCountryList(parser.parseCountryList(jsonElement));
-
-                            n[0]++;
-                            if (n[0] == n[1])
-                                sendMobileDataMessage(m);
-                        }
-
-                        @Override
-                        public void onFailure(@NonNull Throwable throwable) {
-                            if (n[2] == 0) return; // An error occurred
-
-                            n[2] = 0;
-                            m.setErrorMessage(throwable.getMessage());
-                        }
-                    });
-
-
-            Futures.addCallback(MobileServiceHelper.queryAll(Match.Entry.TABLE_NAME, mMobileServiceClient),
-                    new FutureCallback<JsonElement>() {
-                        @Override
-                        public void onSuccess(JsonElement jsonElement) {
-                            if (n[2] == 0) return; // An error occurred
-
-                            ArrayList<Match> matchList = parser.parseMatchList(jsonElement);
-                            Collections.sort(matchList);
-                            m.setMatchList(matchList);
-
-                            n[0]++;
-                            if (n[0] == n[1])
-                                sendMobileDataMessage(m);
-                        }
-
-                        @Override
-                        public void onFailure(@NonNull Throwable throwable) {
-                            if (n[2] == 0) return; // An error occurred
-
-                            n[2] = 0;
-                            m.setErrorMessage(throwable.getMessage());
-                        }
-                    });
-
-            Futures.addCallback(MobileServiceHelper.queryAll(User.Entry.TABLE_NAME, mMobileServiceClient),
-                    new FutureCallback<JsonElement>() {
-                        @Override
-                        public void onSuccess(JsonElement jsonElement) {
-                            if (n[2] == 0) return; // An error occurred
-
-                            m.setUsers(parser.parseUserList(jsonElement));
-
-                            n[0]++;
-                            if (n[0] == n[1])
-                                sendMobileDataMessage(m);
-                        }
-
-                        @Override
-                        public void onFailure(@NonNull Throwable throwable) {
-                            if (n[2] == 0) return; // An error occurred
-
-                            n[2] = 0;
-                            m.setErrorMessage(throwable.getMessage());
-                        }
-                    });
-
-            ListenableFuture<JsonElement> future =
-                    new MobileServiceJsonTable(Prediction.Entry.TABLE_NAME, mMobileServiceClient)
-                            .where().field(Prediction.Entry.Cols.USER_ID).eq(userID).execute();
-            Futures.addCallback(future, new FutureCallback<JsonElement>() {
+            ListenableFuture<JsonElement> futureCountries =  MobileServiceJsonTableHelper
+                    .instance(Country.Entry.TABLE_NAME, mMobileServiceClient)
+                    .execute();
+            Futures.addCallback(futureCountries, new FutureCallback<JsonElement>() {
                 @Override
                 public void onSuccess(JsonElement jsonElement) {
+                    Log.d(TAG, "Countries fetched");
+                    if (n[2] == 0) return; // An error occurred
+
+                    m.setCountryList(parser.parseCountryList(jsonElement));
+
+                    n[0]++;
+                    if (n[0] == n[1])
+                        sendMobileDataMessage(m);
+                }
+
+                @Override
+                public void onFailure(@NonNull Throwable throwable) {
+                    Log.d(TAG, "Error fetching Countries: " + throwable.getMessage());
+                    if (n[2] == 0) return; // An error occurred
+
+                    n[2] = 0;
+                    sendErrorMessage(MobileClientData.OperationType.GET_INFO.ordinal(), throwable.getMessage());
+                }
+            });
+
+            ListenableFuture<JsonElement> futureMatches =  MobileServiceJsonTableHelper
+                    .instance(Match.Entry.TABLE_NAME, mMobileServiceClient)
+                    .execute();
+            Futures.addCallback(futureMatches, new FutureCallback<JsonElement>() {
+                @Override
+                public void onSuccess(JsonElement jsonElement) {
+                    Log.d(TAG, "Matches fetched");
+                    if (n[2] == 0) return; // An error occurred
+
+                    ArrayList<Match> matchList = parser.parseMatchList(jsonElement);
+                    Collections.sort(matchList);
+                    m.setMatchList(matchList);
+
+                    n[0]++;
+                    if (n[0] == n[1])
+                        sendMobileDataMessage(m);
+                }
+
+                @Override
+                public void onFailure(@NonNull Throwable throwable) {
+                    Log.d(TAG, "Error fetching Matches: " + throwable.getMessage());
+                    if (n[2] == 0) return; // An error occurred
+
+                    n[2] = 0;
+                    sendErrorMessage(MobileClientData.OperationType.GET_INFO.ordinal(), throwable.getMessage());
+                }
+            });
+
+            ListenableFuture<JsonElement> futureUsers =  MobileServiceJsonTableHelper
+                    .instance(User.Entry.TABLE_NAME, mMobileServiceClient)
+                    .execute();
+            Futures.addCallback(futureUsers, new FutureCallback<JsonElement>() {
+                @Override
+                public void onSuccess(JsonElement jsonElement) {
+                    Log.d(TAG, "Users fetched");
+                    if (n[2] == 0) return; // An error occurred
+
+                    m.setUsers(parser.parseUserList(jsonElement));
+
+                    n[0]++;
+                    if (n[0] == n[1])
+                        sendMobileDataMessage(m);
+                }
+
+                @Override
+                public void onFailure(@NonNull Throwable throwable) {
+                    Log.d(TAG, "Error fetching Users: " + throwable.getMessage());
+                    if (n[2] == 0) return; // An error occurred
+
+                    n[2] = 0;
+                    sendErrorMessage(MobileClientData.OperationType.GET_INFO.ordinal(), throwable.getMessage());
+                }
+            });
+
+            ListenableFuture<JsonElement> futurePredictions =  MobileServiceJsonTableHelper
+                    .instance(Prediction.Entry.TABLE_NAME, mMobileServiceClient)
+                    .where(Prediction.Entry.Cols.USER_ID, userID)
+                    .execute();
+            Futures.addCallback(futurePredictions, new FutureCallback<JsonElement>() {
+                @Override
+                public void onSuccess(JsonElement jsonElement) {
+                    Log.d(TAG, "Predictions fetched");
                     if (n[2] == 0) return; // An error occurred
 
                     m.setPredictionList(parser.parsePredictionList(jsonElement));
@@ -356,10 +368,11 @@ public class MobileService extends LifecycleLoggingService
 
                 @Override
                 public void onFailure(@NonNull Throwable throwable) {
+                    Log.d(TAG, "Error fetching Predictions: " + throwable.getMessage());
                     if (n[2] == 0) return; // An error occurred
 
                     n[2] = 0;
-                    m.setErrorMessage(throwable.getMessage());
+                    sendErrorMessage(MobileClientData.OperationType.GET_INFO.ordinal(), throwable.getMessage());
                 }
             });
             return true;
@@ -381,6 +394,7 @@ public class MobileService extends LifecycleLoggingService
             Futures.addCallback(future, new FutureCallback<JsonObject>() {
                 @Override
                 public void onSuccess(JsonObject result) {
+
                     MobileClientData m = MobileClientData.makeMessage(
                             MobileClientData.OperationType.PUT_PREDICTION.ordinal(),
                             MobileClientData.REQUEST_RESULT_SUCCESS);
@@ -404,6 +418,42 @@ public class MobileService extends LifecycleLoggingService
                         m.setServerTime(ISO8601.toCalendar(errorMessage.split(":")[1]));
 
                     sendMobileDataMessage(m);
+                }
+            });
+            return true;
+        }
+
+        @Override
+        public boolean getPredictions(final User user) throws RemoteException {
+            if (DevConstants.CLOUD_DATABASE_SIM) {
+                //CloudDatabaseSim.getPredictions(user);
+                return true;
+            }
+
+            if (mMobileServiceClient == null)
+                return false;
+
+            ListenableFuture<JsonElement> futurePredictions =  MobileServiceJsonTableHelper
+                    .instance(Prediction.Entry.TABLE_NAME, mMobileServiceClient)
+                    .where(Prediction.Entry.Cols.USER_ID, user.getID())
+                    .execute();
+            Futures.addCallback(futurePredictions, new FutureCallback<JsonElement>() {
+                @Override
+                public void onSuccess(JsonElement jsonElement) {
+
+                    MobileClientData m = MobileClientData.makeMessage(
+                            MobileClientData.OperationType.GET_PREDICTIONS.ordinal(),
+                            MobileClientData.REQUEST_RESULT_SUCCESS);
+                    m.setUser(user);
+                    m.setPredictionList(parser.parsePredictionList(jsonElement));
+
+                    sendMobileDataMessage(m);
+                }
+
+                @Override
+                public void onFailure(@NonNull Throwable throwable) {
+                    Log.d(TAG, "Error fetching Predictions: " + throwable.getMessage());
+                    sendErrorMessage(MobileClientData.OperationType.GET_PREDICTIONS.ordinal(), throwable.getMessage());
                 }
             });
             return true;

@@ -200,7 +200,7 @@ public interface MVP {
          * of the selected user and, once all Predictions are fetched, start new
          * activity displaying all Predictions of Matches prior to server time.
          */
-        void onUserSelected(User user);
+        void getPredictionsOfSelectedUser(User user);
     }
 
     /**
@@ -241,9 +241,21 @@ public interface MVP {
          *                        It is true if successful, otherwise false.
          * @param message Either the reason that operation failed or the reason PUT operation
          *                responded with an not-updated error.
-         * @param prediction The List of Predictions to display.
+         * @param prediction The Prediction.
          */
         void onPredictionUpdated(boolean operationResult, String message, Prediction prediction);
+
+        /**
+         * Report the result of the GET operation of predictions
+         *
+         * @param operationResult Boolean reporting the result of the operation.
+         *                        It is true if successful, otherwise false.
+         * @param message Either the reason that operation failed or the reason PUT operation
+         *                responded with an not-updated error.
+         * @param user The selected user.
+         * @param predictionList The List of Predictions to display.
+         */
+        void onPredictionsFetched(boolean operationResult, String message, User user, List<Prediction> predictionList);
     }
 
     /**
@@ -271,5 +283,12 @@ public interface MVP {
          * @param prediction prediction to be put or updated in the cloud.
          */
         void putPrediction(Prediction prediction);
+
+        /**
+         * Initiate the asynchronous lookup of the Predictions of the provided user.
+         *
+         * @param user the User
+         */
+        void getPredictions(User user);
     }
 }

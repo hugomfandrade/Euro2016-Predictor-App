@@ -9,6 +9,7 @@ import org.hugoandrade.euro2016.predictor.data.Match;
 import org.hugoandrade.euro2016.predictor.data.Prediction;
 import org.hugoandrade.euro2016.predictor.data.SystemData;
 import org.hugoandrade.euro2016.predictor.data.User;
+import org.hugoandrade.euro2016.predictor.utils.ISO8601;
 
 import java.util.Calendar;
 import java.util.List;
@@ -45,6 +46,7 @@ public class MobileClientData implements Parcelable {
         LOGIN,
         REGISTER,
         GET_INFO,
+        GET_PREDICTIONS,
         PUT_PREDICTION,
     }
 

@@ -5,6 +5,7 @@ package org.hugoandrade.euro2016.predictor.model;
 import org.hugoandrade.euro2016.predictor.model.IMobileClientServiceCallback;
 import org.hugoandrade.euro2016.predictor.data.Prediction;
 import org.hugoandrade.euro2016.predictor.data.LoginData;
+import org.hugoandrade.euro2016.predictor.data.User;
 
 interface IMobileClientService {
 
@@ -21,4 +22,6 @@ interface IMobileClientService {
     boolean getInfo(String userID);
 
     boolean putPrediction(in Prediction prediction);
+
+    boolean getPredictions(in User user);
 }

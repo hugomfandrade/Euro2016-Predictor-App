@@ -91,22 +91,25 @@ public class PredictionListAdapter extends RecyclerView.Adapter<PredictionListAd
         holder.ivHomeTeam.setImageResource(Country.getImageID(match.getHomeTeam()));
         holder.ivAwayTeam.setImageResource(Country.getImageID(match.getAwayTeam()));
         holder.etPredictionHomeTeamGoals.setText(inputPrediction.mHomeTeamGoals);
+        // holder.etPredictionHomeTeamGoals.setEnabled(true);
         holder.etPredictionHomeTeamGoals.setEnabled(!isPast && isEnabled && !viewOnly);
         holder.etPredictionAwayTeamGoals.setText(inputPrediction.mAwayTeamGoals);
+        //holder.etPredictionAwayTeamGoals.setEnabled(true);
         holder.etPredictionAwayTeamGoals.setEnabled(!isPast && isEnabled && !viewOnly);
         holder.tvDateAndTime.setText(DateFormat.format(TEMPLATE, match.getDateAndTime()).toString());
         holder.tvDateAndTime.setVisibility(viewOnly? GONE : VISIBLE);
         holder.tvMatchUpResult.setText(MatchUtils.getShortDescription(match));
+        //holder.btSetResult.setEnabled(true);
         holder.btSetResult.setEnabled(!isPast && isEnabled && !viewOnly);
         holder.progressBar.setVisibility(!isPast && !viewOnly && !isEnabled? VISIBLE : INVISIBLE);
 
         if (!isEnabled || isPast || viewOnly)
-            holder.btSetResult.setEnabled(false);
+            holder.btSetResult.setEnabled(true);//false);
         else
             holder.checkIfThereAreNewValues();
 
         if (isPast) {
-            holder.btSetResult.setText(prediction == null? "0" : String.valueOf(prediction.getScore()));
+            holder.btSetResult.setText(prediction == null || prediction.getScore() == -1? "0" : String.valueOf(prediction.getScore()));
         } else {
             switch (mViewType) {
                 case VIEW_TYPE_DISPLAY_AND_UPDATE:

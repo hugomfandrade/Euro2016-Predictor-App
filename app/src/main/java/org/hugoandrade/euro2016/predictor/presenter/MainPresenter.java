@@ -27,6 +27,11 @@ public class MainPresenter extends PresenterBase<MVP.RequiredMainViewOps,
                    MVP.RequiredMainPresenterOps {
 
     /**
+     * The List of Matches
+     */
+    private List<Match> mMatchList = new ArrayList<>();
+
+    /**
      * Hook method called when a new instance of MainPresenter is
      * created. One time initialization code goes here, e.g., storing
      * a WeakReference to the View layer and initializing the Model
@@ -122,6 +127,8 @@ public class MainPresenter extends PresenterBase<MVP.RequiredMainViewOps,
                 }
             }
 
+            mMatchList = matchList;
+
             // group by stage
             HashMap<SStage, List<Match>> mMatchMap = setupMatches(matchList);
 
@@ -167,12 +174,6 @@ public class MainPresenter extends PresenterBase<MVP.RequiredMainViewOps,
         getView().enableUI();
     }
 
-    /**
-     * Report the result of the PUT operation of a given Prediction. The Prediction
-     * was handled in the back-end (was either put, updated or not handled at all
-     * because the window time to update that specific Prediction was closed) and
-     * returns the Prediction saved.
-     */
     @Override
     public void onPredictionUpdated(boolean operationResult, String message, Prediction prediction) {
         if (operationResult) {
@@ -185,6 +186,20 @@ public class MainPresenter extends PresenterBase<MVP.RequiredMainViewOps,
                 getView().reportMessage(message);
         }
 
+    }
+
+    @Override
+    public void onPredictionsFetched(boolean operationResult, String message, User user, List<Prediction> predictionList) {
+
+        if (operationResult) {
+
+            getView().moveToUsersPredictionActivity(user, mMatchList, predictionList);
+        } else {
+
+            if (message != null)
+                getView().reportMessage(message);
+        }
+        getView().enableUI();
     }
 
     /**
@@ -217,15 +232,13 @@ public class MainPresenter extends PresenterBase<MVP.RequiredMainViewOps,
      * activity displaying all Predictions of Matches prior to server time.
      */
     @Override
-    public void onUserSelected(User user) {
-        // Store the selected user
-        // selectedUser = user;
+    public void getPredictionsOfSelectedUser(User user) {
 
         // Disable User input
-        getView().disableUI();//updateViewAvailability(false);
+        getView().disableUI();
 
         // Fetch all his/her predictions that had been closed.
-        //getModel().getAllPredictions(user.getID(), getFirstMatchAfterSystemTime());
+        getModel().getPredictions(user);
     }
 
     /**

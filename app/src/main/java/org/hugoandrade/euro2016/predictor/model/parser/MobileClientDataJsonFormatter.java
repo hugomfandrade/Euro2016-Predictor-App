@@ -13,7 +13,7 @@ public class MobileClientDataJsonFormatter {
     public JsonObject getAsJsonObject(Prediction prediction) {
 
         return JsonObjectBuilder.instance()
-                .addProperty("_" + Prediction.Entry.Cols.ID, prediction.getID())
+                .addProperty(Prediction.Entry.Cols.ID, prediction.getID())
                 .addProperty(Prediction.Entry.Cols.USER_ID, prediction.getUserID())
                 .addProperty(Prediction.Entry.Cols.MATCH_NO, prediction.getMatchNumber() == -1? null: prediction.getMatchNumber())
                 .addProperty(Prediction.Entry.Cols.HOME_TEAM_GOALS, prediction.getHomeTeamGoals() == -1? null: prediction.getHomeTeamGoals())

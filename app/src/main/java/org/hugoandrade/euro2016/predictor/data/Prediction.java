@@ -19,7 +19,7 @@ public class Prediction implements Parcelable {
         public static class Cols {
             public static final String ID = "id";
             public static final String USER_ID = "UserID";
-            public static final String MATCH_NO = "MatchNo";
+            public static final String MATCH_NO = "MatchNumber";
             public static final String HOME_TEAM_GOALS = "HomeTeamGoals";
             public static final String AWAY_TEAM_GOALS = "AwayTeamGoals";
             public static final String SCORE = "Score";
@@ -39,6 +39,7 @@ public class Prediction implements Parcelable {
         mHomeTeamGoals = homeTeamGoals;
         mMatchNo = matchNo;
         mUserID = userID;
+        mScore = -1;
     }
 
     //NEW
@@ -57,6 +58,7 @@ public class Prediction implements Parcelable {
         mMatchNo = matchNo;
         mHomeTeamGoals = homeTeamGoals;
         mAwayTeamGoals = awayTeamGoals;
+        mScore = -1;
     }
 
     public String getID() {
@@ -138,10 +140,6 @@ public class Prediction implements Parcelable {
             return new Prediction[size];
         }
     };
-
-    public Prediction cloneInstance() {
-        return new Prediction(mID, mUserID, mMatchNo, mHomeTeamGoals, mAwayTeamGoals, mScore);
-    }
 
     @Override
     public boolean equals(Object o) {

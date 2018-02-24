@@ -48,6 +48,9 @@ public class MobileClientDataJsonParser {
 
         ArrayList<Prediction> allPredictionList = new ArrayList<>();
 
+        if (!result.isJsonArray())
+            return allPredictionList;
+
         for (JsonElement item : result.getAsJsonArray()) {
             try {
                 allPredictionList.add(parsePrediction(item.getAsJsonObject()));
@@ -74,6 +77,9 @@ public class MobileClientDataJsonParser {
 
         ArrayList<User> allUserList = new ArrayList<>();
 
+        if (!result.isJsonArray())
+            return allUserList;
+
         for (JsonElement item : result.getAsJsonArray()) {
             try {
                 allUserList.add(parseUser(item.getAsJsonObject()));
@@ -96,6 +102,10 @@ public class MobileClientDataJsonParser {
     public ArrayList<Country> parseCountryList(JsonElement result) {
 
         ArrayList<Country> allCountryList = new ArrayList<>();
+
+        if (!result.isJsonArray())
+            return allCountryList;
+
 
         for (JsonElement item : result.getAsJsonArray()) {
             try {
@@ -130,6 +140,10 @@ public class MobileClientDataJsonParser {
     public ArrayList<Match> parseMatchList(JsonElement result) {
 
         ArrayList<Match> allMatchList = new ArrayList<>();
+
+        if (!result.isJsonArray())
+            return allMatchList;
+
 
         for (JsonElement item : result.getAsJsonArray()) {
             try {
