@@ -1,6 +1,6 @@
 package org.hugoandrade.euro2016.predictor.admin;
 
-import org.hugoandrade.euro2016.predictor.admin.object.SystemData;
+import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
 
 public class GlobalData {
 

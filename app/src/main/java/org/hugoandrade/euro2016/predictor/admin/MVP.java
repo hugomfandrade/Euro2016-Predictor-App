@@ -1,17 +1,15 @@
 package org.hugoandrade.euro2016.predictor.admin;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.HashMap;
-
 import org.hugoandrade.euro2016.predictor.admin.common.ContextView;
 import org.hugoandrade.euro2016.predictor.admin.common.ModelOps;
 import org.hugoandrade.euro2016.predictor.admin.common.PresenterOps;
-import org.hugoandrade.euro2016.predictor.admin.object.Group;
-import org.hugoandrade.euro2016.predictor.admin.object.LoginData;
-import org.hugoandrade.euro2016.predictor.admin.object.Country;
-import org.hugoandrade.euro2016.predictor.admin.object.Match;
-import org.hugoandrade.euro2016.predictor.admin.object.SystemData;
+import org.hugoandrade.euro2016.predictor.admin.data.Country;
+import org.hugoandrade.euro2016.predictor.admin.data.LoginData;
+import org.hugoandrade.euro2016.predictor.admin.data.Match;
+import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
+import org.hugoandrade.euro2016.predictor.admin.view.main.MainFragComm;
+
+import java.util.ArrayList;
 
 public interface MVP {
 
@@ -55,18 +53,18 @@ public interface MVP {
 
 
     interface RequiredViewOps extends RequiredViewBaseOps,
-                                      FragComm.ProvidedGroupsChildFragmentOps,
-                                      FragComm.ProvidedMatchesFragmentOps {
+                                      MainFragComm.ProvidedGroupsChildFragmentOps,
+                                      MainFragComm.ProvidedMatchesFragmentOps {
     }
-
     interface ProvidedPresenterOps extends PresenterOps<RequiredViewOps> {
-        void setNewMatch(Match match);
+        void setMatch(Match match);
 
         void updateSystemData(SystemData systemData);
 
         void reset();
-    }
 
+        void updateScoresOfPredictions();
+    }
     interface RequiredPresenterOps extends RequiredPresenterBaseOps {
 
         void getAllInfoRequestResult(boolean isRetrieved,
@@ -90,11 +88,12 @@ public interface MVP {
                                            String message,
                                            SystemData systemData);
     }
-
     interface ProvidedModelOps extends ModelOps<RequiredPresenterOps> {
         boolean getInfo();
 
         boolean reset();
+
+        boolean updateScoresOfPredictions();
 
         boolean updateMatchUp(Match match);
 

@@ -1,4 +1,4 @@
-package org.hugoandrade.euro2016.predictor.admin.object;
+package org.hugoandrade.euro2016.predictor.admin.data;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -204,6 +204,8 @@ public class Match implements Comparable<Match>, Parcelable {
         dest.writeString(mStadium);
         dest.writeString(mStage);
         dest.writeSerializable(mDateAndTime);
+        dest.writeParcelable(mHomeTeam, flags);
+        dest.writeParcelable(mAwayTeam, flags);
     }
 
     public Match(Parcel in) {
@@ -219,6 +221,8 @@ public class Match implements Comparable<Match>, Parcelable {
         mStadium = in.readString();
         mStage = in.readString();
         mDateAndTime = (Date) in.readSerializable();
+        mHomeTeam = in.readParcelable(Country.class.getClassLoader());
+        mAwayTeam = in.readParcelable(Country.class.getClassLoader());
     }
 
     public static final Creator<Match> CREATOR = new Creator<Match>() {

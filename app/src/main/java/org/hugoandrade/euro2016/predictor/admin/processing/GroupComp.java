@@ -1,6 +1,6 @@
 package org.hugoandrade.euro2016.predictor.admin.processing;
 
-import org.hugoandrade.euro2016.predictor.admin.object.Country;
+import org.hugoandrade.euro2016.predictor.admin.data.Country;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,6 +49,11 @@ public class GroupComp {
     }
 
     private void orderCountryList() {
+        if (mCountryList.size() != 4) {
+            Collections.sort(mCountryList, Collections.<CountryComp>reverseOrder());
+            return;
+        }
+
         // Sort Group
         Collections.sort(mCountryList, Collections.<CountryComp>reverseOrder());
 

@@ -5,10 +5,10 @@ import android.util.Log;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import org.hugoandrade.euro2016.predictor.admin.object.Country;
-import org.hugoandrade.euro2016.predictor.admin.object.LoginData;
-import org.hugoandrade.euro2016.predictor.admin.object.Match;
-import org.hugoandrade.euro2016.predictor.admin.object.SystemData;
+import org.hugoandrade.euro2016.predictor.admin.data.Country;
+import org.hugoandrade.euro2016.predictor.admin.data.LoginData;
+import org.hugoandrade.euro2016.predictor.admin.data.Match;
+import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
 import org.hugoandrade.euro2016.predictor.admin.utils.ISO8601;
 
 import java.util.ArrayList;

@@ -1,12 +1,11 @@
-package org.hugoandrade.euro2016.predictor.admin.view.fragment;
+package org.hugoandrade.euro2016.predictor.admin.view.main;
 
 import android.content.Context;
 import android.support.v4.app.Fragment;
 
-import org.hugoandrade.euro2016.predictor.admin.FragComm;
 import org.hugoandrade.euro2016.predictor.admin.common.ContextView;
 
-public abstract class FragmentBase<ParentActivityOps extends FragComm.ProvidedParentBaseActivityOps>
+public abstract class FragmentBase<ParentActivityOps extends MainFragComm.ProvidedMainActivityBaseOps>
         extends Fragment
         implements ContextView {
 
@@ -51,7 +50,7 @@ public abstract class FragmentBase<ParentActivityOps extends FragComm.ProvidedPa
 
     public void showMessage(String message) {
         if (mParentInstance != null)
-            mParentInstance.showSnackBar(message);
+            mParentInstance.reportMessage(message);
     }
 
     protected ParentActivityOps getParentActivity() {

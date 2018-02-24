@@ -4,6 +4,11 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/action_update_scores"
+        app:showAsAction="never"
+        android:title="@string/update_prediction_scores"/>
+
+    <item
         android:id="@+id/action_edit_system_data"
         app:showAsAction="never"
         android:title="@string/edit_system_data"/>

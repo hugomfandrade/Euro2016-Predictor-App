@@ -3,8 +3,8 @@ package org.hugoandrade.euro2016.predictor.admin.processing;
 import android.os.Parcel;
 import android.support.annotation.NonNull;
 
-import org.hugoandrade.euro2016.predictor.admin.object.Country;
-import org.hugoandrade.euro2016.predictor.admin.object.Match;
+import org.hugoandrade.euro2016.predictor.admin.data.Country;
+import org.hugoandrade.euro2016.predictor.admin.data.Match;
 import org.hugoandrade.euro2016.predictor.admin.utils.MatchUtils;
 
 import java.util.ArrayList;

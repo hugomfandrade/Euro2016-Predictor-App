@@ -1,4 +1,4 @@
-package org.hugoandrade.euro2016.predictor.admin.view.fragment;
+package org.hugoandrade.euro2016.predictor.admin.view.main.standings;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -9,19 +9,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.hugoandrade.euro2016.predictor.admin.FragComm;
 import org.hugoandrade.euro2016.predictor.admin.R;
-import org.hugoandrade.euro2016.predictor.admin.object.Country;
-import org.hugoandrade.euro2016.predictor.admin.object.Group;
-import org.hugoandrade.euro2016.predictor.admin.view.listadapter.GroupListAdapter;
+import org.hugoandrade.euro2016.predictor.admin.data.Country;
+import org.hugoandrade.euro2016.predictor.admin.data.Group;
+import org.hugoandrade.euro2016.predictor.admin.view.main.FragmentBase;
+import org.hugoandrade.euro2016.predictor.admin.view.main.MainFragComm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class GroupsFragment extends FragmentBase<FragComm.ProvidedParentActivityOps>
+public class StandingsFragment extends FragmentBase<MainFragComm.ProvidedMainActivityBaseOps>
 
-        implements FragComm.ProvidedGroupsChildFragmentOps {
+        implements MainFragComm.ProvidedGroupsChildFragmentOps {
 
     private HashMap<String, ViewStruct> mGroupViewMap = buildViewStructMap();
 
@@ -59,13 +59,14 @@ public class GroupsFragment extends FragmentBase<FragComm.ProvidedParentActivity
     }
 
     @Override
-    public void setGroups(HashMap<String, Group> groupsMap) {
-        updateViewStruct(mGroupViewMap.get("A"), groupsMap.get("A").getCountryList());
-        updateViewStruct(mGroupViewMap.get("B"), groupsMap.get("B").getCountryList());
-        updateViewStruct(mGroupViewMap.get("C"), groupsMap.get("C").getCountryList());
-        updateViewStruct(mGroupViewMap.get("D"), groupsMap.get("D").getCountryList());
-        updateViewStruct(mGroupViewMap.get("E"), groupsMap.get("E").getCountryList());
-        updateViewStruct(mGroupViewMap.get("F"), groupsMap.get("F").getCountryList());
+    public void displayGroups(HashMap<String, Group> groupsMap) {
+        List<Country> e = new ArrayList<>();
+        updateViewStruct(mGroupViewMap.get("A"), groupsMap.get("A") == null? e : groupsMap.get("A").getCountryList());
+        updateViewStruct(mGroupViewMap.get("B"), groupsMap.get("B") == null? e : groupsMap.get("B").getCountryList());
+        updateViewStruct(mGroupViewMap.get("C"), groupsMap.get("C") == null? e : groupsMap.get("C").getCountryList());
+        updateViewStruct(mGroupViewMap.get("D"), groupsMap.get("D") == null? e : groupsMap.get("D").getCountryList());
+        updateViewStruct(mGroupViewMap.get("E"), groupsMap.get("E") == null? e : groupsMap.get("E").getCountryList());
+        updateViewStruct(mGroupViewMap.get("F"), groupsMap.get("F") == null? e : groupsMap.get("F").getCountryList());
     }
 
     private void setupGroupLayout(View view, ViewStruct viewStruct) {

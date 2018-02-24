@@ -12,8 +12,8 @@ import android.util.Log;
 import org.hugoandrade.euro2016.predictor.admin.MVP;
 import org.hugoandrade.euro2016.predictor.admin.model.parser.MessageBase;
 import org.hugoandrade.euro2016.predictor.admin.model.service.MobileService;
-import org.hugoandrade.euro2016.predictor.admin.object.LoginData;
-import org.hugoandrade.euro2016.predictor.admin.object.SystemData;
+import org.hugoandrade.euro2016.predictor.admin.data.LoginData;
+import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.ExecutorService;

@@ -1,4 +1,4 @@
-package org.hugoandrade.euro2016.predictor.admin.object;
+package org.hugoandrade.euro2016.predictor.admin.data;
 
 import android.net.Uri;
 import android.os.Parcel;
@@ -17,6 +17,7 @@ public class SystemData implements Parcelable {
     private boolean mAppState;
     private Calendar mSystemDate;
     private Calendar mDateOfChange;
+    private Calendar mDateOfLastRecordedSystemDate;
 
     public static class Entry {
 
@@ -26,9 +27,9 @@ public class SystemData implements Parcelable {
         public static class Cols {
             public static final String ID = "id";
             public static final String RULES = "Rules";
+            public static final String APP_STATE = "AppState";
             public static final String SYSTEM_DATE = "SystemDate";
             public static final String DATE_OF_CHANGE = "DateOfChange";
-            public static final String APP_STATE = "AppState";
         }
 
         // SQLite table mName
@@ -57,6 +58,14 @@ public class SystemData implements Parcelable {
         mAppState = appState;
         mSystemDate = systemDate;
         mDateOfChange = dateOfChange;
+    }
+
+    public SystemData(String id, String rules, boolean appState, Calendar systemDate) {
+        mID = id;
+        mRules = rules;
+        mAppState = appState;
+        mSystemDate = systemDate;
+        mDateOfLastRecordedSystemDate = Calendar.getInstance();
     }
 
     public String getID() {
@@ -121,6 +130,7 @@ public class SystemData implements Parcelable {
         mAppState = in.readByte() != 0;
         mSystemDate = (Calendar) in.readSerializable();
         mDateOfChange = (Calendar) in.readSerializable();
+        mDateOfLastRecordedSystemDate = (Calendar) in.readSerializable();
     }
 
     @Override
@@ -131,6 +141,7 @@ public class SystemData implements Parcelable {
                 ", mAppState=" + mAppState +
                 ", mSystemDate=" + mSystemDate +
                 ", mDateOfChange=" + mDateOfChange +
+                ", mDateOfLastRecordedSystemDate=" + mDateOfLastRecordedSystemDate +
                 '}';
     }
 
@@ -157,13 +168,7 @@ public class SystemData implements Parcelable {
         dest.writeByte((byte) (mAppState ? 1 : 0));
         dest.writeSerializable(mSystemDate);
         dest.writeSerializable(mDateOfChange);
-    }
-
-    public Calendar getDate() {
-        Calendar c = Calendar.getInstance();
-        long diff = c.getTimeInMillis() - mDateOfChange.getTimeInMillis();
-        c.setTimeInMillis(mDateOfChange.getTimeInMillis() + diff);
-        return c;
+        dest.writeSerializable(mDateOfLastRecordedSystemDate);
     }
 
     public class Rules {

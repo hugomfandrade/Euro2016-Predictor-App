@@ -1,4 +1,4 @@
-package org.hugoandrade.euro2016.predictor.admin.view.fragment;
+package org.hugoandrade.euro2016.predictor.admin.view.main.matches;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -11,17 +11,17 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hugoandrade.euro2016.predictor.admin.FragComm;
 import org.hugoandrade.euro2016.predictor.admin.R;
-import org.hugoandrade.euro2016.predictor.admin.object.Match;
-import org.hugoandrade.euro2016.predictor.admin.view.listadapter.MatchListAdapter;
+import org.hugoandrade.euro2016.predictor.admin.data.Match;
+import org.hugoandrade.euro2016.predictor.admin.view.main.FragmentBase;
+import org.hugoandrade.euro2016.predictor.admin.view.main.MainFragComm;
 
-public class SetResultsFragment
-        extends FragmentBase<FragComm.ProvidedParentActivityOps>
-        implements FragComm.ProvidedMatchesFragmentOps {
+public class MatchesFragment
+        extends FragmentBase<MainFragComm.ProvidedMainActivityOps>
+        implements MainFragComm.ProvidedMatchesFragmentOps {
 
     @SuppressWarnings("unused")
-    private static final String TAG = SetResultsFragment.class.getSimpleName();
+    private static final String TAG = MatchesFragment.class.getSimpleName();
 
     private RecyclerView rvAllMatches;
     private MatchListAdapter mAdapter;
@@ -45,7 +45,7 @@ public class SetResultsFragment
         mAdapter.setOnSetButtonClickListener(new MatchListAdapter.OnSetButtonClickListener() {
             @Override
             public void onClick(Match match) {
-                getParentActivity().setNewMatch(match);
+                getParentActivity().setMatch(match);
             }
         });
 
@@ -54,7 +54,7 @@ public class SetResultsFragment
     }
 
     @Override
-    public void setMatches(List<Match> matchList) {
+    public void displayMatches(List<Match> matchList) {
         mMatchList = matchList;
         if (mAdapter != null) {
             mAdapter.set(mMatchList);

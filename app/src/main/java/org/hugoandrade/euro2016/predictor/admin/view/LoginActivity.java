@@ -8,10 +8,11 @@ import android.widget.RelativeLayout;
 
 import org.hugoandrade.euro2016.predictor.admin.MVP;
 import org.hugoandrade.euro2016.predictor.admin.R;
-import org.hugoandrade.euro2016.predictor.admin.object.LoginData;
+import org.hugoandrade.euro2016.predictor.admin.data.LoginData;
 import org.hugoandrade.euro2016.predictor.admin.presenter.LoginPresenter;
 import org.hugoandrade.euro2016.predictor.admin.utils.SharedPreferencesUtils;
 import org.hugoandrade.euro2016.predictor.admin.utils.UIUtils;
+import org.hugoandrade.euro2016.predictor.admin.view.main.MainActivity;
 
 public class LoginActivity extends ActivityBase<MVP.RequiredLoginViewOps,
                                                 MVP.ProvidedLoginPresenterOps,

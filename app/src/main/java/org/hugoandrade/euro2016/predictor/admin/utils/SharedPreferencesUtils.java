@@ -3,7 +3,7 @@ package org.hugoandrade.euro2016.predictor.admin.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import org.hugoandrade.euro2016.predictor.admin.object.LoginData;
+import org.hugoandrade.euro2016.predictor.admin.data.LoginData;
 
 public final class SharedPreferencesUtils {
     /**

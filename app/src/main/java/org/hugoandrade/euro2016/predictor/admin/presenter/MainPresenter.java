@@ -6,10 +6,10 @@ import android.util.Log;
 import org.hugoandrade.euro2016.predictor.admin.GlobalData;
 import org.hugoandrade.euro2016.predictor.admin.MVP;
 import org.hugoandrade.euro2016.predictor.admin.model.MainModel;
-import org.hugoandrade.euro2016.predictor.admin.object.Country;
-import org.hugoandrade.euro2016.predictor.admin.object.Group;
-import org.hugoandrade.euro2016.predictor.admin.object.Match;
-import org.hugoandrade.euro2016.predictor.admin.object.SystemData;
+import org.hugoandrade.euro2016.predictor.admin.data.Country;
+import org.hugoandrade.euro2016.predictor.admin.data.Group;
+import org.hugoandrade.euro2016.predictor.admin.data.Match;
+import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
 import org.hugoandrade.euro2016.predictor.admin.processing.BackEndProcessing;
 
 import java.util.ArrayList;
@@ -70,12 +70,19 @@ public class MainPresenter
     }
 
     @Override
+    public void updateScoresOfPredictions() {
+
+        if (getModel().updateScoresOfPredictions())
+            getView().disableUI();
+    }
+
+    @Override
     public void updateSystemData(SystemData systemData) {
         getModel().updateSystemData(systemData);
     }
 
     @Override
-    public void setNewMatch(Match match) {
+    public void setMatch(Match match) {
         if (!getModel().updateMatch(match))
             getView().updateFailedMatch(match);
     }
@@ -101,10 +108,10 @@ public class MainPresenter
             }
 
             // Update UI
-            getView().setMatches(mMatchList);
+            getView().displayMatches(mMatchList);
 
             // Update UI
-            getView().setGroups(mGroupMap);
+            getView().displayGroups(mGroupMap);
 
             // Start processing countries to each match
             if (mBackEndProcessing != null)
@@ -151,7 +158,7 @@ public class MainPresenter
             }
 
             // Update UI
-            getView().setGroups(mGroupMap);
+            getView().displayGroups(mGroupMap);
 
         }
         else {
@@ -182,6 +189,9 @@ public class MainPresenter
                     }
                     break;
                 }
+
+            // set in UI
+            getView().updateMatch(match);
 
             // Start processing with updated match list
             if (mBackEndProcessing != null)

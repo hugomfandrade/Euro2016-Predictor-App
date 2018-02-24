@@ -18,12 +18,12 @@ import java.util.Calendar;
 
 import org.hugoandrade.euro2016.predictor.admin.cloudsim.parser.CloudContentValuesFormatter;
 import org.hugoandrade.euro2016.predictor.admin.cloudsim.parser.CloudContentValuesParser;
-import org.hugoandrade.euro2016.predictor.admin.object.LoginData;
-import org.hugoandrade.euro2016.predictor.admin.object.User;
-import org.hugoandrade.euro2016.predictor.admin.object.Country;
-import org.hugoandrade.euro2016.predictor.admin.object.Match;
-import org.hugoandrade.euro2016.predictor.admin.object.Prediction;
-import org.hugoandrade.euro2016.predictor.admin.object.SystemData;
+import org.hugoandrade.euro2016.predictor.admin.data.LoginData;
+import org.hugoandrade.euro2016.predictor.admin.data.User;
+import org.hugoandrade.euro2016.predictor.admin.data.Country;
+import org.hugoandrade.euro2016.predictor.admin.data.Match;
+import org.hugoandrade.euro2016.predictor.admin.data.Prediction;
+import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
 import org.hugoandrade.euro2016.predictor.admin.utils.ISO8601;
 import org.hugoandrade.euro2016.predictor.admin.utils.InitConfigUtils;
 import org.hugoandrade.euro2016.predictor.admin.utils.MatchUtils;
@@ -234,6 +234,11 @@ public class CloudDatabaseSimProvider extends ContentProvider {
             }
 
             case Prediction.Entry.PATH_FOR_ID_TOKEN: {
+
+
+                String rawQuery = "";
+
+
                 String idSelection = "_" + Prediction.Entry.Cols.ID + " = " + uri.getLastPathSegment();
                 if (selection == null)
                     modifiedSelection = idSelection;
@@ -321,6 +326,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
                 db.delete(SystemData.Entry.TABLE_NAME, null, null);
 
                 values.remove("_" + SystemData.Entry.Cols.ID);
+                values.put(SystemData.Entry.Cols.DATE_OF_CHANGE, ISO8601.fromCalendar(Calendar.getInstance()));
 
                 // Insert new SystemData
                 long id = db.insert(SystemData.Entry.TABLE_NAME, null, values);

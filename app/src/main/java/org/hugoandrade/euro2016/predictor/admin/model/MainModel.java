@@ -17,9 +17,9 @@ import java.util.concurrent.Executors;
 import org.hugoandrade.euro2016.predictor.admin.MVP;
 import org.hugoandrade.euro2016.predictor.admin.model.parser.MessageBase;
 import org.hugoandrade.euro2016.predictor.admin.model.service.MobileService;
-import org.hugoandrade.euro2016.predictor.admin.object.Country;
-import org.hugoandrade.euro2016.predictor.admin.object.Match;
-import org.hugoandrade.euro2016.predictor.admin.object.SystemData;
+import org.hugoandrade.euro2016.predictor.admin.data.Country;
+import org.hugoandrade.euro2016.predictor.admin.data.Match;
+import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
 
 public class MainModel implements MVP.ProvidedModelOps {
 
@@ -138,6 +138,25 @@ public class MainModel implements MVP.ProvidedModelOps {
 
         MessageBase requestMessage = MessageBase.makeMessage(
                 MessageBase.OperationType.RESET.ordinal(),
+                mReplyMessage
+        );
+
+        try {
+            mRequestMessengerRef.send(requestMessage.getMessage());
+        } catch (Exception e) {
+            Log.e(TAG, "Exception while sending message back to Activity.", e);
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public boolean updateScoresOfPredictions() {
+        if (!areObjectsSet())
+            return false;
+
+        MessageBase requestMessage = MessageBase.makeMessage(
+                MessageBase.OperationType.UPDATE_SCORES_OF_PREDICTIONS.ordinal(),
                 mReplyMessage
         );
 

@@ -4,8 +4,8 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.util.SparseArray;
 
-import org.hugoandrade.euro2016.predictor.admin.object.Country;
-import org.hugoandrade.euro2016.predictor.admin.object.Match;
+import org.hugoandrade.euro2016.predictor.admin.data.Country;
+import org.hugoandrade.euro2016.predictor.admin.data.Match;
 import org.hugoandrade.euro2016.predictor.admin.utils.MatchUtils;
 import org.hugoandrade.euro2016.predictor.admin.utils.StaticVariableUtils;
 

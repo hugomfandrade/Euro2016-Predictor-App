@@ -1,7 +1,7 @@
 package org.hugoandrade.euro2016.predictor.admin.utils;
 
 
-import org.hugoandrade.euro2016.predictor.admin.object.Match;
+import org.hugoandrade.euro2016.predictor.admin.data.Match;
 
 /**
  * Provides some general utility Match helper methods.

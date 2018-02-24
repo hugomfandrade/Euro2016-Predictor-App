@@ -1,4 +1,4 @@
-package org.hugoandrade.euro2016.predictor.admin.view;
+package org.hugoandrade.euro2016.predictor.admin.view.main;
 
 import android.app.ActivityOptions;
 import android.content.Context;
@@ -12,22 +12,24 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import org.hugoandrade.euro2016.predictor.admin.FragComm;
 import org.hugoandrade.euro2016.predictor.admin.GlobalData;
 import org.hugoandrade.euro2016.predictor.admin.MVP;
 import org.hugoandrade.euro2016.predictor.admin.R;
-import org.hugoandrade.euro2016.predictor.admin.object.Group;
-import org.hugoandrade.euro2016.predictor.admin.object.Match;
-import org.hugoandrade.euro2016.predictor.admin.object.SystemData;
+import org.hugoandrade.euro2016.predictor.admin.data.Group;
+import org.hugoandrade.euro2016.predictor.admin.data.Match;
+import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
 import org.hugoandrade.euro2016.predictor.admin.presenter.MainPresenter;
 import org.hugoandrade.euro2016.predictor.admin.utils.UIUtils;
-import org.hugoandrade.euro2016.predictor.admin.view.fragment.GroupsFragment;
-import org.hugoandrade.euro2016.predictor.admin.view.fragment.SetResultsFragment;
+import org.hugoandrade.euro2016.predictor.admin.view.ActivityBase;
+import org.hugoandrade.euro2016.predictor.admin.view.EditSystemDataActivity;
 import org.hugoandrade.euro2016.predictor.admin.view.helper.SimpleDialog;
+import org.hugoandrade.euro2016.predictor.admin.view.main.matches.MatchesFragment;
+import org.hugoandrade.euro2016.predictor.admin.view.main.standings.StandingsFragment;
 
 import java.util.HashMap;
 import java.util.List;
@@ -35,7 +37,7 @@ import java.util.List;
 public class MainActivity extends ActivityBase<MVP.RequiredViewOps,
                                                MVP.ProvidedPresenterOps,
                                                MainPresenter>
-        implements MVP.RequiredViewOps, FragComm.ProvidedParentActivityOps {
+        implements MVP.RequiredViewOps, MainFragComm.ProvidedMainActivityOps {
 
     @SuppressWarnings("unused") private final static String TAG = MainActivity.class.getSimpleName();
 
@@ -43,8 +45,8 @@ public class MainActivity extends ActivityBase<MVP.RequiredViewOps,
 
     private final CharSequence[] mFragmentTitleArray = {"Set Results", "Groups"};
     private final Fragment[] mFragmentArray = {
-            new SetResultsFragment(),
-            new GroupsFragment()};
+            new MatchesFragment(),
+            new StandingsFragment()};
 
     private View vProgressBar;
 
@@ -90,6 +92,22 @@ public class MainActivity extends ActivityBase<MVP.RequiredViewOps,
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.action_update_scores: {
+
+                SimpleDialog simpleDialog = new SimpleDialog(this,
+                        "Update Prediction Scores",
+                        "Are you sure you want to update the scores of all Predictions? It may take a while");
+                simpleDialog.setOnDialogResultListener(new SimpleDialog.OnDialogResult() {
+                    @Override
+                    public void onResult(DialogInterface dialog, int result) {
+                        if (result == SimpleDialog.YES) {
+                            getPresenter().updateScoresOfPredictions();
+                        }
+                    }
+                });
+                simpleDialog.show();
+                return true;
+            }
             case R.id.action_reset: {
                 SimpleDialog simpleDialog = new SimpleDialog(this,
                         "Reset Cloud Database",
@@ -126,46 +144,36 @@ public class MainActivity extends ActivityBase<MVP.RequiredViewOps,
 
     // Method accessed by Fragment
     @Override
-    public void setNewMatch(Match match) {
-        getPresenter().setNewMatch(match);
-    }
-
-    // Method accessed by Fragment
-    @Override
-    public void showSnackBar(String message) {
-        reportMessage(message);
+    public void setMatch(Match match) {
+        getPresenter().setMatch(match);
     }
 
     @Override
-    public void setMatches(List<Match> matchList) {
+    public void displayMatches(List<Match> matchList) {
         for (Fragment fragment : mFragmentArray)
-            if (fragment instanceof FragComm.ProvidedMatchesFragmentOps)
-                ((FragComm.ProvidedMatchesFragmentOps) fragment)
-                        .setMatches(matchList);
+            if (fragment instanceof MainFragComm.ProvidedMatchesFragmentOps)
+                ((MainFragComm.ProvidedMatchesFragmentOps) fragment).displayMatches(matchList);
     }
 
     @Override
     public void updateMatch(Match match) {
         for (Fragment fragment : mFragmentArray)
-            if (fragment instanceof FragComm.ProvidedMatchesFragmentOps)
-                ((FragComm.ProvidedMatchesFragmentOps) fragment)
-                        .updateMatch(match);
+            if (fragment instanceof MainFragComm.ProvidedMatchesFragmentOps)
+                ((MainFragComm.ProvidedMatchesFragmentOps) fragment).updateMatch(match);
     }
 
     @Override
     public void updateFailedMatch(Match match) {
         for (Fragment fragment : mFragmentArray)
-            if (fragment instanceof FragComm.ProvidedMatchesFragmentOps)
-                ((FragComm.ProvidedMatchesFragmentOps) fragment)
-                        .updateFailedMatch(match);
+            if (fragment instanceof MainFragComm.ProvidedMatchesFragmentOps)
+                ((MainFragComm.ProvidedMatchesFragmentOps) fragment).updateFailedMatch(match);
     }
 
     @Override
-    public void setGroups(HashMap<String, Group> allGroups) {
+    public void displayGroups(HashMap<String, Group> groupsMap) {
         for (Fragment fragment : mFragmentArray)
-            if (fragment instanceof FragComm.ProvidedGroupsChildFragmentOps)
-                ((FragComm.ProvidedGroupsChildFragmentOps) fragment)
-                        .setGroups(allGroups);
+            if (fragment instanceof MainFragComm.ProvidedGroupsChildFragmentOps)
+                ((MainFragComm.ProvidedGroupsChildFragmentOps) fragment).displayGroups(groupsMap);
     }
 
     @Override

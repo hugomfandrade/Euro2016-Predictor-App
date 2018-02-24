@@ -6,8 +6,8 @@ import android.util.Log;
 import org.hugoandrade.euro2016.predictor.admin.GlobalData;
 import org.hugoandrade.euro2016.predictor.admin.MVP;
 import org.hugoandrade.euro2016.predictor.admin.model.LoginModel;
-import org.hugoandrade.euro2016.predictor.admin.object.LoginData;
-import org.hugoandrade.euro2016.predictor.admin.object.SystemData;
+import org.hugoandrade.euro2016.predictor.admin.data.LoginData;
+import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
 import org.hugoandrade.euro2016.predictor.admin.utils.SharedPreferencesUtils;
 
 public class LoginPresenter

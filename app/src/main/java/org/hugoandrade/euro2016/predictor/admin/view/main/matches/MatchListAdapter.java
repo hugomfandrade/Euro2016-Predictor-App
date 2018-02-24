@@ -1,4 +1,4 @@
-package org.hugoandrade.euro2016.predictor.admin.view.listadapter;
+package org.hugoandrade.euro2016.predictor.admin.view.main.matches;
 
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
@@ -14,7 +14,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import org.hugoandrade.euro2016.predictor.admin.R;
-import org.hugoandrade.euro2016.predictor.admin.object.Match;
+import org.hugoandrade.euro2016.predictor.admin.data.Match;
 import org.hugoandrade.euro2016.predictor.admin.utils.MatchUtils;
 
 import java.util.ArrayList;

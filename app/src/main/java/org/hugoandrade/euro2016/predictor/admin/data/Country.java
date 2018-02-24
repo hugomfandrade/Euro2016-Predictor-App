@@ -1,4 +1,4 @@
-package org.hugoandrade.euro2016.predictor.admin.object;
+package org.hugoandrade.euro2016.predictor.admin.data;
 
 import android.os.Parcel;
 import android.os.Parcelable;

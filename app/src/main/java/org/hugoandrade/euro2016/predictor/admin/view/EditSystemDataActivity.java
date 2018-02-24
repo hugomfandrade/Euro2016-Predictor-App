@@ -13,7 +13,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import org.hugoandrade.euro2016.predictor.admin.R;
-import org.hugoandrade.euro2016.predictor.admin.object.SystemData;
+import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
 import org.hugoandrade.euro2016.predictor.admin.utils.ISO8601;
 
 import java.util.Calendar;

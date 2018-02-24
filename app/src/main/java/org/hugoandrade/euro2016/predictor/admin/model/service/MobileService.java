@@ -42,10 +42,10 @@ import org.hugoandrade.euro2016.predictor.admin.DevConstants;
 import org.hugoandrade.euro2016.predictor.admin.model.parser.MessageBase;
 import org.hugoandrade.euro2016.predictor.admin.model.parser.MobileClientDataJsonFormatter;
 import org.hugoandrade.euro2016.predictor.admin.model.parser.MobileClientDataJsonParser;
-import org.hugoandrade.euro2016.predictor.admin.object.LoginData;
-import org.hugoandrade.euro2016.predictor.admin.object.Country;
-import org.hugoandrade.euro2016.predictor.admin.object.Match;
-import org.hugoandrade.euro2016.predictor.admin.object.SystemData;
+import org.hugoandrade.euro2016.predictor.admin.data.LoginData;
+import org.hugoandrade.euro2016.predictor.admin.data.Country;
+import org.hugoandrade.euro2016.predictor.admin.data.Match;
+import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
 import org.hugoandrade.euro2016.predictor.admin.utils.InitConfigUtils;
 
 public class MobileService extends Service {
@@ -247,7 +247,7 @@ public class MobileService extends Service {
 
     private void reset(final Messenger replyTo, final int requestCode) {
         if (DevConstants.CLOUD_DATABASE_SIM) {
-            //CloudDatabaseSim.getAllCountries(replyTo, requestCode);
+            //CloudDatabaseSim.reset(replyTo, requestCode);
             return;
         }
 
@@ -271,6 +271,40 @@ public class MobileService extends Service {
                 .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
+    private void updateScoresOfPredictions(final Messenger replyTo, final int requestCode) {
+        if (DevConstants.CLOUD_DATABASE_SIM) {
+            //CloudDatabaseSim.updateScoresOfPredictions(replyTo, requestCode);
+            return;
+        }
+
+        if (mClient == null) {
+            sendNoNetworkConnectionFailureMessage(replyTo, requestCode);
+            return;
+        }
+
+
+        ListenableFuture<JsonElement> future =
+                mClient.invokeApi("UpdateScoresOfPredictions",
+                        null,
+                        "POST",
+                        null);
+
+        Futures.addCallback(future, new FutureCallback<JsonElement>() {
+            @Override
+            public void onSuccess(JsonElement jsonObject) {
+                MessageBase requestMessage
+                        = MessageBase.makeMessage(requestCode, MessageBase.REQUEST_RESULT_SUCCESS);
+
+                sendRequestMessage(replyTo, requestMessage);
+            }
+
+            @Override
+            public void onFailure(@NonNull Throwable t) {
+                sendErrorMessage(replyTo, requestCode, t.getMessage());
+            }
+        });
+    }
+
     private void getInfo(final Messenger replyTo, final int requestCode) {
         if (DevConstants.CLOUD_DATABASE_SIM) {
             CloudDatabaseSim.getInfo(replyTo, requestCode);
@@ -291,53 +325,57 @@ public class MobileService extends Service {
                 2, //3 /* total operations */,
                 1/* isOk flag */};
 
+        ListenableFuture<JsonElement> futureCountries =  MobileServiceJsonTableHelper
+                .instance(Country.Entry.TABLE_NAME, mClient)
+                .execute();
+        Futures.addCallback(futureCountries, new FutureCallback<JsonElement>() {
+            @Override
+            public void onSuccess(JsonElement jsonElement) {
+                Log.d(TAG, "Countries fetched");
+                if (n[2] == 0) return; // An error occurred
 
-        Futures.addCallback(MobileServiceHelper.queryAll(Country.Entry.TABLE_NAME, mClient),
-                new FutureCallback<JsonElement>() {
-                    @Override
-                    public void onSuccess(JsonElement jsonElement) {
-                        if (n[2] == 0) return; // An error occurred
+                requestMessage.setCountryList(parser.parseCountryList(jsonElement));
 
-                        requestMessage.setCountryList(parser.parseCountryList(jsonElement));
+                n[0]++;
+                if (n[0] == n[1])
+                    sendRequestMessage(replyTo, requestMessage);
+            }
 
-                        n[0]++;
-                        if (n[0] == n[1])
-                            sendRequestMessage(replyTo, requestMessage);
-                    }
+            @Override
+            public void onFailure(@NonNull Throwable throwable) {
+                if (n[2] == 0) return; // An error occurred
 
-                    @Override
-                    public void onFailure(@NonNull Throwable throwable) {
-                        if (n[2] == 0) return; // An error occurred
+                n[2] = 0;
+                sendErrorMessage(replyTo, requestCode, throwable.getMessage());
+            }
+        });
 
-                        n[2] = 0;
-                        sendErrorMessage(replyTo, requestCode, throwable.getMessage());
-                    }
-                });
+        ListenableFuture<JsonElement> futureMatches =  MobileServiceJsonTableHelper
+                .instance(Match.Entry.TABLE_NAME, mClient)
+                .execute();
+        Futures.addCallback(futureMatches, new FutureCallback<JsonElement>() {
+            @Override
+            public void onSuccess(JsonElement jsonElement) {
+                Log.d(TAG, "Matches fetched");
+                if (n[2] == 0) return; // An error occurred
 
+                ArrayList<Match> matchList = parser.parseMatchList(jsonElement);
+                Collections.sort(matchList);
+                requestMessage.setMatchList(matchList);
 
-        Futures.addCallback(MobileServiceHelper.queryAll(Match.Entry.TABLE_NAME, mClient),
-                new FutureCallback<JsonElement>() {
-                    @Override
-                    public void onSuccess(JsonElement jsonElement) {
-                        if (n[2] == 0) return; // An error occurred
+                n[0]++;
+                if (n[0] == n[1])
+                    sendRequestMessage(replyTo, requestMessage);
+            }
 
-                        ArrayList<Match> matchList = parser.parseMatchList(jsonElement);
-                        Collections.sort(matchList);
-                        requestMessage.setMatchList(matchList);
+            @Override
+            public void onFailure(@NonNull Throwable throwable) {
+                if (n[2] == 0) return; // An error occurred
 
-                        n[0]++;
-                        if (n[0] == n[1])
-                            sendRequestMessage(replyTo, requestMessage);
-                    }
-
-                    @Override
-                    public void onFailure(@NonNull Throwable throwable) {
-                        if (n[2] == 0) return; // An error occurred
-
-                        n[2] = 0;
-                        sendErrorMessage(replyTo, requestCode, throwable.getMessage());
-                    }
-                });
+                n[2] = 0;
+                sendErrorMessage(replyTo, requestCode, throwable.getMessage());
+            }
+        });
     }
 
     private void updateCountry(Country country, final Messenger replyTo, final int requestCode) {
@@ -448,6 +486,17 @@ public class MobileService extends Service {
                     @Override
                     public void run() {
                         mService.get().reset(
+                                messenger,
+                                requestCode);
+                    }
+                };
+                mExecutorService.execute(sendDataToHub);
+            }
+            else if (requestCode == MessageBase.OperationType.UPDATE_SCORES_OF_PREDICTIONS.ordinal()) {
+                final Runnable sendDataToHub = new Runnable() {
+                    @Override
+                    public void run() {
+                        mService.get().updateScoresOfPredictions(
                                 messenger,
                                 requestCode);
                     }
@@ -611,7 +660,7 @@ public class MobileService extends Service {
         private void deleteCountryTable() {
             Log.d(TAG, "start to delete Country Table");
             try {
-                JsonArray jsonArray = MobileServiceHelper.queryAll(Country.Entry.TABLE_NAME, mClient)
+                JsonArray jsonArray = MobileServiceJsonTableHelper.instance(Country.Entry.TABLE_NAME, mClient).execute()
                         .get().getAsJsonArray();
 
                 if (jsonArray.size() == 0){
@@ -702,7 +751,7 @@ public class MobileService extends Service {
             Log.d(TAG, "start to delete Match Table");
 
             try {
-                JsonArray jsonArray = MobileServiceHelper.queryAll(Match.Entry.TABLE_NAME, mClient)
+                JsonArray jsonArray = MobileServiceJsonTableHelper.instance(Match.Entry.TABLE_NAME, mClient).execute()
                         .get().getAsJsonArray();
 
                 if (jsonArray.size() == 0){

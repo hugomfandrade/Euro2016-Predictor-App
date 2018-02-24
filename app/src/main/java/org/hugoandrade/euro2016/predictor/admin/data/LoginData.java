@@ -1,4 +1,4 @@
-package org.hugoandrade.euro2016.predictor.admin.object;
+package org.hugoandrade.euro2016.predictor.admin.data;
 
 import android.net.Uri;
 import android.os.Parcel;

@@ -1,12 +1,10 @@
 package org.hugoandrade.euro2016.predictor.admin.cloudsim;
 
 import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.RemoteException;
 import android.util.Log;
 
 import com.google.gson.JsonArray;
@@ -16,9 +14,10 @@ import com.google.gson.JsonObject;
 import org.hugoandrade.euro2016.predictor.admin.cloudsim.parser.CloudContentValuesFormatter;
 import org.hugoandrade.euro2016.predictor.admin.cloudsim.parser.CloudDataJsonParser;
 import org.hugoandrade.euro2016.predictor.admin.cloudsim.parser.CloudJsonFormatter;
-import org.hugoandrade.euro2016.predictor.admin.model.parser.MobileClientDataJsonParser;
-import org.hugoandrade.euro2016.predictor.admin.object.SystemData;
+import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
+import org.hugoandrade.euro2016.predictor.admin.utils.ISO8601;
 
+import java.util.Calendar;
 import java.util.Map;
 
 class CloudDatabaseSimImpl {
@@ -155,11 +154,39 @@ class CloudDatabaseSimImpl {
                     if (jsonArray.size() == 0)
                         future.onSuccess(null);
                     else
-                        future.onSuccess((V) jsonArray.get(0));
+                        future.onSuccess((V) adjustIfItIsSystemData(jsonArray.get(0)));
                 }
             } catch (ClassCastException e) {
                 future.onFailure("Cursor not found");
             }
+        }
+
+        private JsonElement adjustIfItIsSystemData(JsonElement jsonElement) {
+            if (!jsonElement.isJsonObject())
+                return jsonElement;
+            if (jsonElement.getAsJsonObject().has(SystemData.Entry.Cols.RULES)
+                    && jsonElement.getAsJsonObject().has(SystemData.Entry.Cols.APP_STATE)
+                    && jsonElement.getAsJsonObject().has(SystemData.Entry.Cols.DATE_OF_CHANGE)
+                    && jsonElement.getAsJsonObject().has(SystemData.Entry.Cols.SYSTEM_DATE)) {
+                Calendar dateOfChange =
+                        ISO8601.toCalendar(getJsonPrimitive(jsonElement.getAsJsonObject(), SystemData.Entry.Cols.DATE_OF_CHANGE, null));
+                Calendar systemDate =
+                        ISO8601.toCalendar(getJsonPrimitive(jsonElement.getAsJsonObject(), SystemData.Entry.Cols.SYSTEM_DATE, null));
+
+                if (dateOfChange != null && systemDate != null) {
+                    Calendar c = Calendar.getInstance();
+                    long diff = c.getTimeInMillis() - dateOfChange.getTimeInMillis();
+                    systemDate.setTimeInMillis(systemDate.getTimeInMillis() + diff);
+
+                    jsonElement.getAsJsonObject().remove(SystemData.Entry.Cols.DATE_OF_CHANGE);
+                    jsonElement.getAsJsonObject().addProperty(SystemData.Entry.Cols.DATE_OF_CHANGE,
+                                                              ISO8601.fromCalendar(systemDate));
+                }
+                else {
+                    return jsonElement;
+                }
+            }
+            return jsonElement;
         }
 
         private void postApiOperation(String URL) {

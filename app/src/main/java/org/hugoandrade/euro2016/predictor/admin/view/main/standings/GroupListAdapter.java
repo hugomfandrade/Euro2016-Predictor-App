@@ -1,15 +1,14 @@
-package org.hugoandrade.euro2016.predictor.admin.view.listadapter;
+package org.hugoandrade.euro2016.predictor.admin.view.main.standings;
 
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.hugoandrade.euro2016.predictor.admin.R;
-import org.hugoandrade.euro2016.predictor.admin.object.Country;
+import org.hugoandrade.euro2016.predictor.admin.data.Country;
 
 import java.util.List;
 

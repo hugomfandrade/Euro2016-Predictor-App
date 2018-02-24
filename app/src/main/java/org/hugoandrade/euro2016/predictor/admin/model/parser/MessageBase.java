@@ -3,15 +3,14 @@ package org.hugoandrade.euro2016.predictor.admin.model.parser;
 import android.os.Bundle;
 import android.os.Message;
 import android.os.Messenger;
-import android.util.Log;
 
 import java.util.ArrayList;
 
-import org.hugoandrade.euro2016.predictor.admin.object.LoginData;
-import org.hugoandrade.euro2016.predictor.admin.object.User;
-import org.hugoandrade.euro2016.predictor.admin.object.Country;
-import org.hugoandrade.euro2016.predictor.admin.object.Match;
-import org.hugoandrade.euro2016.predictor.admin.object.SystemData;
+import org.hugoandrade.euro2016.predictor.admin.data.LoginData;
+import org.hugoandrade.euro2016.predictor.admin.data.User;
+import org.hugoandrade.euro2016.predictor.admin.data.Country;
+import org.hugoandrade.euro2016.predictor.admin.data.Match;
+import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
 
 public class MessageBase {
 
@@ -33,6 +32,7 @@ public class MessageBase {
 
         LOGIN,
         RESET,
+        UPDATE_SCORES_OF_PREDICTIONS,
         GET_INFO,
         UPDATE_MATCH_UP,
         UPDATE_MATCH_RESULT,

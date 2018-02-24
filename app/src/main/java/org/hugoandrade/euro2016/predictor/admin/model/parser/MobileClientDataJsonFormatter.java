@@ -2,10 +2,10 @@ package org.hugoandrade.euro2016.predictor.admin.model.parser;
 
 import com.google.gson.JsonObject;
 
-import org.hugoandrade.euro2016.predictor.admin.object.Country;
-import org.hugoandrade.euro2016.predictor.admin.object.LoginData;
-import org.hugoandrade.euro2016.predictor.admin.object.Match;
-import org.hugoandrade.euro2016.predictor.admin.object.SystemData;
+import org.hugoandrade.euro2016.predictor.admin.data.Country;
+import org.hugoandrade.euro2016.predictor.admin.data.LoginData;
+import org.hugoandrade.euro2016.predictor.admin.data.Match;
+import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
 import org.hugoandrade.euro2016.predictor.admin.utils.ISO8601;
 
 /**
@@ -47,7 +47,6 @@ public class MobileClientDataJsonFormatter {
                 .addProperty(SystemData.Entry.Cols.APP_STATE, systemData.getAppState())
                 .addProperty(SystemData.Entry.Cols.RULES, systemData.getRawRules())
                 .addProperty(SystemData.Entry.Cols.SYSTEM_DATE, ISO8601.fromCalendar(systemData.getSystemDate()))
-                .addProperty(SystemData.Entry.Cols.DATE_OF_CHANGE, ISO8601.fromCalendar(systemData.getDateOfChange()))
                 .removeProperties(exceptProperties)
                 .create();
     }
@@ -59,8 +58,8 @@ public class MobileClientDataJsonFormatter {
                 .addProperty(Match.Entry.Cols.MATCH_NUMBER, match.getMatchNumber())
                 .addProperty(Match.Entry.Cols.HOME_TEAM_ID, match.getHomeTeamID())
                 .addProperty(Match.Entry.Cols.AWAY_TEAM_ID, match.getAwayTeamID())
-                .addProperty(Match.Entry.Cols.HOME_TEAM_GOALS, match.getHomeTeamGoals())
-                .addProperty(Match.Entry.Cols.AWAY_TEAM_GOALS, match.getAwayTeamGoals())
+                .addProperty(Match.Entry.Cols.HOME_TEAM_GOALS, match.getHomeTeamGoals() != -1? match.getHomeTeamGoals() : null)
+                .addProperty(Match.Entry.Cols.AWAY_TEAM_GOALS, match.getAwayTeamGoals() != -1? match.getAwayTeamGoals() : null)
                 .addProperty(Match.Entry.Cols.HOME_TEAM_NOTES, match.getHomeTeamNotes())
                 .addProperty(Match.Entry.Cols.AWAY_TEAM_NOTES, match.getAwayTeamNotes())
                 .addProperty(Match.Entry.Cols.GROUP, match.getGroup())
