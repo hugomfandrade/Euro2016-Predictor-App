@@ -1,10 +1,8 @@
 package org.hugoandrade.euro2016.predictor.admin.cloudsim.parser;
 
-
 import android.database.Cursor;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
@@ -12,10 +10,10 @@ import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
 /**
  * Parses the objects to Json data.
  */
-public class CloudJsonFormatter {
+public class CloudJsonObjectFormatter {
 
 
-    public JsonElement getAsJsonObject(Cursor c) {
+    public JsonObject getAsJsonObject(Cursor c) {
         JsonObjectBuilder builder = JsonObjectBuilder.instance();
         for (String columnName : c.getColumnNames()) {
             // Because it is a boolean

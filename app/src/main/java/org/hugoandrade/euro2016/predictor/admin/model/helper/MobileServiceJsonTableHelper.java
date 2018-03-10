@@ -1,4 +1,4 @@
-package org.hugoandrade.euro2016.predictor.admin.model.service;
+package org.hugoandrade.euro2016.predictor.admin.model.helper;
 
 import android.os.Handler;
 import android.os.Looper;

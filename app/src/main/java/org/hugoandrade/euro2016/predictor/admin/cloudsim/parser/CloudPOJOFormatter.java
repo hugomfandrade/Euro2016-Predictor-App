@@ -14,7 +14,7 @@ import org.hugoandrade.euro2016.predictor.admin.utils.ISO8601;
 /**
  * Parses the objects to Json data.
  */
-public class CloudContentValuesParser {
+public class CloudPOJOFormatter {
 
     public User parseAccount(Cursor c) {
         return new User(
@@ -22,16 +22,6 @@ public class CloudContentValuesParser {
                 getColumnValue(c, User.Entry.Cols.EMAIL, null),
                 getColumnValue(c, User.Entry.Cols.PASSWORD, null),
                 getColumnValue(c, User.Entry.Cols.SCORE, 0)
-        );
-    }
-
-    public User parseAccount(ContentValues values) {
-
-        return new User(
-                getColumnValue(values, "_" + User.Entry.Cols.ID, null),
-                getColumnValue(values, User.Entry.Cols.EMAIL, null),
-                getColumnValue(values, User.Entry.Cols.PASSWORD, null),
-                getColumnValue(values, User.Entry.Cols.SCORE, 0)
         );
     }
 

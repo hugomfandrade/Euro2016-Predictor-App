@@ -1,10 +1,7 @@
 package org.hugoandrade.euro2016.predictor.admin.data;
 
-import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
-
-import org.hugoandrade.euro2016.predictor.admin.cloudsim.CloudDatabaseSimProvider;
 
 public class LoginData implements Parcelable {
 
@@ -28,15 +25,6 @@ public class LoginData implements Parcelable {
         // PATH & TOKEN for single row of table
         public static final String PATH_REGISTER = API_NAME_REGISTER;
         public static final int PATH_REGISTER_TOKEN = 220;
-
-        // URI for this content.
-        public static final Uri CONTENT_URI = CloudDatabaseSimProvider.BASE_URI.buildUpon()
-                .appendPath(PATH_LOGIN).build();
-
-        // CONTENT/MIME TYPE for this content
-        private final static String MIME_TYPE_END = PATH_LOGIN;
-        public static final String CONTENT_TYPE_DIR = CloudDatabaseSimProvider.ORGANIZATIONAL_NAME
-                + ".cursor.dir/" + CloudDatabaseSimProvider.ORGANIZATIONAL_NAME + "." + MIME_TYPE_END;
     }
 
     private String mUserID;

@@ -395,6 +395,8 @@ public class BackEndProcessing {
         }
 
         private Match updateRoundOf16MatchUp(Match match, String teamID, String matchUpPosition) {
+            if (match == null)
+                return null;
             // Check if there is any need to update match-up
             if (matchUpPosition.equals("HOME") && match.getHomeTeamID().equals(teamID))
                 return null;
@@ -464,6 +466,8 @@ public class BackEndProcessing {
 
             Match matchToUpdate = allMatches.get(matchUpToUpdate);
 
+            if (matchToUpdate == null)
+                return null;
 
             if (matchUpToUpdatePosition.equals("AWAY")) {
                 if (!matchToUpdate.getAwayTeamID().equals(teamName)) {

@@ -1,5 +1,6 @@
 package org.hugoandrade.euro2016.predictor.admin.data;
 
+import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
@@ -44,8 +45,6 @@ public class Country implements Comparable<Country>, Parcelable {
             public static final String FAIR_PLAY_POINTS = "FairPlayPoints";
         }
 
-
-        // SQLite table mName
         // PATH_LOGIN & TOKEN for entire table
         public static final String PATH = TABLE_NAME;
         public static final int PATH_TOKEN = 150;
@@ -54,12 +53,8 @@ public class Country implements Comparable<Country>, Parcelable {
         public static final String PATH_FOR_ID = PATH + "/#";
         public static final int PATH_FOR_ID_TOKEN = 160;
 
-        // CONTENT/MIME TYPE for this content
-        private final static String MIME_TYPE_END = PATH;
-        public static final String CONTENT_TYPE_DIR = CloudDatabaseSimProvider.ORGANIZATIONAL_NAME
-                + ".cursor.dir/" + CloudDatabaseSimProvider.ORGANIZATIONAL_NAME + "." + MIME_TYPE_END;
-        public static final String CONTENT_ITEM_TYPE = CloudDatabaseSimProvider.ORGANIZATIONAL_NAME
-                + ".cursor.item/" + CloudDatabaseSimProvider.ORGANIZATIONAL_NAME + "." + MIME_TYPE_END;
+        public static final Uri CONTENT_URI = CloudDatabaseSimProvider.BASE_URI.buildUpon()
+                .appendPath(PATH).build();
     }
 
     public Country(String id,

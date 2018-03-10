@@ -23,6 +23,7 @@ public class SystemData implements Parcelable {
 
         public static final String TABLE_NAME = "SystemData";
         public static final String API_NAME = "SystemData";
+        public static final String API_NAME_UPDATE_SCORES = "UpdateScoresOfPredictions";
 
         public static class Cols {
             public static final String ID = "id";
@@ -37,19 +38,12 @@ public class SystemData implements Parcelable {
         public static final String PATH = API_NAME;
         public static final int PATH_TOKEN = 190;
 
-        public static final String PATH_FOR_ID = PATH + "/#";
-        public static final int PATH_FOR_ID_TOKEN = 200;
+        public static final String PATH_UPDATE_SCORES = API_NAME_UPDATE_SCORES;
+        public static final int PATH_UPDATE_SCORES_TOKEN = 200;
 
         // URI for this content.
         public static final Uri CONTENT_URI = CloudDatabaseSimProvider.BASE_URI.buildUpon()
                 .appendPath(PATH).build();
-
-        // CONTENT/MIME TYPE for this content
-        private final static String MIME_TYPE_END = PATH;
-        public static final String CONTENT_TYPE_DIR = CloudDatabaseSimProvider.ORGANIZATIONAL_NAME
-                + ".cursor.dir/" + CloudDatabaseSimProvider.ORGANIZATIONAL_NAME + "." + MIME_TYPE_END;
-        public static final String CONTENT_ITEM_TYPE = CloudDatabaseSimProvider.ORGANIZATIONAL_NAME
-                + ".cursor.item/" + CloudDatabaseSimProvider.ORGANIZATIONAL_NAME + "." + MIME_TYPE_END;
     }
 
     public SystemData(String id, String rules, boolean appState, Calendar systemDate, Calendar dateOfChange) {

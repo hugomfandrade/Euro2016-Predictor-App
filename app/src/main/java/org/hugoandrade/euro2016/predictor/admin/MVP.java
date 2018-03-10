@@ -87,6 +87,8 @@ public interface MVP {
         void updateSystemDataRequestResult(boolean isRetrieved,
                                            String message,
                                            SystemData systemData);
+
+        void updateScoresOfPredictionsRequestResult(boolean isRetrieved, String message);
     }
     interface ProvidedModelOps extends ModelOps<RequiredPresenterOps> {
         boolean getInfo();

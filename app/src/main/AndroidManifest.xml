@@ -34,14 +34,17 @@
             android:name=".view.EditSystemDataActivity"
             android:configChanges="orientation|screenSize" />
 
-        <service android:name=".model.service.MobileService" android:enabled="true"/>
+        <service
+            android:name=".model.MobileService"
+            android:enabled="true"/>
 
         <provider
             android:name=".cloudsim.CloudDatabaseSimProvider"
-            android:authorities="org.hugoandrade.euro2016.predictor.sim_provider"
+            android:authorities="@string/sim_content_authority"
             android:exported="true"
             android:multiprocess="true"
             tools:ignore="ExportedContentProvider" />
+
     </application>
 
 </manifest>

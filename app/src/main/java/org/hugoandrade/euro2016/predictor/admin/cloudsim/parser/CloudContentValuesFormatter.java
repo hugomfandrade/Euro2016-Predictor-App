@@ -45,21 +45,15 @@ public class CloudContentValuesFormatter {
     public ContentValues getAsContentValues(JsonObject jsonObject) {
         ContentValuesBuilder builder = ContentValuesBuilder.instance();
         for (Map.Entry<String, JsonElement> entry: jsonObject.entrySet()) {
+            String cName = entry.getKey();
+            if (cName.equals("id"))
+                cName = "_id";
+
             // Because it is a boolean
             if (entry.getKey().equals(SystemData.Entry.Cols.APP_STATE)) {
-                builder.put(entry.getKey(),
-                        CloudDataJsonParser.getJsonPrimitive(jsonObject,
-                                entry.getKey(),
-                                false) ? 1 : 0);
+                builder.put(cName, getJsonPrimitive(jsonObject, entry.getKey(), false) ? 1 : 0);
             } else {
-                String cname = entry.getKey();
-                if (cname.equals("id"))
-                    cname = "_id";
-
-                builder.put(cname,
-                        CloudDataJsonParser.getJsonPrimitive(jsonObject,
-                                entry.getKey(),
-                                null));
+                builder.put(cName, getJsonPrimitive(jsonObject, entry.getKey(), null));
             }
         }
         return builder.create();
@@ -107,6 +101,26 @@ public class CloudContentValuesFormatter {
                 .put(Country.Entry.Cols.FAIR_PLAY_POINTS, country.getFairPlayPoints())
                 .put(Country.Entry.Cols.COEFFICIENT, country.getCoefficient())
                 .create();
+    }
+
+    private static String getJsonPrimitive(JsonObject jsonObject,
+                                           String jsonMemberName,
+                                           @SuppressWarnings("SameParameterValue") String defaultValue) {
+        try {
+            return jsonObject.getAsJsonPrimitive(jsonMemberName).getAsString();
+        } catch (Exception e) {
+            return defaultValue;
+        }
+    }
+
+    private static boolean getJsonPrimitive(JsonObject jsonObject,
+                                            String jsonMemberName,
+                                            @SuppressWarnings("SameParameterValue") boolean defaultValue) {
+        try {
+            return jsonObject.getAsJsonPrimitive(jsonMemberName).getAsBoolean();
+        } catch (Exception e) {
+            return defaultValue;
+        }
     }
 
     private static class ContentValuesBuilder {

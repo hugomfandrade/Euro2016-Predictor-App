@@ -27,4 +27,5 @@
     <string name="email">email</string>
     <string name="action_done">Done</string>
     <string name="update_prediction_scores">Update Prediction Scores</string>
+    <string name="sim_content_authority">org.hugoandrade.euro2016.predictor.sim_provider</string>
 </resources>

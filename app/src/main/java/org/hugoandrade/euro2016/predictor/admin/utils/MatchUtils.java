@@ -20,32 +20,37 @@ public final class MatchUtils {
         throw new AssertionError();
     }
 
+    public static boolean isMachValid(Match match) {
+        return match != null;
+    }
+
     public static boolean isMatchPlayed(Match match) {
-        return match.getHomeTeamGoals() != -1 && match.getAwayTeamGoals() != -1;
+        return isMachValid(match) && match.getHomeTeamGoals() != -1 && match.getAwayTeamGoals() != -1;
     }
 
     public static boolean didHomeTeamWin(Match match) {
-        return match.getHomeTeamGoals() > match.getAwayTeamGoals();
+        return isMachValid(match) && match.getHomeTeamGoals() > match.getAwayTeamGoals();
     }
 
     public static boolean didAwayTeamWin(Match match) {
-        return match.getAwayTeamGoals() > match.getHomeTeamGoals();
+        return isMachValid(match) && match.getAwayTeamGoals() > match.getHomeTeamGoals();
     }
 
     public static boolean didTeamsTied(Match match) {
-        return match.getHomeTeamGoals() == match.getAwayTeamGoals();
+        return isMachValid(match) && match.getHomeTeamGoals() == match.getAwayTeamGoals();
     }
 
     public static boolean didHomeTeamWinByPenaltyShootout(Match match) {
-        return match.getHomeTeamNotes() != null && match.getHomeTeamNotes().equals("p");
+        return isMachValid(match) && match.getHomeTeamNotes() != null && match.getHomeTeamNotes().equals("p");
     }
 
     public static boolean didAwayTeamWinByPenaltyShootout(Match match) {
-        return match.getAwayTeamNotes() != null && match.getAwayTeamNotes().equals("p");
+        return isMachValid(match) && match.getAwayTeamNotes() != null && match.getAwayTeamNotes().equals("p");
     }
 
     public static boolean wasThereAPenaltyShootout(Match match) {
-        return (match.getHomeTeamNotes() != null && match.getHomeTeamNotes().equals("p") ||
+        return isMachValid(match) &&
+                (match.getHomeTeamNotes() != null && match.getHomeTeamNotes().equals("p") ||
                 (match.getAwayTeamNotes() != null && match.getAwayTeamNotes().equals("p")));
     }
 

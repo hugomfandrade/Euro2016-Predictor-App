@@ -36,13 +36,6 @@ public class User implements Parcelable {
         // URI for this content.
         public static final Uri CONTENT_URI = CloudDatabaseSimProvider.BASE_URI.buildUpon()
                 .appendPath(PATH).build();
-
-        // CONTENT/MIME TYPE for this content
-        private final static String MIME_TYPE_END = PATH;
-        public static final String CONTENT_TYPE_DIR = CloudDatabaseSimProvider.ORGANIZATIONAL_NAME
-                + ".cursor.dir/" + CloudDatabaseSimProvider.ORGANIZATIONAL_NAME + "." + MIME_TYPE_END;
-        public static final String CONTENT_ITEM_TYPE = CloudDatabaseSimProvider.ORGANIZATIONAL_NAME
-                + ".cursor.item/" + CloudDatabaseSimProvider.ORGANIZATIONAL_NAME + "." + MIME_TYPE_END;
     }
 
     public User(String id, String email, String password, int score) {

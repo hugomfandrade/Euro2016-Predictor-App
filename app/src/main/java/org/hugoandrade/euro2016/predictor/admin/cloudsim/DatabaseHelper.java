@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 
 import org.hugoandrade.euro2016.predictor.admin.cloudsim.parser.CloudContentValuesFormatter;
-import org.hugoandrade.euro2016.predictor.admin.cloudsim.parser.CloudContentValuesParser;
+import org.hugoandrade.euro2016.predictor.admin.cloudsim.parser.CloudPOJOFormatter;
 import org.hugoandrade.euro2016.predictor.admin.data.Country;
 import org.hugoandrade.euro2016.predictor.admin.data.Match;
 import org.hugoandrade.euro2016.predictor.admin.data.Prediction;
@@ -137,7 +137,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         qb.setTables(Country.Entry.TABLE_NAME);
         Cursor c = qb.query(db, null, null, null, null, null, null);
 
-        CloudContentValuesParser parser = new CloudContentValuesParser();
+        CloudPOJOFormatter parser = new CloudPOJOFormatter();
 
         List<Country> countryList = new ArrayList<>();
         if (c.moveToFirst()) {

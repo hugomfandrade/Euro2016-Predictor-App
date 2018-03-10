@@ -16,7 +16,6 @@ import java.util.concurrent.Executors;
 
 import org.hugoandrade.euro2016.predictor.admin.MVP;
 import org.hugoandrade.euro2016.predictor.admin.model.parser.MessageBase;
-import org.hugoandrade.euro2016.predictor.admin.model.service.MobileService;
 import org.hugoandrade.euro2016.predictor.admin.data.Country;
 import org.hugoandrade.euro2016.predictor.admin.data.Match;
 import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
@@ -380,10 +379,27 @@ public class MainModel implements MVP.ProvidedModelOps {
                         break;
                 }
             }
+            else if (requestCode == MessageBase.OperationType.UPDATE_SCORES_OF_PREDICTIONS.ordinal()) {
+                switch (requestResult) {
+                    case MessageBase.REQUEST_RESULT_SUCCESS:
+                        mModel.get().updateScoresOfPredictionsResult(true, null);
+                        break;
+                    case MessageBase.REQUEST_RESULT_FAILURE:
+                        mModel.get().updateScoresOfPredictionsResult(false, requestMessage.getErrorMessage());
+                        break;
+                    default:
+                        mModel.get().updateScoresOfPredictionsResult(false, "No RequestResult provided");
+                        break;
+                }
+            }
         }
         void shutdown() {
             mExecutorService.shutdown();
         }
+    }
+
+    private void updateScoresOfPredictionsResult(boolean isRetrieved, String message) {
+        mPresenter.get().updateScoresOfPredictionsRequestResult(isRetrieved, message);
     }
 
     private void getAllInfoRequestResult(boolean isRetrieved,

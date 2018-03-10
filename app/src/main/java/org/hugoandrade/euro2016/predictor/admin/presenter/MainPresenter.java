@@ -1,7 +1,6 @@
 package org.hugoandrade.euro2016.predictor.admin.presenter;
 
 import android.content.Context;
-import android.util.Log;
 
 import org.hugoandrade.euro2016.predictor.admin.GlobalData;
 import org.hugoandrade.euro2016.predictor.admin.MVP;
@@ -96,6 +95,7 @@ public class MainPresenter
             mMatchList = matchList;
             mGroupMap = setupGroups(countryList);
 
+            Collections.sort(mMatchList);
 
             // Set countries to each match
             for (Country c : countryList) {
@@ -250,6 +250,15 @@ public class MainPresenter
         else {
             getView().reportMessage(message);
         }
+    }
+
+    @Override
+    public void updateScoresOfPredictionsRequestResult(boolean isRetrieved, String message) {
+        if (!isRetrieved) {
+            getView().reportMessage(message);
+        }
+
+        getView().enableUI();
     }
 
     @Override
