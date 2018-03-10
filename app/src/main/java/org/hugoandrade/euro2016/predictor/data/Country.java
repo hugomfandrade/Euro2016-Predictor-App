@@ -2,10 +2,11 @@ package org.hugoandrade.euro2016.predictor.data;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 
 import org.hugoandrade.euro2016.predictor.R;
 
-public class Country implements Parcelable {
+public class Country implements Comparable<Country>, Parcelable {
 
     private String mID;
     private String mName;
@@ -174,6 +175,13 @@ public class Country implements Parcelable {
 
     public boolean hasAdvancedGroupStage() {
         return mHasAdvancedGroupStage;
+    }
+
+    @Override
+    public int compareTo(@NonNull Country o) {
+        if (mPosition != o.mPosition)
+            return mPoints - o.mPoints;
+        return 0;
     }
 
     public Country(Parcel in) {

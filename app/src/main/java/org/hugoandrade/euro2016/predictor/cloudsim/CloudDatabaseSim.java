@@ -5,7 +5,6 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -35,22 +34,19 @@ public class CloudDatabaseSim {
 
     private static final int CLOUD_SIM_DURATION = 1000; // 1 seconds
 
-    // org mName in java package format
+    // org name in java package format
     private static final String ORGANIZATIONAL_NAME = "org.hugoandrade";
-    // mName of this provider's project
+    // name of this provider's project
     private static final String PROJECT_NAME = "euro2016.predictor";
 
-    /**
-     * ContentProvider Related Constants
-     */
-    private static final String AUTHORITY = ORGANIZATIONAL_NAME + "."
-            + PROJECT_NAME + ".sim_provider";
+    private static final String AUTHORITY = ORGANIZATIONAL_NAME + "." + PROJECT_NAME + ".sim_provider";
+
     private static final Uri BASE_URI = Uri.parse("content://" + AUTHORITY);
 
     public static void initialize(Callback callback, ContentResolver contentResolver) {
 
         mCallback = callback;
-        CloudDatabaseSimImpl.initialize(contentResolver, BASE_URI);
+        CloudDatabaseSimImpll.initialize(contentResolver, BASE_URI);
     }
 
     public interface Callback {
@@ -62,10 +58,10 @@ public class CloudDatabaseSim {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                CloudDatabaseSimImpl.ListenableCallback<JsonElement> future
-                        = new CloudDatabaseSimImpl(SystemData.Entry.API_NAME, null, "GET")
+                CloudDatabaseSimImpll.ListenableCallback<JsonElement> future
+                        = new CloudDatabaseSimImpll(SystemData.Entry.API_NAME, null, "GET")
                         .execute();
-                CloudDatabaseSimImpl.addCallback(future, new CloudDatabaseSimImpl.Callback<JsonElement>() {
+                CloudDatabaseSimImpll.addCallback(future, new CloudDatabaseSimImpll.Callback<JsonElement>() {
                     @Override
                     public void onSuccess(JsonElement jsonObject) {
                         MobileClientData requestMessage = MobileClientData.makeMessage(
@@ -91,11 +87,11 @@ public class CloudDatabaseSim {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                CloudDatabaseSimImpl.ListenableCallback<JsonElement> future = new CloudDatabaseSimImpl(
+                CloudDatabaseSimImpll.ListenableCallback<JsonElement> future = new CloudDatabaseSimImpll(
                         LoginData.Entry.API_NAME_REGISTER,
                         formatter.getAsJsonObject(loginData),
                         "POST").execute();
-                CloudDatabaseSimImpl.addCallback(future, new CloudDatabaseSimImpl.Callback<JsonElement>() {
+                CloudDatabaseSimImpll.addCallback(future, new CloudDatabaseSimImpll.Callback<JsonElement>() {
                     @Override
                     public void onSuccess(JsonElement result) {
                         MobileClientData requestMessage = MobileClientData.makeMessage(
@@ -123,11 +119,11 @@ public class CloudDatabaseSim {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                CloudDatabaseSimImpl.ListenableCallback<JsonElement> future = new CloudDatabaseSimImpl(
+                CloudDatabaseSimImpll.ListenableCallback<JsonElement> future = new CloudDatabaseSimImpll(
                         LoginData.Entry.API_NAME_LOGIN,
                         formatter.getAsJsonObject(loginData),
                         "POST").execute();
-                CloudDatabaseSimImpl.addCallback(future, new CloudDatabaseSimImpl.Callback<JsonElement>() {
+                CloudDatabaseSimImpll.addCallback(future, new CloudDatabaseSimImpll.Callback<JsonElement>() {
                     @Override
                     public void onSuccess(JsonElement result) {
                         MobileClientData requestMessage = MobileClientData.makeMessage(
@@ -165,9 +161,9 @@ public class CloudDatabaseSim {
                         4, //3 /* total operations */,
                         1/* isOk flag */};
 
-                CloudDatabaseSimImpl.ListenableCallback<JsonElement> fCountry
-                        = new CloudDatabaseSimImpl(Country.Entry.TABLE_NAME).execute();
-                CloudDatabaseSimImpl.addCallback(fCountry, new CloudDatabaseSimImpl.Callback<JsonElement>() {
+                CloudDatabaseSimImpll.ListenableCallback<JsonElement> fCountry
+                        = new CloudDatabaseSimImpll(Country.Entry.TABLE_NAME).execute();
+                CloudDatabaseSimImpll.addCallback(fCountry, new CloudDatabaseSimImpll.Callback<JsonElement>() {
                     @Override
                     public void onSuccess(JsonElement jsonElement) {
                         if (n[2] == 0) return; // An error occurred
@@ -189,9 +185,9 @@ public class CloudDatabaseSim {
                     }
                 });
 
-                CloudDatabaseSimImpl.ListenableCallback<JsonElement> future
-                        = new CloudDatabaseSimImpl(Match.Entry.TABLE_NAME).execute();
-                CloudDatabaseSimImpl.addCallback(future, new CloudDatabaseSimImpl.Callback<JsonElement>() {
+                CloudDatabaseSimImpll.ListenableCallback<JsonElement> future
+                        = new CloudDatabaseSimImpll(Match.Entry.TABLE_NAME).execute();
+                CloudDatabaseSimImpll.addCallback(future, new CloudDatabaseSimImpll.Callback<JsonElement>() {
                     @Override
                     public void onSuccess(JsonElement jsonElement) {
                         if (n[2] == 0) return; // An error occurred
@@ -215,9 +211,9 @@ public class CloudDatabaseSim {
                     }
                 });
 
-                CloudDatabaseSimImpl.ListenableCallback<JsonElement> fUser
-                        = new CloudDatabaseSimImpl(User.Entry.TABLE_NAME).execute();
-                CloudDatabaseSimImpl.addCallback(fUser, new CloudDatabaseSimImpl.Callback<JsonElement>() {
+                CloudDatabaseSimImpll.ListenableCallback<JsonElement> fUser
+                        = new CloudDatabaseSimImpll(User.Entry.TABLE_NAME).execute();
+                CloudDatabaseSimImpll.addCallback(fUser, new CloudDatabaseSimImpll.Callback<JsonElement>() {
                     @Override
                     public void onSuccess(JsonElement jsonElement) {
                         if (n[2] == 0) return; // An error occurred
@@ -239,10 +235,10 @@ public class CloudDatabaseSim {
                     }
                 });
 
-                CloudDatabaseSimImpl.ListenableCallback<JsonElement> fPrediction =
-                        new CloudDatabaseSimImpl(Prediction.Entry.TABLE_NAME).where()
+                CloudDatabaseSimImpll.ListenableCallback<JsonElement> fPrediction =
+                        new CloudDatabaseSimImpll(Prediction.Entry.TABLE_NAME).where()
                                 .field(Prediction.Entry.Cols.USER_ID).eq(userID).execute();
-                CloudDatabaseSimImpl.addCallback(fPrediction, new CloudDatabaseSimImpl.Callback<JsonElement>() {
+                CloudDatabaseSimImpll.addCallback(fPrediction, new CloudDatabaseSimImpll.Callback<JsonElement>() {
                     @Override
                     public void onSuccess(JsonElement result) {
                         if (n[2] == 0) return; // An error occurred
@@ -272,10 +268,10 @@ public class CloudDatabaseSim {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                CloudDatabaseSimImpl.ListenableCallback<JsonObject> future
-                        = new CloudDatabaseSimImpl(Prediction.Entry.TABLE_NAME)
+                CloudDatabaseSimImpll.ListenableCallback<JsonObject> future
+                        = new CloudDatabaseSimImpll(Prediction.Entry.TABLE_NAME)
                         .insert(formatter.getAsJsonObject(prediction));
-                CloudDatabaseSimImpl.addCallback(future, new CloudDatabaseSimImpl.Callback<JsonObject>() {
+                CloudDatabaseSimImpll.addCallback(future, new CloudDatabaseSimImpll.Callback<JsonObject>() {
                     @Override
                     public void onSuccess(JsonObject result) {
                         MobileClientData requestMessage = MobileClientData.makeMessage(

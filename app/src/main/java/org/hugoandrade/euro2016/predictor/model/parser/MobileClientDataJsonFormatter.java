@@ -10,7 +10,7 @@ import org.hugoandrade.euro2016.predictor.data.Prediction;
  */
 public class MobileClientDataJsonFormatter {
 
-    public JsonObject getAsJsonObject(Prediction prediction) {
+    public JsonObject getAsJsonObject(Prediction prediction, String... exceptProperties) {
 
         return JsonObjectBuilder.instance()
                 .addProperty(Prediction.Entry.Cols.ID, prediction.getID())
@@ -19,14 +19,16 @@ public class MobileClientDataJsonFormatter {
                 .addProperty(Prediction.Entry.Cols.HOME_TEAM_GOALS, prediction.getHomeTeamGoals() == -1? null: prediction.getHomeTeamGoals())
                 .addProperty(Prediction.Entry.Cols.AWAY_TEAM_GOALS, prediction.getAwayTeamGoals() == -1? null: prediction.getAwayTeamGoals())
                 .addProperty(Prediction.Entry.Cols.SCORE, prediction.getScore() == -1? null : prediction.getScore())
+                .removeProperties(exceptProperties)
                 .create();
     }
 
-    public JsonObject getAsJsonObject(LoginData loginData) {
+    public JsonObject getAsJsonObject(LoginData loginData, String... exceptProperties) {
 
         return JsonObjectBuilder.instance()
                 .addProperty(LoginData.Entry.Cols.EMAIL, loginData.getEmail())
                 .addProperty(LoginData.Entry.Cols.PASSWORD, loginData.getPassword())
+                .removeProperties(exceptProperties)
                 .create();
     }
 
@@ -54,6 +56,12 @@ public class MobileClientDataJsonFormatter {
 
         JsonObjectBuilder addProperty(String property, Boolean value) {
             mJsonObject.addProperty(property, value);
+            return this;
+        }
+
+        JsonObjectBuilder removeProperties(String... properties) {
+            for (String property : properties)
+                mJsonObject.remove(property);
             return this;
         }
 

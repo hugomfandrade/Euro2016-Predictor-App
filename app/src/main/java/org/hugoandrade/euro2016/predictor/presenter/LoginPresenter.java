@@ -128,6 +128,7 @@ public class LoginPresenter extends MobileClientPresenterBase<MVP.RequiredLoginV
 
     private void loginOperationResult(boolean wasOperationSuccessful, String message, LoginData loginData) {
         if (wasOperationSuccessful) {
+            Log.e(TAG, "loginOperationResult: " + loginData.toString());
 
             SharedPreferencesUtils.putLoginData(getActivityContext(), loginData);
 

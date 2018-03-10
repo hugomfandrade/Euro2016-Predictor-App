@@ -86,4 +86,14 @@ public class LoginData implements Parcelable {
         dest.writeString(mPassword);
         dest.writeString(mToken);
     }
+
+    @Override
+    public String toString() {
+        return "LoginData{" +
+                "mUserID='" + mUserID + '\'' +
+                ", mEmail='" + mEmail + '\'' +
+                ", mPassword='" + mPassword + '\'' +
+                ", mToken='" + mToken + '\'' +
+                '}';
+    }
 }

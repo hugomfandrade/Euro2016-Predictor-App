@@ -1,13 +1,11 @@
 package org.hugoandrade.euro2016.predictor.cloudsim;
 
 import android.content.ContentProviderClient;
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.RemoteException;
-import android.support.annotation.IntDef;
 import android.support.v4.util.Pair;
 import android.util.Log;
 
@@ -15,37 +13,21 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import org.hugoandrade.euro2016.predictor.cloudsim.parser.CloudContentValuesFormatter;
+import org.hugoandrade.euro2016.predictor.cloudsim.parser.CloudJsonObjectFormatter;
+import org.hugoandrade.euro2016.predictor.data.LoginData;
+import org.hugoandrade.euro2016.predictor.network.HttpConstants;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
-import org.hugoandrade.euro2016.predictor.data.SystemData;
 
 class CloudDatabaseSimImpl {
 
     private final static String TAG = CloudDatabaseSimImpl.class.getSimpleName();
 
-    @IntDef({TASK_UNKNOWN, TASK_GET, TASK_UPDATE, TASK_INSERT, TASK_API})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface TaskType {}
+    private final ContentProviderClient provider;
 
-    @SuppressWarnings("unused") private static final int TASK_UNKNOWN = 0;
-    private static final int TASK_GET = 1;
-    private static final int TASK_UPDATE = 2;
-    private static final int TASK_INSERT = 3;
-    private static final int TASK_API = 4;
-    private static final int TASK_API_GET = 5;
-    private static final int TASK_API_POST = 6;
-
-
-    @SuppressWarnings("unused") private static final int CLOUD_SIM_DURATION = 0; // 1 seconds
-
-    private static ContentProviderClient provider;
-    private static Uri BASE_URL;
     private final String tableName;
-
     private final boolean isApi;
     private JsonObject apiJsonObject;
     private String apiType;
@@ -53,29 +35,26 @@ class CloudDatabaseSimImpl {
     private List<FilteringOperation> filteringOperationList;
     private String[] selectFields;
 
-    CloudDatabaseSimImpl(String table) {
-        tableName = table;
-        isApi = false;
+    CloudDatabaseSimImpl(String table, ContentProviderClient contentProviderClient) {
+        this.provider = contentProviderClient;
+        this.tableName = table;
+        this.isApi = false;
     }
 
-    CloudDatabaseSimImpl(String tableName, JsonObject jsonObject, String apiType) {
+    CloudDatabaseSimImpl(String tableName, JsonObject jsonObject, String apiType, ContentProviderClient contentProviderClient) {
+        this.provider = contentProviderClient;
         this.tableName = tableName;
         this.apiJsonObject = jsonObject;
         this.apiType = apiType;
-        isApi = true;
+        this.isApi = true;
     }
-
-
 
     ListenableCallback<JsonElement> execute() {
         Log.d(TAG, "execute(getTable): " + tableName);
-        ListenableCallback<JsonElement> task;
-        if (isApi)  {
-            task = new ListenableCallback<JsonElement>(tableName)
-                    .api(apiType, apiJsonObject);
-        }
-        else {
-            task = new ListenableCallback<>(tableName);
+        ListenableCallback<JsonElement> task = new ListenableCallback<>(provider, tableName);
+
+        if (isApi) {
+            task.api(apiType, apiJsonObject);
         }
         task.execute(filteringOperationList, selectFields);
         return task;
@@ -83,34 +62,23 @@ class CloudDatabaseSimImpl {
 
     ListenableCallback<JsonObject> update(JsonObject jsonObject) {
         Log.d(TAG, "update(" + tableName + "): " + jsonObject);
-        ListenableCallback<JsonObject> task = new ListenableCallback<>(tableName, jsonObject, TASK_UPDATE);
+        ListenableCallback<JsonObject> task = new ListenableCallback<>(provider, tableName, jsonObject);
         task.execute();
         return task;
     }
 
     ListenableCallback<JsonObject> insert(JsonObject jsonObject) {
         Log.d(TAG, "insert(" + tableName + "): " + jsonObject);
-        ListenableCallback<JsonObject> task = new ListenableCallback<>(tableName, jsonObject, TASK_INSERT);
+        ListenableCallback<JsonObject> task = new ListenableCallback<>(provider, tableName, jsonObject, ListenableCallback.TASK_INSERT);
         task.execute();
         return task;
     }
 
-    ListenableCallback<JsonObject> insert(JsonObject jsonObject, List<Pair<String, String>> parameters) {
-        Log.d(TAG, "insert(" + tableName + "): " + jsonObject);
-        ListenableCallback<JsonObject> task = new ListenableCallback<>(tableName, jsonObject, parameters, TASK_INSERT);
+    ListenableCallback<Void> delete(JsonObject jsonObject) {
+        Log.d(TAG, "delete(" + tableName + "): " + jsonObject);
+        ListenableCallback<Void> task = new ListenableCallback<>(provider, tableName, jsonObject, ListenableCallback.TASK_DELETE);
         task.execute();
         return task;
-    }
-
-    static ListenableCallback<JsonObject> invokeApi(String apiName, JsonObject jsonObject) {
-        ListenableCallback<JsonObject> task = new ListenableCallback<>(apiName, jsonObject, TASK_API);
-        task.execute();
-        return task;
-    }
-
-    static void initialize(ContentResolver contentResolver, Uri baseURL) {
-        CloudDatabaseSimImpl.BASE_URL = baseURL;
-        CloudDatabaseSimImpl.provider = contentResolver.acquireContentProviderClient(CloudDatabaseSimImpl.BASE_URL);
     }
 
     FilteringOperation where() {
@@ -136,6 +104,7 @@ class CloudDatabaseSimImpl {
             this.field = field;
             return this;
         }
+
         FilteringOperation eq(String value) {
             this.operation = "=";
             this.value = value;
@@ -146,9 +115,11 @@ class CloudDatabaseSimImpl {
             this.value = String.valueOf(matchNo);
             return this;
         }
+
         FilteringOperation and() {
             return this.base.where();
         }
+
         ListenableCallback<JsonElement> execute() {
             return base.execute();
         }
@@ -162,37 +133,81 @@ class CloudDatabaseSimImpl {
 
     static class ListenableCallback<V> extends AsyncTask<Void, Void, Void> {
 
-        @SuppressWarnings("unused") private final String TAG = ListenableCallback.class.getSimpleName();
+        @SuppressWarnings("unused")
+        private final String TAG = ListenableCallback.class.getSimpleName();
 
-        private final String tableName;
-        private JsonObject jsonObjectToUpdate;
-        private final List<Pair<String, String>> parameters;
+        private static final int TASK_GET = 1;
+        private static final int TASK_UPDATE = 2;
+        private static final int TASK_INSERT = 3;
+        private static final int TASK_DELETE = 4;
+        private static final int TASK_API_GET = 5;
+        private static final int TASK_API_POST = 6;
+
+        private final ContentProviderClient provider;
+
+        private List<Pair<String, String>> parameters;
         private List<FilteringOperation> filteringOperationList;
         private String[] selectFields;
-        private Callback<V> future;
-        @TaskType private int taskType;
 
-        private CloudJsonFormatter jsonFormatter = new CloudJsonFormatter();
+        private CloudContentValuesFormatter cvFormatter = new CloudContentValuesFormatter();
+        private CloudJsonObjectFormatter jsonFormatter = new CloudJsonObjectFormatter();
 
-        ListenableCallback(String tableName) {
-            this.tableName = tableName;
-            this.jsonObjectToUpdate = null;
-            this.taskType = TASK_GET;
-            this.parameters = null;
+        private final String tableName;
+        private JsonObject jsonObject;
+        private int taskType;
+        private Callback<V> mFuture;
+
+        ListenableCallback(ContentProviderClient contentProviderClient, String tableName) {
+            this(contentProviderClient, tableName, null, TASK_GET);
         }
 
-        ListenableCallback(String tableName, JsonObject jsonObject, @TaskType int taskType) {
-            this.tableName = tableName;
-            this.jsonObjectToUpdate = jsonObject;
-            this.taskType = taskType;
-            this.parameters = null;
+        ListenableCallback(ContentProviderClient contentProviderClient, String tableName, JsonObject jsonObject) {
+            this(contentProviderClient, tableName, jsonObject, TASK_UPDATE);
         }
 
-        ListenableCallback(String tableName, JsonObject jsonObject, List<Pair<String, String>> parameters, @TaskType int taskType) {
+        ListenableCallback(ContentProviderClient contentProviderClient, String tableName, JsonObject jsonObject, int taskType) {
+            provider = contentProviderClient;
             this.tableName = tableName;
-            this.jsonObjectToUpdate = jsonObject;
+            this.jsonObject = jsonObject;
             this.taskType = taskType;
-            this.parameters = parameters;
+        }
+
+        ListenableCallback<V> api(String apiType, JsonObject apiJsonObject) {
+            this.jsonObject = apiJsonObject;
+            if (apiType.equals(HttpConstants.PostMethod))
+                this.taskType = TASK_API_POST;
+            else if (apiType.equals(HttpConstants.GetMethod))
+                this.taskType = TASK_API_GET;
+            return this;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            Uri uri = CloudDatabaseSimAdapter.BASE_URI.buildUpon()
+                    .appendPath(tableName)
+                    .build();
+
+            try {
+
+                if (taskType == TASK_GET)
+                    getOperation(uri);
+                else if (taskType == TASK_UPDATE)
+                    updateOperation(uri);
+                else if (taskType == TASK_DELETE)
+                    deleteOperation(uri);
+                else if (taskType == TASK_INSERT)
+                    insertOperation(uri);
+                else if (taskType == TASK_API_POST)
+                    postApiOperation(uri);
+                else if (taskType == TASK_API_GET)
+                    getApiOperation(uri);
+
+            } catch (Exception e) {
+                if (mFuture != null)
+                    mFuture.onFailure(e.getMessage());
+            }
+
+            return null;
         }
 
         void execute(List<FilteringOperation> filteringOperationList, String[] selectFields) {
@@ -201,194 +216,134 @@ class CloudDatabaseSimImpl {
             this.execute();
         }
 
-        ListenableCallback<V> api(String apiType, JsonObject apiJsonObject) {
-            this.jsonObjectToUpdate = apiJsonObject;
-            if (apiType.equals("POST"))
-                this.taskType = TASK_API_POST;
-            else if (apiType.equals("GET"))
-                this.taskType = TASK_API_GET;
-            return this;
-        }
+        private void getApiOperation(Uri baseUri) throws RemoteException {
 
-        @Override
-        @SuppressWarnings("unchecked")
-        protected Void doInBackground(Void... params) {
-            String URL = CloudDatabaseSimImpl.BASE_URL.toString();//"content://hugoandrade.euro2016app.CloudDatabaseSimProvider";
-
-            if (taskType == TASK_GET)
-                getOperation(URL);
-            else if (taskType == TASK_UPDATE)
-                updateOperation(URL);
-            else if (taskType == TASK_INSERT)
-                insertOperation(URL);
-            else if (taskType == TASK_API_POST)
-                postApiOperation(URL);
-            else if (taskType == TASK_API_GET)
-                getApiOperation(URL);
-
-            return null;
-        }
-
-        private void getApiOperation(String URL) {
-            Uri objects = Uri.parse(URL + "/" + tableName);
-
-            Cursor c = null;
-            try {
-                c = provider.query(objects, null, null, null, null);
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
+            Cursor c = provider.query(baseUri, null, null, null, null);
 
             if (c == null) {
-                if (future != null)
-                    future.onFailure("Cursor not found");
-                return;
+                throw new IllegalArgumentException("Cursor not found");
             }
 
-            Log.e(TAG, Integer.toString(c.getCount()));
             JsonArray jsonArray = jsonFormatter.getAsJsonArray(c);
 
             try {
-                if (future != null) {
+                if (mFuture != null) {
                     if (jsonArray.size() == 0)
-                        future.onSuccess(null);
+                        mFuture.onSuccess(null);
                     else
-                        future.onSuccess((V) jsonArray.get(0));
+                        mFuture.onSuccess((V) adjustIfItIsSystemData(jsonArray.get(0)));
                 }
             } catch (ClassCastException e) {
-                future.onFailure("Cursor not found");
+                throw new IllegalArgumentException("Cursor not found");
             }
         }
 
-        private void postApiOperation(String URL) {
-            Uri url = Uri.parse(URL + "/" + tableName);
+        private void postApiOperation(Uri baseUri) throws RemoteException {
+            Uri uri = provider.insert(baseUri, jsonObject == null ? null: cvFormatter.getAsContentValues(jsonObject));
 
-            Uri uri = null;
-            try {
-                uri = provider.insert(url, jsonFormatter.getAsContentValues(jsonObjectToUpdate));
-            } catch (RemoteException e) {
-                e.printStackTrace();
+            if (uri == null)
+                throw new IllegalArgumentException("Operation failed");
+
+            Cursor c = provider.query(uri, null, null, null, null);
+
+            if (c == null) {
+                throw new IllegalArgumentException("Cursor not found");
             }
 
-            if (future == null)
-                return;
-            if (uri == null)
-                future.onFailure("Operation failed");
-            else {
-                if (!uri.toString().startsWith("content://"))
-                    future.onFailure(uri.toString());
-                else {
-
-                    Cursor c = null;
-                    try {
-                        c = provider.query(uri, null, null, null, null);
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
-                    if (c == null) {
-                        if (future != null)
-                            future.onFailure("Cursor not found");
-                        return;
-                    }
-
-                    if (c.moveToFirst()) {
-                        try {
-                            if (future != null)
-                                future.onSuccess((V) parseUserID(fromCursorToJsonObject(c)));
-                        } catch (ClassCastException e) {
-                            future.onFailure("Could not cast");
-                        }
-                    }
-                    c.close();
+            if (c.moveToFirst()) {
+                try {
+                    if (mFuture != null)
+                        mFuture.onSuccess((V) adjustIfItIsLoginData(jsonFormatter.getAsJsonObject(c)));
+                } catch (ClassCastException e) {
+                    throw new IllegalArgumentException("Could not cast");
                 }
             }
+            c.close();
         }
 
-        private JsonObject parseUserID(JsonObject jsonObject) {
-            jsonObject.addProperty("UserID", jsonObject.get("id").getAsString());
-            jsonObject.remove("id");
-            return jsonObject;
-        }
+        private void updateOperation(Uri baseUri) throws RemoteException {
+            ContentValues contentValues = cvFormatter.getAsContentValues(jsonObject);
 
-        @SuppressWarnings("unchecked")
-        private void insertOperation(String URL) {
-            Uri objects;
-            //if (tableName.equals("Country"))
-                objects = Uri.parse(URL + "/" + tableName);// + "/" + NetworkUtils.getJsonPrimitive(jsonObjectToUpdate, "Name", "null"));
-            //else
-              //  objects = Uri.parse(URL + "/" + tableName + "/" + NetworkUtils.getJsonPrimitive(jsonObjectToUpdate, "_id", "null"));
+            Uri url = baseUri.buildUpon()
+                    .appendPath(contentValues.getAsString("_id"))
+                    .build();
 
-            if (parameters != null && jsonObjectToUpdate != null)
-                for (Pair<String, String> entry : parameters)
-                    jsonObjectToUpdate.addProperty(entry.first, entry.second);
+            int count = provider.update(url,
+                    contentValues,
+                    null,
+                    null);
 
-            Uri uri = null;
-            try {
-                uri = provider.insert(objects, fromJsonObjectToContentValues(jsonObjectToUpdate));
-            } catch (RemoteException e) {
-                future.onFailure("Operation error: " + e.getMessage());
-            }
-            if (future == null)
+            if (mFuture == null)
                 return;
-            if (uri == null)
-                future.onFailure("Operation error");
-            else {
-                if (!uri.toString().startsWith("content"))
-                    future.onFailure(uri.toString());
-                else {
+            if (count == 0)
+                throw new IllegalArgumentException("No item updated");
+            else if (count == 1) {
 
-                    Cursor c = null;
-                    try {
-                        c = provider.query(uri, null, null, null, null);
-                    } catch (RemoteException e) {
-                        future.onFailure("Operation error: " + e.getMessage());
-                    }
-                    if (c == null) {
-                        if (future != null)
-                            future.onFailure("Cursor not found");
-                        return;
-                    }
+                Cursor c = provider.query(url, null, null, null, null);
 
-                    if (c.moveToFirst()) {
-                        try {
-                            if (future != null)
-                                future.onSuccess((V) fromCursorToJsonObject(c));
-                        } catch (ClassCastException e) {
-                            future.onFailure("Could not cast");
-                        }
-                    }
-                    c.close();
+                if (c == null) {
+                    throw new IllegalArgumentException("Cursor not found");
+                }
+
+                JsonArray jsonArray = jsonFormatter.getAsJsonArray(c);
+
+                try {
+                    if (jsonArray.size() != 1)
+                        throw new IllegalArgumentException("Multiple items updated. Please, retrieve all items again.");
+
+                    if (mFuture != null)
+                        mFuture.onSuccess((V) jsonArray.get(0));
+
+                } catch (ClassCastException e) {
+                    throw new IllegalArgumentException("Cursor not found");
                 }
             }
-        }
-
-        @SuppressWarnings("unchecked")
-        private void updateOperation(String URL) {
-            Uri objects;
-            if (tableName.equals("Country"))
-                objects = Uri.parse(URL + "/" + tableName + "/" + getJsonPrimitive(jsonObjectToUpdate, "Name", "null"));
             else
-                objects = Uri.parse(URL + "/" + tableName + "/" + getJsonPrimitive(jsonObjectToUpdate, "_id", "null"));
+                throw new IllegalArgumentException("Multiple items updated. Please, retrieve all items again.");
+        }
 
-            int c = 0;
-            try {
-                c = provider.update(objects, fromJsonObjectToContentValues(jsonObjectToUpdate), null, null);
-            } catch (RemoteException e) {
-                future.onFailure("Operation error: " + e.getMessage());
-            }
-            if (future == null)
+        private void deleteOperation(Uri baseUri) throws RemoteException {
+            Uri url = baseUri.buildUpon()
+                    .appendPath(cvFormatter.getAsContentValues(jsonObject).getAsString("_id"))
+                    .build();
+
+            int c = provider.delete(url,
+                    null,
+                    null);
+            if (mFuture == null)
                 return;
             if (c == 0)
-                future.onFailure("No item updated");
+                throw new IllegalArgumentException("No item deleted");
             else if (c == 1)
-                future.onSuccess((V) jsonObjectToUpdate);
+                mFuture.onSuccess(null);
             else
-                future.onFailure("Multiple items updated. Please, retrieve all matches again.");
+                throw new IllegalArgumentException("Multiple items deleted. Please, retrieve all items again.");
         }
 
-        @SuppressWarnings("unchecked")
-        private void getOperation(String URL) {
-            Uri objects = Uri.parse(URL + "/" + tableName);
+        private void insertOperation(Uri baseUri) throws RemoteException {
+
+            Uri uri = provider.insert(baseUri, cvFormatter.getAsContentValues(jsonObject));
+
+            if (mFuture == null)
+                return;
+
+            if (uri == null)
+                throw new IllegalArgumentException("No item inserted");
+
+            Cursor c = provider.query(uri, null, null, null, null);
+
+            if (c == null || c.getCount() == 0) {
+                throw new IllegalArgumentException("No item inserted");
+            }
+
+            c.moveToFirst();
+
+            mFuture.onSuccess((V) jsonFormatter.getAsJsonObject(c));
+
+            c.close();
+        }
+
+        private void getOperation(Uri baseUri) throws RemoteException {
 
             String selection = null;
             String[] selectionArgs = null;
@@ -403,58 +358,35 @@ class CloudDatabaseSimImpl {
                     selectionArgs[i] = f.value;
                 }
             }
-            Cursor c = null;
-            try {
-                c = provider.query(objects, selectFields, selection, selectionArgs, null);
-            } catch (RemoteException e) {
-                future.onFailure("Operation error: " + e.getMessage());
-            }
+
+            Cursor c = provider.query(baseUri, selectFields, selection, selectionArgs, null);
+
             if (c == null) {
-                if (future != null)
-                    future.onFailure("Cursor not found");
-                return;
+                throw new IllegalArgumentException("Cursor not found");
             }
-            JsonArray jsonArray = new JsonArray();
 
-            if (c.moveToFirst()) {
-                do{
-                    jsonArray.add(fromCursorToJsonObject(c));
-                } while (c.moveToNext());
-            }
-            c.close();
+            JsonArray jsonArray = jsonFormatter.getAsJsonArray(c);
 
             try {
-                if (future != null)
-                    future.onSuccess((V) jsonArray);
+                if (mFuture != null)
+                    mFuture.onSuccess((V) jsonArray);
             } catch (ClassCastException e) {
-                future.onFailure("Cursor not found");
+                throw new IllegalArgumentException("Could not cast");
             }
-        }
-
-        private JsonObject fromCursorToJsonObject(Cursor c) {
-            JsonObject jsonObject = new JsonObject();
-            for (String columnName : c.getColumnNames())
-                if (columnName.equals(SystemData.Entry.Cols.APP_STATE))
-                    jsonObject.addProperty(columnName, c.getInt(c.getColumnIndex(columnName)) == 1);
-                else {
-                    if (columnName.equals("_id"))
-                        jsonObject.addProperty("id", Integer.toString(c.getInt(c.getColumnIndex(columnName))));
-                    else
-                        jsonObject.addProperty(columnName, c.getString(c.getColumnIndex(columnName)));
-                }
-            return jsonObject;
-        }
-
-        private ContentValues fromJsonObjectToContentValues(JsonObject jsonObject) {
-            ContentValues values = new ContentValues();
-            for (Map.Entry<String, JsonElement> entry: jsonObject.entrySet())
-                values.put(entry.getKey(), getJsonPrimitive(jsonObject, entry.getKey(), null));
-            return values;
         }
 
         void addListener(Callback<V> future) {
-            this.future = future;
+            this.mFuture = future;
         }
+    }
+
+    static <V> void addCallback(ListenableCallback<V> listenable, Callback<V> future) {
+        listenable.addListener(future);
+    }
+
+    interface Callback<V> {
+        void onSuccess(V result);
+        void onFailure(String errorMessage);
     }
 
     private static String getJsonPrimitive(JsonObject jsonObject, String jsonMemberName, String defaultValue) {
@@ -465,13 +397,48 @@ class CloudDatabaseSimImpl {
         }
     }
 
+    private static JsonObject adjustIfItIsLoginData(JsonObject jsonObject) {
+        Log.e(TAG, "adjustIfItIsLoginData: " + jsonObject.toString());
 
-    static <V>  void addCallback(ListenableCallback<V> listenable, Callback<V> future) {
-        listenable.addListener(future);
+        if (jsonObject.has(LoginData.Entry.Cols.EMAIL) &&
+                jsonObject.has(LoginData.Entry.Cols.PASSWORD)) {
+
+            jsonObject.addProperty(LoginData.Entry.Cols.USER_ID, jsonObject.get("id").getAsString());
+            jsonObject.remove("id");
+
+            Log.e(TAG, "adjustIfItIsLoginData: " + jsonObject.toString());
+            return jsonObject;
+        }
+        return jsonObject;
     }
 
-    interface Callback<V> {
-        void onSuccess(V result);
-        void onFailure(String errorMessage);
-    }
+    private static JsonElement adjustIfItIsSystemData(JsonElement jsonElement) {
+
+        /*if (!jsonElement.isJsonObject())
+            return jsonElement;
+
+        if (jsonElement.getAsJsonObject().has(SystemData.Entry.Cols.RULES)
+                && jsonElement.getAsJsonObject().has(SystemData.Entry.Cols.APP_STATE)
+                && jsonElement.getAsJsonObject().has(SystemData.Entry.Cols.DATE_OF_CHANGE)
+                && jsonElement.getAsJsonObject().has(SystemData.Entry.Cols.SYSTEM_DATE)) {
+
+            Calendar dateOfChange =
+                    ISO8601.toCalendar(getJsonPrimitive(jsonElement.getAsJsonObject(), SystemData.Entry.Cols.DATE_OF_CHANGE, null));
+            Calendar systemDate =
+                    ISO8601.toCalendar(getJsonPrimitive(jsonElement.getAsJsonObject(), SystemData.Entry.Cols.SYSTEM_DATE, null));
+
+            if (dateOfChange != null && systemDate != null) {
+                Calendar c = Calendar.getInstance();
+                long diff = c.getTimeInMillis() - dateOfChange.getTimeInMillis();
+                systemDate.setTimeInMillis(systemDate.getTimeInMillis() + diff);
+
+                jsonElement.getAsJsonObject().remove(SystemData.Entry.Cols.DATE_OF_CHANGE);
+                jsonElement.getAsJsonObject().addProperty(SystemData.Entry.Cols.DATE_OF_CHANGE, ISO8601.fromCalendar(systemDate));
+            }
+            else {
+                return jsonElement;
+            }
+        }/**/
+        return jsonElement;
+    }/**/
 }
