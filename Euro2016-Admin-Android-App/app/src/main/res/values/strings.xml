@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">Euro 2016 Predictor Admin</string>
+    <string name="action_settings">Settings</string>
+    <string name="group_a">Group A</string>
+    <string name="group_b">Group B</string>
+    <string name="group_c">Group C</string>
+    <string name="group_d">Group D</string>
+    <string name="group_e">Group E</string>
+    <string name="group_f">Group F</string>
+    <string name="reset">Reset</string>
+    <string name="edit_system_data">Edit System Data</string>
+    <string name="app_enabled"><u>App enabled?</u></string>
+    <string name="rules"><u>Rules:</u></string>
+    <string name="set_system_date"><u>System Date:</u></string>
+    <string name="correct_prediction">Correct prediction</string>
+    <string name="correct_outcome">Correct outcome</string>
+    <string name="correct_outcome_via_penalties">Correct outcome via penalty shootout</string>
+    <string name="incorrect_prediction_and_outcome">Incorrect prediction and outcome</string>
+    <string name="set">Set</string>
+    <string name="zero_value">0</string>
+    <string name="action_cancel">cancel</string>
+    <string name="action_confirm">confirm</string>
+    <string name="double_dots">:</string>
+    <string name="login">login</string>
+    <string name="password">password</string>
+    <string name="username">username</string>
+    <string name="email">email</string>
+    <string name="action_done">Done</string>
+    <string name="update_prediction_scores">Update Prediction Scores</string>
+    <string name="sim_content_authority">org.hugoandrade.euro2016.predictor.sim_provider</string>
+</resources>

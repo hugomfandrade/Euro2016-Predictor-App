@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/action_update_scores"
+        app:showAsAction="never"
+        android:title="@string/update_prediction_scores"/>
+
+    <item
+        android:id="@+id/action_edit_system_data"
+        app:showAsAction="never"
+        android:title="@string/edit_system_data"/>
+
+    <item
+        android:id="@+id/action_reset"
+        app:showAsAction="never"
+        android:title="@string/reset"/>
+
+</menu>
