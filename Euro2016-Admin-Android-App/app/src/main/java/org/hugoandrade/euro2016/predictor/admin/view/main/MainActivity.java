@@ -12,7 +12,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -39,8 +38,6 @@ public class MainActivity extends ActivityBase<MVP.RequiredViewOps,
                                                MainPresenter>
         implements MVP.RequiredViewOps, MainFragComm.ProvidedMainActivityOps {
 
-    @SuppressWarnings("unused") private final static String TAG = MainActivity.class.getSimpleName();
-
     private static final int EDIT_SYSTEM_DATA_REQUEST_CODE = 100;
 
     private final CharSequence[] mFragmentTitleArray = {"Set Results", "Groups"};
@@ -58,8 +55,6 @@ public class MainActivity extends ActivityBase<MVP.RequiredViewOps,
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_main);
-
         initializeUI();
 
         enableUI();
@@ -68,6 +63,8 @@ public class MainActivity extends ActivityBase<MVP.RequiredViewOps,
     }
 
     private void initializeUI() {
+        setContentView(R.layout.activity_main);
+
         vProgressBar = findViewById(R.id.progressBar_waiting);
 
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));

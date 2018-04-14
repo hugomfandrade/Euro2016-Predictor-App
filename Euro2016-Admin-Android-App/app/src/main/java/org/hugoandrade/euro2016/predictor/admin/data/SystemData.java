@@ -102,12 +102,12 @@ public class SystemData implements Parcelable {
         mAppState = state;
     }
 
-    public void setRules(String rules) {
-        mRules = rules;
-    }
+    public void setRules(Rules rules) {
 
-    public void setSystemDate(int year, int month, int day, int hour, int minute) {
-        mSystemDate.set(year, month, day, hour, minute);
+        mRules = Integer.toString(rules.getRuleIncorrectPrediction()) + "," +
+                Integer.toString(rules.getRuleCorrectOutcomeViaPenalties()) + "," +
+                Integer.toString(rules.getRuleCorrectOutcome()) + "," +
+                Integer.toString(rules.getRuleCorrectPrediction());
     }
 
     public void setSystemDate(int year, int month, int day) {
@@ -165,7 +165,7 @@ public class SystemData implements Parcelable {
         dest.writeSerializable(mDateOfLastRecordedSystemDate);
     }
 
-    public class Rules {
+    public static class Rules {
 
         private final int mRuleCorrectPrediction;
         private final int mRuleCorrectOutcome;

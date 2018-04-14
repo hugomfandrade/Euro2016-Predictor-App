@@ -149,11 +149,11 @@ public class EditSystemDataActivity extends AppCompatActivity {
     private void confirm() {
         mSystemData.setDateOfChange(Calendar.getInstance());
         mSystemData.setAppState(switchAppEnabled.isChecked());
-        mSystemData.setRules(
-                Integer.toString(viewStructIncorrectPrediction.getProgress()) + "," +
-                        Integer.toString(viewStructCorrectOutcomeViaPenalties.getProgress()) + "," +
-                        Integer.toString(viewStructCorrectOutcome.getProgress()) + "," +
-                        Integer.toString(viewStructCorrectPrediction.getProgress()));
+        mSystemData.setRules(new SystemData.Rules(
+                viewStructIncorrectPrediction.getProgress(),
+                viewStructCorrectOutcomeViaPenalties.getProgress(),
+                viewStructCorrectOutcome.getProgress(),
+                viewStructCorrectPrediction.getProgress()));
 
         setResult(RESULT_OK, new Intent().putExtra(INTENT_EXTRA_SYSTEM_DATA, mSystemData));
         onBackPressed();

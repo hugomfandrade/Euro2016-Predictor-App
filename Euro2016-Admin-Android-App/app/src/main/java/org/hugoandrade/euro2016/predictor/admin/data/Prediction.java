@@ -20,7 +20,7 @@ public class Prediction {
         public static class Cols {
             public static final String ID = "id";
             public static final String USER_ID = "UserID";
-            public static final String MATCH_NO = "MatchNo";
+            public static final String MATCH_NO = "MatchNumber";
             public static final String HOME_TEAM_GOALS = "HomeTeamGoals";
             public static final String AWAY_TEAM_GOALS = "AwayTeamGoals";
             public static final String SCORE = "Score";

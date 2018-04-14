@@ -330,7 +330,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
                 Calendar matchDate = mSimHelper.getMatchDate(mDbHelper, prediction.getMatchNumber());
 
                 if (matchDate == null)
-                    throw new IllegalArgumentException("Failed to retrieve date of match.");
+                    throw new IllegalArgumentException("Failed to retrieve date of match " + prediction.getMatchNumber());
 
                 if (matchDate.before(systemTime))
                     throw new IllegalArgumentException("Past match date:\t" + ISO8601.fromCalendar(systemTime));
