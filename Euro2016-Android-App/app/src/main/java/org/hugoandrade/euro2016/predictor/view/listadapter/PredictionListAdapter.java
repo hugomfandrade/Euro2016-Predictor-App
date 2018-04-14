@@ -1,58 +1,72 @@
 package org.hugoandrade.euro2016.predictor.view.listadapter;
 
+import android.annotation.SuppressLint;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.os.Build;
+import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
+import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.R;
-import org.hugoandrade.euro2016.predictor.data.Country;
-import org.hugoandrade.euro2016.predictor.data.Match;
-import org.hugoandrade.euro2016.predictor.data.Prediction;
+import org.hugoandrade.euro2016.predictor.data.raw.Country;
+import org.hugoandrade.euro2016.predictor.data.raw.Match;
+import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
+import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils;
+import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
 import static android.view.View.GONE;
-import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 
 public class PredictionListAdapter extends RecyclerView.Adapter<PredictionListAdapter.ViewHolder> {
+
+    private static final String DAY_MONTH_TEMPLATE = "d MMMM";
+    private static final String TIME_TEMPLATE = "HH:mm";
 
     public static final int VIEW_TYPE_DISPLAY_ONLY = 0;
     public static final int VIEW_TYPE_DISPLAY_AND_UPDATE = 1;
 
     private static final int COLOR_DEFAULT = Color.parseColor("#aaffffff");
-    private static final int COLOR_INCORRECT_PREDICTION = Color.parseColor("#7Aff0000");
-    private static final int COLOR_CORRECT_OUTCOME_VIA_PENALTIES = Color.parseColor("#7AFF5500");
-    private static final int COLOR_CORRECT_OUTCOME = Color.parseColor("#7AAAAA00");
-    private static final int COLOR_CORRECT_PREDICTION = Color.parseColor("#7A00AA00");
+    private static final int COLOR_INCORRECT_PREDICTION = Color.parseColor("#aaff0000");
+    //private static final int COLOR_INCORRECT_PREDICTION = Color.parseColor("#aaff5f5f");
+    private static final int COLOR_CORRECT_OUTCOME_VIA_PENALTIES = Color.parseColor("#aaFF5500");
+    private static final int COLOR_CORRECT_OUTCOME = Color.parseColor("#aaAAAA00");
+    private static final int COLOR_CORRECT_PREDICTION = Color.parseColor("#aa00AA00");
 
-    private static final int COLOR_CORAL_RED = Color.parseColor("#ffff4444");
-    private static final int COLOR_BLACK = Color.parseColor("#ff000000");
-
-    private static final String TEMPLATE = "dd-MM-yyyy HH:mm";
+    private static final int TEXT_COLOR = Color.parseColor("#222222");
+    private static final int TEXT_COLOR_DEFAULT = Color.WHITE;//parseColor("#c0d7ed");
 
     private final int mViewType;
 
     private List<Prediction> mPredictionList;
     private List<InputPrediction> mInputPredictionList;
 
+    private RecyclerView mRecyclerView;
     private OnPredictionSetListener mListener;
-
+    private Handler mHandler;
+    private Runnable mRunnable;
 
     public PredictionListAdapter(List<Match> matchList,
                                  List<Prediction> predictionList,
@@ -60,6 +74,7 @@ public class PredictionListAdapter extends RecyclerView.Adapter<PredictionListAd
         setPredictionList(predictionList);
         setMatchList(matchList);
         mViewType = taskType;
+        mHandler = new Handler();
     }
 
     @Override
@@ -68,60 +83,83 @@ public class PredictionListAdapter extends RecyclerView.Adapter<PredictionListAd
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        mRecyclerView = recyclerView;
+    }
+
+    @NonNull
+    @Override
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater vi = LayoutInflater.from(parent.getContext());
         return new ViewHolder(vi.inflate(R.layout.list_item_prediction, parent, false));
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
         InputPrediction inputPrediction = mInputPredictionList.get(holder.getAdapterPosition());
         Match match = inputPrediction.mMatch;
         Prediction prediction = inputPrediction.mPrediction;
+
         boolean isEnabled = inputPrediction.mIsEnabled;
-        boolean isPast = match.getDateAndTime().before(GlobalData.getServerTime().getTime());
+        boolean isPast = match.getDateAndTime().before(GlobalData.getInstance().getServerTime().getTime());
         boolean viewOnly = mViewType == VIEW_TYPE_DISPLAY_ONLY;
+        boolean isSameDayAsPrevious =
+                position == 0? false :
+                        DateFormat.format(DAY_MONTH_TEMPLATE, match.getDateAndTime()).toString().equals(
+                                DateFormat.format(DAY_MONTH_TEMPLATE, mInputPredictionList.get(holder.getAdapterPosition() - 1).mMatch.getDateAndTime()).toString());
+
+        holder.isBinding = true;
 
         holder.cardView.setCardBackgroundColor(isPast? getCardColor(prediction) : COLOR_DEFAULT);
-        holder.tvMatchNo.setText(String.valueOf(match.getMatchNumber()));
+        //holder.tvMatchNo.setText(String.valueOf(match.getMatchNumber()));
         holder.tvHomeTeam.setText(match.getHomeTeamName());
         holder.tvAwayTeam.setText(match.getAwayTeamName());
         holder.tvHomeTeam.setTypeface(null, Typeface.NORMAL);
         holder.tvAwayTeam.setTypeface(null, Typeface.NORMAL);
+        holder.tvHomeTeam.setTextColor(isPast ? TEXT_COLOR_DEFAULT : TEXT_COLOR);
+        holder.tvAwayTeam.setTextColor(isPast ? TEXT_COLOR_DEFAULT : TEXT_COLOR);
         holder.ivHomeTeam.setImageResource(Country.getImageID(match.getHomeTeam()));
         holder.ivAwayTeam.setImageResource(Country.getImageID(match.getAwayTeam()));
-        holder.etPredictionHomeTeamGoals.setText(inputPrediction.mHomeTeamGoals);
-        // holder.etPredictionHomeTeamGoals.setEnabled(true);
-        holder.etPredictionHomeTeamGoals.setEnabled(!isPast && isEnabled && !viewOnly);
-        holder.etPredictionAwayTeamGoals.setText(inputPrediction.mAwayTeamGoals);
-        //holder.etPredictionAwayTeamGoals.setEnabled(true);
-        holder.etPredictionAwayTeamGoals.setEnabled(!isPast && isEnabled && !viewOnly);
-        holder.tvDateAndTime.setText(DateFormat.format(TEMPLATE, match.getDateAndTime()).toString());
+
+        boolean hasHomeCountryFlag = Country.getImageID(match.getHomeTeam()) != 0;
+        boolean hasAwayCountryFlag = Country.getImageID(match.getAwayTeam()) != 0;
+        ((View) holder.ivHomeTeam.getParent()).setVisibility(hasHomeCountryFlag ? VISIBLE : GONE);
+        ((View) holder.ivAwayTeam.getParent()).setVisibility(hasAwayCountryFlag ? VISIBLE : GONE);
+        holder.tvHomeTeam.setGravity(hasHomeCountryFlag ? Gravity.TOP | Gravity.CENTER_HORIZONTAL : Gravity.CENTER);
+        holder.tvAwayTeam.setGravity(hasAwayCountryFlag ? Gravity.TOP | Gravity.CENTER_HORIZONTAL : Gravity.CENTER);
+
+        holder.etHomeTeamGoals.setText(inputPrediction.mHomeTeamGoals);
+        // holder.etHomeTeamGoals.setEnabled(true);
+        holder.etHomeTeamGoals.setEnabled(!isPast && isEnabled && !viewOnly);
+        holder.etAwayTeamGoals.setText(inputPrediction.mAwayTeamGoals);
+        //holder.etHomeTeamGoals.setBackgroundResource(isPast? 0 : R.drawable.bg_edittext_icon);
+        //holder.etAwayTeamGoals.setBackgroundResource(isPast? 0 : R.drawable.bg_edittext_icon);
+        //holder.etAwayTeamGoals.setEnabled(true);
+        holder.etAwayTeamGoals.setEnabled(!isPast && isEnabled && !viewOnly);
+        holder.tvDayMonth.setText(DateFormat.format(DAY_MONTH_TEMPLATE, match.getDateAndTime()).toString());
+        holder.tvDayMonth.setVisibility(isSameDayAsPrevious? GONE : VISIBLE);
+        holder.tvDateAndTime.setText(DateFormat.format(TIME_TEMPLATE, match.getDateAndTime()).toString());
         holder.tvDateAndTime.setVisibility(viewOnly? GONE : VISIBLE);
+        holder.tvDateAndTime.setTextColor(isPast ? TEXT_COLOR_DEFAULT : TEXT_COLOR);
         holder.tvMatchUpResult.setText(MatchUtils.getShortDescription(match));
-        //holder.btSetResult.setEnabled(true);
-        holder.btSetResult.setEnabled(!isPast && isEnabled && !viewOnly);
-        holder.progressBar.setVisibility(!isPast && !viewOnly && !isEnabled? VISIBLE : INVISIBLE);
 
-        if (!isEnabled || isPast || viewOnly)
-            holder.btSetResult.setEnabled(true);//false);
-        else
-            holder.checkIfThereAreNewValues();
+        holder.detailsContainer.setVisibility(isPast ? VISIBLE: GONE);
 
-        if (isPast) {
-            holder.btSetResult.setText(prediction == null || prediction.getScore() == -1? "0" : String.valueOf(prediction.getScore()));
-        } else {
-            switch (mViewType) {
-                case VIEW_TYPE_DISPLAY_AND_UPDATE:
-                    holder.btSetResult.setText(R.string.set);
-                    break;
-                case VIEW_TYPE_DISPLAY_ONLY:
-                    holder.btSetResult.setText("0");
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid view type, value of " + mViewType);
-            }
+        holder.tvPoints.setText(getPointsText(prediction));
+        holder.tvStageAbbr.setText(getStageText(match));
+
+        holder.tvMatchNumber.setText(TextUtils.concat("Match number: ", String.valueOf(match.getMatchNumber())));
+        holder.detailsInfoContainer.setVisibility(View.INVISIBLE);
+        holder.tvStage.setText(
+                String.format("%s%s", match.getStage(), match.getGroup() == null ? "" : (" - " + match.getGroup())));
+        holder.tvStadium.setText(match.getStadium());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            holder.ivInfo.setImageTintList(ColorStateList.valueOf(isPast ? TEXT_COLOR_DEFAULT : TEXT_COLOR));
         }
+        holder.ivInfo.setVisibility(viewOnly ? GONE : VISIBLE);
+
+        holder.isBinding = false;
     }
 
     @Override
@@ -162,7 +200,7 @@ public class PredictionListAdapter extends RecyclerView.Adapter<PredictionListAd
             if (mInputPredictionList.get(l).mMatch.getMatchNumber() == prediction.getMatchNumber()) {
                 mInputPredictionList.get(l).setPrediction(prediction);
                 mInputPredictionList.get(l).mIsEnabled = true;
-                notifyItemChanged(l);
+                //notifyItemChanged(l);
                 break;
             }
     }
@@ -182,81 +220,138 @@ public class PredictionListAdapter extends RecyclerView.Adapter<PredictionListAd
                 notifyItemChanged(l);
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    class ViewHolder extends RecyclerView.ViewHolder {
 
+        TextView tvMatchNumber;
+        View detailsInfoContainer;
+        TextView tvStage;
+        TextView tvStadium;
+        ImageView ivInfo;
+        
+        TextView tvStageAbbr;
         CardView cardView;
-        TextView tvMatchNo;
+        TextView tvDayMonth;
         TextView tvHomeTeam;
         TextView tvAwayTeam;
         TextView tvMatchUpResult;
         TextView tvDateAndTime;
         ImageView ivHomeTeam;
         ImageView ivAwayTeam;
-        EditText etPredictionHomeTeamGoals;
-        EditText etPredictionAwayTeamGoals;
-        Button btSetResult;
-        View progressBar;
+        EditText etHomeTeamGoals;
+        EditText etAwayTeamGoals;
+        TextView tvPoints;
+        View detailsContainer;
+        boolean isBinding;
 
+        @SuppressLint("ClickableViewAccessibility")
         ViewHolder(View itemView) {
             super(itemView);
 
-            progressBar = itemView.findViewById(R.id.progressBar_waiting_for_response);
+            tvDayMonth = itemView.findViewById(R.id.tv_month);
+            tvStageAbbr = itemView.findViewById(R.id.tv_stage_abbr);
+            cardView = itemView.findViewById(R.id.cardView_container);
+            tvHomeTeam = itemView.findViewById(R.id.tv_match_home_team);
+            tvAwayTeam = itemView.findViewById(R.id.tv_match_away_team);
+            ivHomeTeam = itemView.findViewById(R.id.iv_match_home_team);
+            ivAwayTeam = itemView.findViewById(R.id.iv_match_away_team);
+            tvMatchUpResult = itemView.findViewById(R.id.tv_match_result);
+            tvDateAndTime = itemView.findViewById(R.id.tv_match_date_time);
+            etHomeTeamGoals = itemView.findViewById(R.id.et_home_team_goals);
+            etAwayTeamGoals = itemView.findViewById(R.id.et_away_team_goals);
+            tvPoints = itemView.findViewById(R.id.tv_points);
+            detailsContainer = itemView.findViewById(R.id.viewGroup_details_container);
 
-            cardView = (CardView) itemView;
-            tvMatchNo = (TextView) itemView.findViewById(R.id.tv_match_no);
-            tvHomeTeam = (TextView) itemView.findViewById(R.id.tv_match_home_team);
-            tvAwayTeam = (TextView) itemView.findViewById(R.id.tv_match_away_team);
-            ivHomeTeam = (ImageView) itemView.findViewById(R.id.iv_match_home_team);
-            ivAwayTeam = (ImageView) itemView.findViewById(R.id.iv_match_away_team);
-            tvMatchUpResult = (TextView) itemView.findViewById(R.id.tv_match_result);
-            tvDateAndTime = (TextView) itemView.findViewById(R.id.tv_match_date_time);
-            etPredictionHomeTeamGoals = (EditText) itemView.findViewById(R.id.et_prediction_home_team_goals);
-            etPredictionAwayTeamGoals = (EditText) itemView.findViewById(R.id.et_prediction_away_team_goals);
-
-            btSetResult = (Button) itemView.findViewById(R.id.bt_set_prediction);
-            btSetResult.setOnClickListener(this);
-
-            etPredictionHomeTeamGoals.addTextChangedListener(new SimpleTextWatcher() {
+            etHomeTeamGoals.addTextChangedListener(new SimpleTextWatcher() {
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    if (isBinding) return;
 
                     mInputPredictionList.get(getAdapterPosition()).mHomeTeamGoals = s.toString();
 
-                    checkIfThereAreNewValues();
+                    onPredictionChanged();
                 }
             });
-            etPredictionAwayTeamGoals.addTextChangedListener(new SimpleTextWatcher() {
+            etAwayTeamGoals.addTextChangedListener(new SimpleTextWatcher() {
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    if (isBinding) return;
 
                     mInputPredictionList.get(getAdapterPosition()).mAwayTeamGoals = s.toString();
 
-                    checkIfThereAreNewValues();
+                    onPredictionChanged();
                 }
             });
+            View.OnFocusChangeListener l = new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(final View v, boolean hasFocus) {
+                    if (hasFocus) {
+                        if (mRunnable != null) {
+                            mHandler.removeCallbacks(mRunnable);
+                        }
+                    }
+                    else {
+
+                        mRunnable = new Runnable() {
+                            @Override
+                            public void run() {
+                                if (mRecyclerView != null)
+                                    ViewUtils.hideSoftKeyboardAndClearFocus(mRecyclerView);
+
+                            }
+                        };
+                        mHandler.postDelayed(mRunnable, 200);/**/
+                    }
+                }
+            };
+
+            etHomeTeamGoals.setOnFocusChangeListener(l);
+            etAwayTeamGoals.setOnFocusChangeListener(l);
+            etAwayTeamGoals.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                    if (actionId == EditorInfo.IME_ACTION_DONE) {
+                        ViewUtils.hideSoftKeyboardAndClearFocus(etAwayTeamGoals);
+                        //return true;
+                    }
+                    return false;
+                }
+            });
+
+            ivInfo = itemView.findViewById(R.id.iv_info);
+            tvStadium = itemView.findViewById(R.id.tv_match_stadium);
+            tvStage = itemView.findViewById(R.id.tv_stage);
+            detailsInfoContainer = itemView.findViewById(R.id.viewGroup_info_details_container);
+            ivInfo.setOnTouchListener(new View.OnTouchListener() {
+                 @Override
+                 public boolean onTouch(View v, MotionEvent event) {
+                     switch (event.getAction()) {
+                         case MotionEvent.ACTION_DOWN:
+                             detailsInfoContainer.setVisibility(VISIBLE);
+                             break;
+
+                         case MotionEvent.ACTION_CANCEL:
+                         case MotionEvent.ACTION_UP:
+                             detailsInfoContainer.setVisibility(View.INVISIBLE);
+                             break;
+                     }
+
+                     return true;
+                 }
+            });
+            tvMatchNumber = itemView.findViewById(R.id.tv_match_number);
+
         }
 
-        private void checkIfThereAreNewValues() {
-
-            boolean isEnabled = mInputPredictionList.get(getAdapterPosition()).haveValuesChanged();
-            int color = isEnabled? COLOR_CORAL_RED : COLOR_BLACK;
-
-            etPredictionHomeTeamGoals.setTextColor(color);
-            etPredictionAwayTeamGoals.setTextColor(color);
-            btSetResult.setEnabled(isEnabled);
-        }
-
-        @Override
-        public void onClick(View v) {
+        private void onPredictionChanged() {
             if (mListener != null) {
                 InputPrediction inputPrediction = mInputPredictionList.get(getAdapterPosition());
                 inputPrediction.mIsEnabled = false;
                 Prediction prediction = new Prediction(
-                        GlobalData.user.getID(),
+                        GlobalData.getInstance().user.getID(),
                         inputPrediction.mMatch.getMatchNumber(),
                         MatchUtils.getInt(inputPrediction.mHomeTeamGoals),
                         MatchUtils.getInt(inputPrediction.mAwayTeamGoals));
-                notifyItemChanged(getAdapterPosition());
+                //notifyItemChanged(getAdapterPosition());
                 mListener.onPredictionSet(prediction);
             }
         }
@@ -275,18 +370,54 @@ public class PredictionListAdapter extends RecyclerView.Adapter<PredictionListAd
             return COLOR_INCORRECT_PREDICTION;
         }
         else {
-            if (prediction.getScore() == GlobalData.systemData.getRules().getRuleCorrectOutcomeViaPenalties()) {
+            if (prediction.getScore() == GlobalData.getInstance().systemData.getRules().getRuleCorrectOutcomeViaPenalties()) {
                 return COLOR_CORRECT_OUTCOME_VIA_PENALTIES;
             }
-            else if (prediction.getScore() == GlobalData.systemData.getRules().getRuleCorrectOutcome()) {
+            else if (prediction.getScore() == GlobalData.getInstance().systemData.getRules().getRuleCorrectOutcome()) {
                 return COLOR_CORRECT_OUTCOME;
             }
-            else if (prediction.getScore() == GlobalData.systemData.getRules().getRuleCorrectPrediction()) {
+            else if (prediction.getScore() == GlobalData.getInstance().systemData.getRules().getRuleCorrectPrediction()) {
                 return COLOR_CORRECT_PREDICTION;
             }
             else {
                 return COLOR_INCORRECT_PREDICTION;
             }
+        }
+    }
+
+    private String getPointsText(Prediction prediction) {
+        if (prediction == null || prediction.getScore() == -1) {
+            return "+0pts";
+        }
+        else {
+            return "+" + String.valueOf(prediction.getScore()) + "pts";
+        }
+    }
+
+    private String getStageText(Match match) {
+        if (match == null || match.getStage() == null){
+            return null;
+        }
+        else {
+            if (match.getStage().equals(StaticVariableUtils.SStage.groupStage.name)) {
+                return match.getGroup();
+            }
+            else if (match.getStage().equals(StaticVariableUtils.SStage.roundOf16.name)){
+                return "16";
+
+            }
+            else if (match.getStage().equals(StaticVariableUtils.SStage.quarterFinals.name)){
+                return "QF";
+
+            }
+            else if (match.getStage().equals(StaticVariableUtils.SStage.semiFinals.name)){
+                return "SF";
+
+            }
+            else if (match.getStage().equals(StaticVariableUtils.SStage.finals.name)){
+                return "F";
+            }
+            return null;
         }
     }
 

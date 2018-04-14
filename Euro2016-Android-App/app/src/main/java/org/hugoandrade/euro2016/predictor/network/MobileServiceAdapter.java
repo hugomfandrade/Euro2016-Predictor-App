@@ -16,12 +16,12 @@ import com.microsoft.windowsazure.mobileservices.table.MobileServiceJsonTable;
 
 import org.hugoandrade.euro2016.predictor.DevConstants;
 import org.hugoandrade.euro2016.predictor.cloudsim.CloudDatabaseSimAdapter;
-import org.hugoandrade.euro2016.predictor.data.Country;
-import org.hugoandrade.euro2016.predictor.data.LoginData;
-import org.hugoandrade.euro2016.predictor.data.Match;
-import org.hugoandrade.euro2016.predictor.data.Prediction;
-import org.hugoandrade.euro2016.predictor.data.SystemData;
-import org.hugoandrade.euro2016.predictor.data.User;
+import org.hugoandrade.euro2016.predictor.data.raw.Country;
+import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
+import org.hugoandrade.euro2016.predictor.data.raw.Match;
+import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
+import org.hugoandrade.euro2016.predictor.data.raw.SystemData;
+import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.model.helper.MobileServiceJsonTableHelper;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientDataJsonFormatter;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientDataJsonParser;
@@ -284,9 +284,40 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
                 !isNetworkAvailable(callback, MobileServiceData.GET_PREDICTIONS))
             return callback;
 
-        ListenableFuture<JsonElement> i =  MobileServiceJsonTableHelper
+        ListenableFuture<JsonElement> i = MobileServiceJsonTableHelper
                 .instance(Prediction.Entry.TABLE_NAME, mClient)
                 .where(Prediction.Entry.Cols.USER_ID, userID)
+                .execute();
+        Futures.addCallback(i, new FutureCallback<JsonElement>() {
+            @Override
+            public void onSuccess(JsonElement jsonElement) {
+                callback.set(MobileServiceData.Builder
+                        .instance(MobileServiceData.GET_PREDICTIONS, MobileServiceData.REQUEST_RESULT_SUCCESS)
+                        .setPredictionList(parser.parsePredictionList(jsonElement))
+                        .create());
+            }
+
+            @Override
+            public void onFailure(@NonNull Throwable throwable) {
+                sendErrorMessage(callback, MobileServiceData.GET_PREDICTIONS, throwable.getMessage());
+            }
+        });
+
+        return callback;
+    }
+
+    public MobileServiceCallback getPredictions(String userID, int firstMatchNumber, int lastMatchNumber) {
+
+        final MobileServiceCallback callback = new MobileServiceCallback();
+
+        if (CloudDatabaseSimAdapter.getInstance().getPredictions(callback, userID, firstMatchNumber, lastMatchNumber) ||
+                !isNetworkAvailable(callback, MobileServiceData.GET_PREDICTIONS))
+            return callback;
+
+        ListenableFuture<JsonElement> i = new MobileServiceJsonTable(Prediction.Entry.TABLE_NAME, mClient)
+                .where().field(Prediction.Entry.Cols.USER_ID).eq(userID)
+                .and().field(Prediction.Entry.Cols.MATCH_NO).ge(firstMatchNumber)
+                .and().field(Prediction.Entry.Cols.MATCH_NO).le(firstMatchNumber)
                 .execute();
         Futures.addCallback(i, new FutureCallback<JsonElement>() {
             @Override

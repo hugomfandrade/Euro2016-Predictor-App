@@ -15,7 +15,7 @@ import com.google.gson.JsonObject;
 
 import org.hugoandrade.euro2016.predictor.cloudsim.parser.CloudContentValuesFormatter;
 import org.hugoandrade.euro2016.predictor.cloudsim.parser.CloudJsonObjectFormatter;
-import org.hugoandrade.euro2016.predictor.data.LoginData;
+import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
 import org.hugoandrade.euro2016.predictor.network.HttpConstants;
 
 import java.util.ArrayList;
@@ -112,6 +112,16 @@ class CloudDatabaseSimImpl {
         }
         FilteringOperation lt(Number matchNo) {
             this.operation = "<";
+            this.value = String.valueOf(matchNo);
+            return this;
+        }
+        FilteringOperation ge(Number matchNo) {
+            this.operation = ">=";
+            this.value = String.valueOf(matchNo);
+            return this;
+        }
+        FilteringOperation le(Number matchNo) {
+            this.operation = "<=";
             this.value = String.valueOf(matchNo);
             return this;
         }

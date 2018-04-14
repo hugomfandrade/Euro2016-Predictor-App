@@ -9,31 +9,24 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.hugoandrade.euro2016.predictor.FragComm;
+import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.R;
-import org.hugoandrade.euro2016.predictor.data.Match;
-import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils.SStage;
+import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.view.listadapter.MatchListAdapter;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 
-public class MatchesFragment extends FragmentBase<FragComm.RequiredActivityOps>
-
-        implements FragComm.ProvidedMatchesFragmentOps {
+public class MatchesFragment extends FragmentBase<FragComm.RequiredActivityOps>  {
 
     // Views
     private RecyclerView rvMatches;
-    private MatchListAdapter mAdapter;
-
-    // Data
-    private List<Match> mMatchList = new ArrayList<>();
+    private MatchListAdapter mMatchesAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        GlobalData.getInstance().addOnMatchesChangedListener(mOnMatchesChangedListener);
 
         return inflater.inflate(R.layout.fragment_matches, container, false);
     }
@@ -47,46 +40,41 @@ public class MatchesFragment extends FragmentBase<FragComm.RequiredActivityOps>
                 new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 
         // Set up adapter
-        mAdapter = new MatchListAdapter(mMatchList);
-        rvMatches.setAdapter(mAdapter);
+        mMatchesAdapter = new MatchListAdapter(GlobalData.getInstance().getMatchList());
+        rvMatches.setAdapter(mMatchesAdapter);
 
         // Scroll to stored position.
         rvMatches.scrollToPosition(getStartingItemPosition());
     }
 
-    /**
-     * Display the List of Matches in the appropriate View
-     */
     @Override
-    public void setMatches(HashMap<SStage, List<Match>> matchMap) {
-        // Store previous List size.
-        int prevSize = mMatchList.size();
+    public void onDestroyView() {
+        super.onDestroyView();
 
-        // Set up stored List and Adapter
-        mMatchList = getAsList(matchMap);
-
-        if (mAdapter != null)
-            mAdapter.set(mMatchList);
-
-        // Scroll only if the List size has changed (ie. if it is the first initialization)
-        if (rvMatches != null && mMatchList.size() != prevSize)
-            rvMatches.scrollToPosition(getStartingItemPosition());
+        GlobalData.getInstance().removeOnMatchesChangedListener(mOnMatchesChangedListener);
     }
 
-    private List<Match> getAsList(HashMap<SStage, List<Match>> matchMap) {
-        List<Match> matchList = new ArrayList<>();
 
-        for (List<Match> matches : matchMap.values())
-            matchList.addAll(matches);
+    private GlobalData.OnMatchesChangedListener mOnMatchesChangedListener
+            = new GlobalData.OnMatchesChangedListener() {
 
-        Collections.sort(matchList, new Comparator<Match>() {
-            @Override
-            public int compare(Match lhs, Match rhs) {
-                return lhs.getMatchNumber() - rhs.getMatchNumber();
+        @Override
+        public void onMatchesChanged() {
+            // Store previous List size.
+            //int prevSize = mMatchList.size();
+
+            // Set up stored List and Adapter
+            //mMatchList = getAsList(matchMap);
+
+            if (mMatchesAdapter != null) {
+                mMatchesAdapter.set(GlobalData.getInstance().getMatchList());
             }
-        });
-        return matchList;
-    }
+
+            // Scroll only if the List size has changed (ie. if it is the first initialization)
+            if (rvMatches != null)// && mMatchList.size() != prevSize)
+                rvMatches.scrollToPosition(getStartingItemPosition());
+        }
+    };
 
     /**
      * Get scrolling starting position, ie. the next match after
@@ -97,10 +85,11 @@ public class MatchesFragment extends FragmentBase<FragComm.RequiredActivityOps>
      */
     public int getStartingItemPosition() {
         int selection = 0;
-        if (mMatchList != null) {
+        List<Match> matchList = GlobalData.getInstance().getMatchList();
+        if (matchList != null) {
             selection = 0;
-            for (int i = 0; i < mMatchList.size(); i++) {
-                if (mMatchList.get(i).getHomeTeamGoals() == -1 && mMatchList.get(i).getAwayTeamGoals() == -1) {
+            for (int i = 0; i < matchList.size(); i++) {
+                if (matchList.get(i).getHomeTeamGoals() == -1 && matchList.get(i).getAwayTeamGoals() == -1) {
                     selection = i;
                     break;
                 }

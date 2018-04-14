@@ -1,72 +1,111 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:custom="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    custom:cardCornerRadius="4dp"
-    custom:cardElevation="@dimen/cardview_default_elevation"
-    custom:cardBackgroundColor="#aaffffff"
-    android:foreground="?android:attr/selectableItemBackground"
-    android:layout_marginLeft="8dp"
-    android:layout_marginRight="8dp"
-    android:layout_marginTop="5dp"
-    android:layout_marginBottom="5dp">
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp"
+    android:paddingTop="8dp"
+    tools:background="#26629e">
 
-    <RelativeLayout
+    <TextView
+        android:id="@+id/tv_month"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAllCaps="true"
+        android:textColor="#fff"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:fontFamily="sans-serif-condensed"
+        tools:text="11 april"
+        />
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/cardView_container"
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        custom:cardCornerRadius="4dp"
+        custom:cardElevation="@dimen/cardview_default_elevation"
+        custom:cardBackgroundColor="#aaff0000"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:layout_marginBottom="4dp">
 
-        <LinearLayout android:id="@+id/prediction_container"
-            android:orientation="horizontal"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical">
-
-            <TextView
-                android:layout_width="20dp"
-                android:layout_height="wrap_content"
-                android:gravity="center_horizontal"
-                android:layout_gravity="center_vertical"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:id="@+id/tv_match_no"/>
+            android:layout_height="wrap_content">
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:id="@+id/prediction_container"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:orientation="vertical"
-                android:gravity="center_horizontal" >
+                android:gravity="center_horizontal"
+                android:padding="4dp">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <org.hugoandrade.euro2016.predictor.customview.RoundedCornerLayout
+                        android:visibility="invisible"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        custom:corner_radius="50dp"
+                        custom:background_color="#26629e">
+
+                        <TextView
+                            android:id="@+id/tv_stage_abbr"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:textColor="#fff"
+                            tools:text="16"/>
+
+                    </org.hugoandrade.euro2016.predictor.customview.RoundedCornerLayout>
+
+                    <TextView
+                        android:id="@+id/tv_match_date_time"
+                        android:layout_width="match_parent"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true"
+                        android:gravity="center_horizontal"
+                        android:textStyle="bold"/>
+
+                </RelativeLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" >
+                    android:layout_height="wrap_content"
+                    android:baselineAligned="false">
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="2"
+                        android:minHeight="50dp"
                         android:orientation="vertical"
-                        android:gravity="center_horizontal">
+                        android:gravity="center">
+
+                        <org.hugoandrade.euro2016.predictor.customview.RoundedCornerLayout
+                            style="@style/Prediction.CountryFlagContainer">
+
+                            <ImageView
+                                android:id="@+id/iv_match_home_team"
+                                style="@style/Prediction.CountryFlag"/>
+
+                        </org.hugoandrade.euro2016.predictor.customview.RoundedCornerLayout>
 
                         <TextView
-                            android:layout_margin="2dp"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textSize="15sp"
-                            android:gravity="center"
-                            android:lines="2"
-                            android:id="@+id/tv_match_home_team"/>
-
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="20dp"
-                            android:maxWidth="30dp"
-                            android:adjustViewBounds="true"
-                            android:gravity="center_horizontal"
-                            android:id="@+id/iv_match_home_team"/>
+                            android:id="@+id/tv_match_home_team"
+                            style="@style/Prediction.CountryName"
+                            tools:text="Portugal"/>
 
                     </LinearLayout>
 
@@ -74,107 +113,173 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="2"
-                        android:orientation="vertical">
+                        android:orientation="horizontal"
+                        android:gravity="center">
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal">
+                        <EditText
+                            android:id="@+id/et_home_team_goals"
+                            style="@style/Prediction.InputScore"
+                            android:nextFocusRight="@id/et_away_team_goals"
+                            android:nextFocusDown="@id/et_away_team_goals"
+                            android:nextFocusForward="@id/et_away_team_goals"
+                            android:imeOptions="actionNext"
+                            />
 
-                            <EditText
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:gravity="center_horizontal"
-                                android:id="@+id/et_prediction_home_team_goals"
-                                android:inputType="number"
-                                android:maxLength="2"/>
+                        <View
+                            android:layout_width="10dp"
+                            android:layout_height="2dp"
+                            android:background="#26629e"/>
 
-                            <EditText
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:gravity="center_horizontal"
-                                android:id="@+id/et_prediction_away_team_goals"
-                                android:inputType="number"
-                                android:maxLength="2"/>
+                        <EditText
+                            android:id="@+id/et_away_team_goals"
+                            style="@style/Prediction.InputScore"
+                            android:imeOptions="actionDone"
+                            />
 
-                        </LinearLayout>
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_gravity="center_horizontal"
-                            android:layout_height="wrap_content"
-                            android:gravity="center_horizontal"
-                            android:id="@+id/tv_match_result"/>
                     </LinearLayout>
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="2"
+                        android:minHeight="50dp"
                         android:orientation="vertical"
-                        android:gravity="center_horizontal">
+                        android:gravity="center">
+
+                        <org.hugoandrade.euro2016.predictor.customview.RoundedCornerLayout
+                            style="@style/Prediction.CountryFlagContainer">
+
+                            <ImageView
+                                android:id="@+id/iv_match_away_team"
+                                style="@style/Prediction.CountryFlag"/>
+
+                        </org.hugoandrade.euro2016.predictor.customview.RoundedCornerLayout>
 
                         <TextView
-                            android:layout_margin="2dp"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textSize="15sp"
-                            android:gravity="center"
-                            android:lines="2"
-                            android:id="@+id/tv_match_away_team"/>
-
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="20dp"
-                            android:maxWidth="30dp"
-                            android:adjustViewBounds="true"
-                            android:gravity="center_horizontal"
-                            android:id="@+id/iv_match_away_team"/>
+                            android:id="@+id/tv_match_away_team"
+                            style="@style/Prediction.CountryName"
+                            tools:text="Spain"/>
 
                     </LinearLayout>
 
                 </LinearLayout>
 
-                <TextView
+                <LinearLayout
+                    android:id="@+id/viewGroup_details_container"
                     android:layout_width="match_parent"
-                    android:layout_gravity="center_horizontal"
                     android:layout_height="wrap_content"
-                    android:gravity="center_horizontal"
-                    android:id="@+id/tv_match_date_time"/>
+                    android:orientation="vertical">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.5dp"
+                        android:background="#d6d6d6" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="5dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:textColor="#fff"
+                            android:text="@string/result"/>
+
+                        <TextView
+                            android:id="@+id/tv_match_result"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textStyle="bold"
+                            android:textColor="#fff"
+                            android:gravity="center"/>
+
+                        <FrameLayout
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content">
+
+
+                            <org.hugoandrade.euro2016.predictor.customview.RoundedCornerLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                custom:corner_radius="50dp"
+                                custom:border_color="#fff"
+                                custom:border_elevation="0.5dp"
+                                android:layout_gravity="end"
+                                android:padding="4dp">
+
+                                <TextView
+                                    android:id="@+id/tv_points"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="end"
+                                    android:textColor="#fff"
+                                    tools:text="+0pts"/>
+
+                            </org.hugoandrade.euro2016.predictor.customview.RoundedCornerLayout>
+                        </FrameLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
 
             </LinearLayout>
 
-            <Button
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:visibility="visible"
+                android:id="@+id/viewGroup_info_details_container"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:id="@+id/bt_set_prediction"
-                android:minWidth="50dp"
-                android:text="@string/set"/>
+                android:layout_alignTop="@id/prediction_container"
+                android:layout_alignBottom="@id/prediction_container"
+                android:orientation="vertical"
+                android:background="#ddffffff"
+                android:gravity="center">
 
-        </LinearLayout>
+                <TextView
+                    android:id="@+id/tv_match_number"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#222222"
+                    android:textSize="16sp"
+                    tools:text="Match number: 1"/>
 
-        <RelativeLayout android:id="@+id/progressBar_waiting_for_response"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_alignTop="@id/prediction_container"
-            android:layout_alignBottom="@id/prediction_container"
-            android:background="#66ffa500"
-            android:clickable="true"
-            android:focusable="true">
+                <TextView
+                    android:id="@+id/tv_stage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#222222"
+                    android:textSize="16sp"
+                    android:layout_marginTop="6dp"
+                    android:layout_marginBottom="6dp"
+                    tools:text="Group Stage A"/>
 
-            <ProgressBar
-                style="?android:attr/progressBarStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:layout_centerVertical="true"
-                android:layout_alignParentEnd="true" />
+                <TextView
+                    android:id="@+id/tv_match_stadium"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#222222"
+                    android:textSize="16sp"
+                    tools:text="Stadium of Light"/>
+
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/iv_info"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/ic_info"/>
 
         </RelativeLayout>
 
-    </RelativeLayout>
 
-</android.support.v7.widget.CardView>
+
+    </android.support.v7.widget.CardView>
+
+</LinearLayout>

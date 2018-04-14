@@ -4,7 +4,7 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import org.hugoandrade.euro2016.predictor.MVP;
-import org.hugoandrade.euro2016.predictor.data.LoginData;
+import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
 
 public class SignUpPresenter extends MobileClientPresenterBase<MVP.RequiredSignUpViewOps>

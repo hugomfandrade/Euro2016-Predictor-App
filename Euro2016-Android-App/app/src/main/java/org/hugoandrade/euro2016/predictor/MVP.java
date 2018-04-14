@@ -1,22 +1,17 @@
 package org.hugoandrade.euro2016.predictor;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.hugoandrade.euro2016.predictor.common.ContextView;
-import org.hugoandrade.euro2016.predictor.data.Country;
-import org.hugoandrade.euro2016.predictor.data.Group;
-import org.hugoandrade.euro2016.predictor.data.LoginData;
+import org.hugoandrade.euro2016.predictor.data.raw.Country;
+import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
 import org.hugoandrade.euro2016.predictor.common.ModelOps;
 import org.hugoandrade.euro2016.predictor.common.PresenterOps;
-import org.hugoandrade.euro2016.predictor.data.Match;
-import org.hugoandrade.euro2016.predictor.data.Prediction;
-import org.hugoandrade.euro2016.predictor.data.User;
+import org.hugoandrade.euro2016.predictor.data.raw.Match;
+import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
+import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.model.IMobileClientService;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
-import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils;
-import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils.*;
 
 /**
  * Defines the interfaces for the Euro 2016 application that are
@@ -136,36 +131,6 @@ public interface MVP {
                                            List<Match> matchList,
                                            List<Prediction> predictionList);
 
-        /**
-         * Display the list of Users in the UI.
-         *
-         * @param userList th list of Users
-         */
-        void setUserList(List<User> userList);
-
-        /**
-         * Display the map of countries in the UI.
-         *
-         * @param groupMap HashMap of countries grouped together
-         *                 according to the group stage
-         */
-        void setGroups(HashMap<SGroup, Group> groupMap);
-
-        /**
-         * Display the map of matches in the UI.
-         *
-         * @param matchMap HashMap of matches grouped together
-         *                 according to stage
-         */
-        void setMatches(HashMap<SStage, List<Match>> matchMap);
-
-        /**
-         * Display the list of predictions in the UI.
-         *
-         * @param predictionList List of predictions
-         */
-        void setPredictions(List<Prediction> predictionList);
-
         void updatePrediction(Prediction prediction);
 
         void updateFailedPrediction(Prediction prediction);
@@ -256,6 +221,8 @@ public interface MVP {
          * @param predictionList The List of Predictions to display.
          */
         void onPredictionsFetched(boolean operationResult, String message, User user, List<Prediction> predictionList);
+
+        void onLatestPerformanceFetched(boolean operationResult, String message, List<Prediction> predictionList);
     }
 
     /**
@@ -290,5 +257,7 @@ public interface MVP {
          * @param user the User
          */
         void getPredictions(User user);
+
+        void getLatestPerformanceOfUsers(List<User> userList, int firstMatchNumber, int lastMatchNumber);
     }
 }

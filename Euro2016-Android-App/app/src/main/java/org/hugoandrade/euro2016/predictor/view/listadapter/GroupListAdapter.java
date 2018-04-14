@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hugoandrade.euro2016.predictor.R;
-import org.hugoandrade.euro2016.predictor.data.Country;
+import org.hugoandrade.euro2016.predictor.data.raw.Country;
 
 public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.ViewHolder> {
 

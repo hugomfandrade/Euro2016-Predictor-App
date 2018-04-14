@@ -1,7 +1,7 @@
 package org.hugoandrade.euro2016.predictor.utils;
 
-import org.hugoandrade.euro2016.predictor.data.Match;
-import org.hugoandrade.euro2016.predictor.data.Prediction;
+import org.hugoandrade.euro2016.predictor.data.raw.Match;
+import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 
 /**
  * Provides some general utility Match helper methods.

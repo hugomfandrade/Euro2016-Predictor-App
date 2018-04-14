@@ -1,5 +1,7 @@
 package org.hugoandrade.euro2016.predictor.view.listadapter;
 
+import android.graphics.Color;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,10 +10,17 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.R;
-import org.hugoandrade.euro2016.predictor.data.User;
+import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
+import org.hugoandrade.euro2016.predictor.data.raw.User;
 
 public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHolder> {
+
+    private static final int COLOR_INCORRECT_PREDICTION = Color.parseColor("#aaff0000");
+    private static final int COLOR_CORRECT_OUTCOME_VIA_PENALTIES = Color.parseColor("#aaFF5500");
+    private static final int COLOR_CORRECT_OUTCOME = Color.parseColor("#aaAAAA00");
+    private static final int COLOR_CORRECT_PREDICTION = Color.parseColor("#aa00AA00");
 
     private List<User> mUserList;
 
@@ -21,23 +30,38 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHo
         mUserList = userList;
     }
 
+    @NonNull
     @Override
-    public int getItemViewType(int position) {
-        return position;
-    }
-
-    @Override
-    public UserListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public UserListAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater vi = LayoutInflater.from(parent.getContext());
         return new ViewHolder(vi.inflate(R.layout.list_item_user, parent, false));
     }
 
     @Override
-    public void onBindViewHolder(final UserListAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull final UserListAdapter.ViewHolder holder, int position) {
         User user = mUserList.get(position);
+
+        int[] points = GlobalData.getInstance().getLatestPerformance(user);
+
+        for (int i = 0 ; i < holder.tvLatestPerformances.length ; i++) {
+            TextView tv = holder.tvLatestPerformances[i];
+            if (points.length <= i) {
+                tv.setVisibility(View.INVISIBLE);
+            }
+            else {
+                tv.setVisibility(View.VISIBLE);
+                tv.setBackgroundColor(getCardColor(points[i]));
+                tv.setText(String.valueOf(points[i]));
+            }
+        }
 
         holder.tvUser.setText(user.getEmail());
         holder.tvPoints.setText(String.valueOf(user.getScore()));
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return position;
     }
 
     @Override
@@ -48,6 +72,21 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHo
     public void set(List<User> userList) {
         mUserList = userList;
         notifyDataSetChanged();
+    }
+
+    private int getCardColor(int points) {
+        if (points == GlobalData.getInstance().systemData.getRules().getRuleCorrectOutcomeViaPenalties()) {
+            return COLOR_CORRECT_OUTCOME_VIA_PENALTIES;
+        }
+        else if (points == GlobalData.getInstance().systemData.getRules().getRuleCorrectOutcome()) {
+            return COLOR_CORRECT_OUTCOME;
+        }
+        else if (points == GlobalData.getInstance().systemData.getRules().getRuleCorrectPrediction()) {
+            return COLOR_CORRECT_PREDICTION;
+        }
+        else {
+            return COLOR_INCORRECT_PREDICTION;
+        }
     }
 
     public void setOnItemClickListener(UserListAdapter.OnItemClickListener listener) {
@@ -62,13 +101,20 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHo
 
         TextView tvUser;
         TextView tvPoints;
+        TextView[] tvLatestPerformances;
 
         ViewHolder(View itemView) {
             super(itemView);
 
             itemView.setOnClickListener(this);
-            tvUser = (TextView) itemView.findViewById(R.id.tv_user);
-            tvPoints = (TextView) itemView.findViewById(R.id.tv_points);
+            tvUser = itemView.findViewById(R.id.tv_user);
+            tvPoints = itemView.findViewById(R.id.tv_points);
+            tvLatestPerformances = new TextView[5];
+            tvLatestPerformances[0] = itemView.findViewById(R.id.tv_latest_performance_5);
+            tvLatestPerformances[1] = itemView.findViewById(R.id.tv_latest_performance_4);
+            tvLatestPerformances[2] = itemView.findViewById(R.id.tv_latest_performance_3);
+            tvLatestPerformances[3] = itemView.findViewById(R.id.tv_latest_performance_2);
+            tvLatestPerformances[4] = itemView.findViewById(R.id.tv_latest_performance_1);
         }
 
         @Override

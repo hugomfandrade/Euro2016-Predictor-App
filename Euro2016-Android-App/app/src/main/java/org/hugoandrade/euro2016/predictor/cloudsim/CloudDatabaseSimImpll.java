@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.hugoandrade.euro2016.predictor.data.SystemData;
+import org.hugoandrade.euro2016.predictor.data.raw.SystemData;
 
 class CloudDatabaseSimImpll {
 

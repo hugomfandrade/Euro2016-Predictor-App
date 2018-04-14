@@ -2,8 +2,8 @@ package org.hugoandrade.euro2016.predictor.model.parser;
 
 import com.google.gson.JsonObject;
 
-import org.hugoandrade.euro2016.predictor.data.LoginData;
-import org.hugoandrade.euro2016.predictor.data.Prediction;
+import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
+import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 
 /**
  * Parses the objects to Json data.

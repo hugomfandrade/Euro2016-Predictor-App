@@ -3,9 +3,11 @@ package org.hugoandrade.euro2016.predictor.model;
 import android.os.RemoteException;
 
 import org.hugoandrade.euro2016.predictor.MVP;
-import org.hugoandrade.euro2016.predictor.data.Prediction;
-import org.hugoandrade.euro2016.predictor.data.User;
+import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
+import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
+
+import java.util.List;
 
 public class MainModel extends MobileClientModelBase<MVP.RequiredMainPresenterOps>
 
@@ -48,6 +50,12 @@ public class MainModel extends MobileClientModelBase<MVP.RequiredMainPresenterOp
                     isOperationSuccessful,
                     data.getErrorMessage(),
                     data.getUser(),
+                    data.getPredictionList());
+        }
+        else if (operationType == MobileClientData.OperationType.GET_LATEST_PERFORMANCE.ordinal()) {
+            getPresenter().onLatestPerformanceFetched(
+                    isOperationSuccessful,
+                    data.getErrorMessage(),
                     data.getPredictionList());
         }
     }
@@ -106,6 +114,24 @@ public class MainModel extends MobileClientModelBase<MVP.RequiredMainPresenterOp
         } catch (RemoteException e) {
             e.printStackTrace();
             getPresenter().onPredictionsFetched(false, "Error sending message", user, null);
+        }
+    }
+
+    @Override
+    public void getLatestPerformanceOfUsers(List<User> userList, int firstMatchNumber, int lastMatchNumber) {
+        if (getService() == null) {
+            getPresenter().onLatestPerformanceFetched(false, "Not bound to the service", null);
+            return;
+        }
+
+        try {
+            boolean isFetching = getService().getLatestPerformanceOfUsers(userList, firstMatchNumber, lastMatchNumber);
+            if (!isFetching) {
+                getPresenter().onLatestPerformanceFetched(false, "No Network Connection", null);
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            getPresenter().onLatestPerformanceFetched(false, "Error sending message", null);
         }
     }
 }

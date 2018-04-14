@@ -7,7 +7,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import org.hugoandrade.euro2016.predictor.data.SystemData;
+import org.hugoandrade.euro2016.predictor.data.raw.SystemData;
 
 import java.util.Map;
 

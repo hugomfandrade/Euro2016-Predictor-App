@@ -5,8 +5,9 @@ import android.util.Log;
 
 import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.MVP;
-import org.hugoandrade.euro2016.predictor.data.LoginData;
-import org.hugoandrade.euro2016.predictor.data.SystemData;
+import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
+import org.hugoandrade.euro2016.predictor.data.raw.SystemData;
+import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
 import org.hugoandrade.euro2016.predictor.model.service.MobileService;
 import org.hugoandrade.euro2016.predictor.utils.SharedPreferencesUtils;
@@ -132,7 +133,7 @@ public class LoginPresenter extends MobileClientPresenterBase<MVP.RequiredLoginV
 
             SharedPreferencesUtils.putLoginData(getActivityContext(), loginData);
 
-            GlobalData.initializeUser(loginData);
+            GlobalData.getInstance().setUser(new User(loginData.getUserID(), loginData.getEmail()));
 
             getView().successfulLogin();
         }
@@ -154,7 +155,7 @@ public class LoginPresenter extends MobileClientPresenterBase<MVP.RequiredLoginV
                 return;
             }
 
-            GlobalData.setSystemData(systemData);
+            GlobalData.getInstance().setSystemData(systemData);
         }
         else {
             // operation failed, show error message

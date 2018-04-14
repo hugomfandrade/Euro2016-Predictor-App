@@ -14,8 +14,8 @@ import android.widget.TextView;
 import java.util.List;
 
 import org.hugoandrade.euro2016.predictor.R;
-import org.hugoandrade.euro2016.predictor.data.Country;
-import org.hugoandrade.euro2016.predictor.data.Match;
+import org.hugoandrade.euro2016.predictor.data.raw.Country;
+import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
 
 public class MatchListAdapter extends RecyclerView.Adapter<MatchListAdapter.ViewHolder> {

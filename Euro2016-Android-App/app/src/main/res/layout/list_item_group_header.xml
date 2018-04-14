@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_horizontal|bottom" >
+
+    <TextView
+        android:id="@+id/tv_group"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="6"
+        android:textStyle="bold"
+        android:textAllCaps="true"
+        android:fontFamily="sans-serif-condensed"
+        android:textSize="18sp" />
+
+    <!--TextView
+        android:id="@+id/tv_country_position"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:text="@string/position_abbr"
+        android:textStyle="bold"/>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="5"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+
+        <TextView
+            android:id="@+id/tv_country_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="start"
+            android:text="@string/name"
+            android:textStyle="bold"/>
+
+    </LinearLayout-->
+
+    <TextView
+        android:id="@+id/tv_country_victories"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center_horizontal"
+        android:text="@string/victories_abbr"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/tv_country_draws"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center_horizontal"
+        android:text="@string/draws_abbr"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/tv_country_defeats"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center_horizontal"
+        android:text="@string/defeats_abbr"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/tv_country_goals_for"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center_horizontal"
+        android:text="@string/goals_for_abbr"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/tv_country_goals_against"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center_horizontal"
+        android:text="@string/goals_against_abbr"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/tv_country_goals_difference"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center_horizontal"
+        android:text="@string/goals_difference_abbr"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/tv_country_points"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center_horizontal"
+        android:text="@string/points_abbr"
+        android:textStyle="bold"/>
+
+</LinearLayout>

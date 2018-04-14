@@ -3,9 +3,9 @@ package org.hugoandrade.euro2016.predictor.model;
 
 // Declare any non-default types here with import statements
 import org.hugoandrade.euro2016.predictor.model.IMobileClientServiceCallback;
-import org.hugoandrade.euro2016.predictor.data.Prediction;
-import org.hugoandrade.euro2016.predictor.data.LoginData;
-import org.hugoandrade.euro2016.predictor.data.User;
+import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
+import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
+import org.hugoandrade.euro2016.predictor.data.raw.User;
 
 interface IMobileClientService {
 
@@ -24,4 +24,6 @@ interface IMobileClientService {
     boolean putPrediction(in Prediction prediction);
 
     boolean getPredictions(in User user);
+
+    boolean getLatestPerformanceOfUsers(in List<User> userList, int firstMatchNumber, int lastMatchNumber);
 }

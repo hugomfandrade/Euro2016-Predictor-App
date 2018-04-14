@@ -1,6 +1,10 @@
 package org.hugoandrade.euro2016.predictor.utils;
 
-import org.hugoandrade.euro2016.predictor.data.Match;
+import org.hugoandrade.euro2016.predictor.data.raw.Match;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Provides some general utility Match helper methods.
@@ -90,6 +94,17 @@ public final class MatchUtils {
         } catch (Exception e) {
             return defaultValue;
         }
+    }
+
+    public static int getMatchNumberOfFirstNotPlayedMatched(List<Match> matchList, Date serverTime) {
+        if (matchList != null) {
+            for (int i = 0; i < matchList.size(); i++) {
+                if (matchList.get(i).getDateAndTime().after(serverTime)) {
+                    return matchList.get(i).getMatchNumber();
+                }
+            }
+        }
+        return 0;
     }
 }
 

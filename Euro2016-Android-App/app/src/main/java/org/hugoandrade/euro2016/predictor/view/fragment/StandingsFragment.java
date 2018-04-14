@@ -1,6 +1,7 @@
 package org.hugoandrade.euro2016.predictor.view.fragment;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -10,23 +11,23 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.hugoandrade.euro2016.predictor.FragComm;
+import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.R;
-import org.hugoandrade.euro2016.predictor.data.Country;
-import org.hugoandrade.euro2016.predictor.data.Group;
-import org.hugoandrade.euro2016.predictor.data.Match;
+import org.hugoandrade.euro2016.predictor.data.raw.Country;
+import org.hugoandrade.euro2016.predictor.data.raw.Group;
+import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils.SGroup;
 import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils.SStage;
 import org.hugoandrade.euro2016.predictor.view.listadapter.GroupListAdapter;
 import org.hugoandrade.euro2016.predictor.view.listadapter.KnockoutListAdapter;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
-public class StandingsFragment extends FragmentBase<FragComm.RequiredActivityOps>
-
-        implements FragComm.ProvidedCountriesFragmentOps,
-                   FragComm.ProvidedMatchesFragmentOps {
+public class StandingsFragment extends FragmentBase<FragComm.RequiredActivityOps> {
 
     // Views
     private HashMap<SGroup, GroupViewStruct> mGroupViewStructMap = buildGroupViewStructMap();
@@ -53,19 +54,17 @@ public class StandingsFragment extends FragmentBase<FragComm.RequiredActivityOps
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        GlobalData.getInstance().addOnMatchesChangedListener(mOnMatchesChangedListener);
+        GlobalData.getInstance().addOnCountriesChangedListener(mOnCountriesChangedListener);
 
         return inflater.inflate(R.layout.fragment_standings, container, false);
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-
-        initializeUI(view);
-    }
-
-    private void initializeUI(View view) {
 
         setupGroupLayout(view.findViewById(R.id.layout_group_a),
                 mGroupViewStructMap.get(SGroup.A));
@@ -88,27 +87,52 @@ public class StandingsFragment extends FragmentBase<FragComm.RequiredActivityOps
                 mKnockOutViewStructMap.get(SStage.semiFinals));
         setupKnockOutLayout(view.findViewById(R.id.layout_final),
                 mKnockOutViewStructMap.get(SStage.finals));
+
+        updateGroupView();
+        updateKnockOutView();
     }
 
-    /**
-     * Display the List of Countries in the appropriate View. Split them
-     * by Group, sort them by position
-     */
     @Override
-    public void setGroups(HashMap<SGroup, Group> groupsMap) {
-        updateGroupViewStruct(mGroupViewStructMap.get(SGroup.A), groupsMap.get(SGroup.A).getCountryList());
-        updateGroupViewStruct(mGroupViewStructMap.get(SGroup.B), groupsMap.get(SGroup.B).getCountryList());
-        updateGroupViewStruct(mGroupViewStructMap.get(SGroup.C), groupsMap.get(SGroup.C).getCountryList());
-        updateGroupViewStruct(mGroupViewStructMap.get(SGroup.D), groupsMap.get(SGroup.D).getCountryList());
-        updateGroupViewStruct(mGroupViewStructMap.get(SGroup.E), groupsMap.get(SGroup.E).getCountryList());
-        updateGroupViewStruct(mGroupViewStructMap.get(SGroup.F), groupsMap.get(SGroup.F).getCountryList());
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        GlobalData.getInstance().removeOnMatchesChangedListener(mOnMatchesChangedListener);
+        GlobalData.getInstance().removeOnCountriesChangedListener(mOnCountriesChangedListener);
     }
 
-    /**
-     * Display the List of Matches in the appropriate View
-     */
-    @Override
-    public void setMatches(HashMap<SStage, List<Match>> matchMap) {
+    private GlobalData.OnMatchesChangedListener mOnMatchesChangedListener
+            = new GlobalData.OnMatchesChangedListener() {
+
+        @Override
+        public void onMatchesChanged() {
+            updateGroupView();
+        }
+    };
+
+    private GlobalData.OnCountriesChangedListener mOnCountriesChangedListener
+            = new GlobalData.OnCountriesChangedListener() {
+
+        @Override
+        public void onCountriesChanged() {
+            updateKnockOutView();
+        }
+    };
+
+    private void updateKnockOutView() {
+        HashMap<SGroup, Group> groupsMap = setupGroups(GlobalData.getInstance().getCountryList());
+
+        updateGroupViewStruct(mGroupViewStructMap.get(SGroup.A), groupsMap.get(SGroup.A));
+        updateGroupViewStruct(mGroupViewStructMap.get(SGroup.B), groupsMap.get(SGroup.B));
+        updateGroupViewStruct(mGroupViewStructMap.get(SGroup.C), groupsMap.get(SGroup.C));
+        updateGroupViewStruct(mGroupViewStructMap.get(SGroup.D), groupsMap.get(SGroup.D));
+        updateGroupViewStruct(mGroupViewStructMap.get(SGroup.E), groupsMap.get(SGroup.E));
+        updateGroupViewStruct(mGroupViewStructMap.get(SGroup.F), groupsMap.get(SGroup.F));
+    }
+
+    private void updateGroupView() {
+
+        HashMap<SStage, List<Match>> matchMap = setupMatches(GlobalData.getInstance().getMatchList());
+
         updateKnockOutViewStruct(mKnockOutViewStructMap.get(SStage.roundOf16), matchMap.get(SStage.roundOf16));
         updateKnockOutViewStruct(mKnockOutViewStructMap.get(SStage.quarterFinals), matchMap.get(SStage.quarterFinals));
         updateKnockOutViewStruct(mKnockOutViewStructMap.get(SStage.semiFinals), matchMap.get(SStage.semiFinals));
@@ -139,12 +163,78 @@ public class StandingsFragment extends FragmentBase<FragComm.RequiredActivityOps
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
     }
 
-    private void updateGroupViewStruct(GroupViewStruct groupViewStruct, List<Country> countryList) {
-        groupViewStruct.set(countryList);
+    private void updateGroupViewStruct(GroupViewStruct groupViewStruct, Group group) {
+        if (group != null) {
+            groupViewStruct.set(group.getCountryList());
+        }
     }
 
     private void updateKnockOutViewStruct(KnockOutViewStruct knockOutViewStruct, List<Match> matchList) {
-        knockOutViewStruct.set(matchList);
+        if (matchList != null) {
+            knockOutViewStruct.set(matchList);
+        }
+    }
+
+    /**
+     * Utility method to group countries according to the group stage.
+     *
+     * @param countryList List of countries.
+     *
+     * @return HashMap of the countries grouped together according to group stage
+     */
+    private HashMap<SGroup, Group> setupGroups(List<Country> countryList) {
+        // Set groups
+        HashMap<SGroup, Group> groupsMap = new HashMap<>();
+        for (Country c : countryList) {
+            SGroup group = SGroup.get(c.getGroup());
+
+            if (groupsMap.containsKey(group)) {
+                groupsMap.get(group).add(c);
+            } else {
+                groupsMap.put(group, new Group(group == null? null : group.name));
+                groupsMap.get(group).add(c);
+            }
+        }
+        for (Group group : groupsMap.values())
+            Collections.sort(group.getCountryList(), new Comparator<Country>() {
+                @Override
+                public int compare(Country lhs, Country rhs) {
+                    return lhs.getPosition() - rhs.getPosition();
+                }
+            });
+
+        return groupsMap;
+    }
+
+    /**
+     * Utility method to group matches according to stage.
+     *
+     * @param matchList List of matches.
+     *
+     * @return HashMap of the matches grouped together according to stage
+     */
+    private HashMap<SStage, List<Match>> setupMatches(List<Match> matchList) {
+        // Set groups
+        HashMap<SStage, List<Match>> matchesMap = new HashMap<>();
+        for (Match m : matchList) {
+            SStage stage = SStage.get(m.getStage());
+
+            if (matchesMap.containsKey(stage)) {
+                matchesMap.get(stage).add(m);
+            } else {
+                matchesMap.put(stage, new ArrayList<Match>());
+                matchesMap.get(stage).add(m);
+            }
+        }
+        for (List<Match> matches : matchesMap.values())
+            Collections.sort(matches, new Comparator<Match>() {
+                @Override
+                public int compare(Match lhs, Match rhs) {
+                    return lhs.getMatchNumber() - rhs.getMatchNumber();
+                }
+            });
+
+        return matchesMap;
     }
 
     private class GroupViewStruct {

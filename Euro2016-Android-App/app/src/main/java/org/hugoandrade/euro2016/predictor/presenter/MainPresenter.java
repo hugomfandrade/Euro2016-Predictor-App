@@ -1,21 +1,23 @@
 package org.hugoandrade.euro2016.predictor.presenter;
 
 import android.content.Context;
+import android.util.Log;
 
 import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.MVP;
-import org.hugoandrade.euro2016.predictor.data.Country;
-import org.hugoandrade.euro2016.predictor.data.Group;
-import org.hugoandrade.euro2016.predictor.data.Match;
-import org.hugoandrade.euro2016.predictor.data.Prediction;
-import org.hugoandrade.euro2016.predictor.data.User;
+import org.hugoandrade.euro2016.predictor.data.raw.Country;
+import org.hugoandrade.euro2016.predictor.data.raw.Match;
+import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
+import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.model.MainModel;
-import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils.SGroup;
+import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
 import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils.SStage;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -25,11 +27,6 @@ public class MainPresenter extends PresenterBase<MVP.RequiredMainViewOps,
                                                      MainModel>
         implements MVP.ProvidedMainPresenterOps,
                    MVP.RequiredMainPresenterOps {
-
-    /**
-     * The List of Matches
-     */
-    private List<Match> mMatchList = new ArrayList<>();
 
     /**
      * Hook method called when a new instance of MainPresenter is
@@ -91,7 +88,7 @@ public class MainPresenter extends PresenterBase<MVP.RequiredMainViewOps,
     public void notifyServiceIsBound() {
         getView().disableUI();
 
-        getModel().getInfo(GlobalData.user.getID());
+        getModel().getInfo(GlobalData.getInstance().user.getID());
     }
 
     @Override
@@ -112,8 +109,7 @@ public class MainPresenter extends PresenterBase<MVP.RequiredMainViewOps,
                 }
             });
 
-            // Send the list of Users to the UI
-            getView().setUserList(userList);
+            GlobalData.getInstance().setUserList(userList);
 
             /* ******************************** */
 
@@ -127,23 +123,10 @@ public class MainPresenter extends PresenterBase<MVP.RequiredMainViewOps,
                 }
             }
 
-            mMatchList = matchList;
+            GlobalData.getInstance().setMatchList(matchList);
 
             // group by stage
             HashMap<SStage, List<Match>> mMatchMap = setupMatches(matchList);
-
-            // Send the hash map of countries to the UI
-            getView().setMatches(mMatchMap);
-
-            /* ******************************** */
-
-            /*for (Map.Entry<SStage, List<Match>> e : mMatchMap.entrySet()) {
-                Log.e(TAG, "------------");
-                Log.e(TAG, e.getKey() == null ? "null" : e.getKey().name);
-                for (Match m : e.getValue()) {
-                    Log.e(TAG, m.toString());
-                }
-            } /**/
 
             for (Country c : countryList) {
                 for (Match match : mMatchMap.get(SStage.roundOf16)) {
@@ -154,21 +137,26 @@ public class MainPresenter extends PresenterBase<MVP.RequiredMainViewOps,
                 }
             }
 
-            // group by group stage
-            HashMap<SGroup, Group> mGroupMap = setupGroups(countryList);
-
-            // Send the hash map of countries to the UI
-            getView().setGroups(mGroupMap);
+            GlobalData.getInstance().setCountryList(countryList);
 
             /* ******************************** */
 
-            // Send the list of predictions to the UI
-            getView().setPredictions(predictionList);
 
+            // Send the list of predictions to the UI
+            GlobalData.getInstance().setPredictionList(predictionList);
+
+            Date serverTime = GlobalData.getInstance().getServerTime().getTime();
+
+            int to = MatchUtils.getMatchNumberOfFirstNotPlayedMatched(matchList, serverTime);
+            to = to == 0? 0 : to - 1;
+
+            int from = (to < 4) ? 0 : to - 4;
+
+
+            getModel().getLatestPerformanceOfUsers(userList, from, to);
 
         } else {
-            if (message != null)
-                getView().reportMessage(message);
+            getView().reportMessage(message);
         }
 
         getView().enableUI();
@@ -182,8 +170,7 @@ public class MainPresenter extends PresenterBase<MVP.RequiredMainViewOps,
 
             getView().updateFailedPrediction(prediction);
 
-            if (message != null)
-                getView().reportMessage(message);
+            getView().reportMessage(message);
         }
 
     }
@@ -193,13 +180,26 @@ public class MainPresenter extends PresenterBase<MVP.RequiredMainViewOps,
 
         if (operationResult) {
 
-            getView().moveToUsersPredictionActivity(user, mMatchList, predictionList);
+            getView().moveToUsersPredictionActivity(user, GlobalData.getInstance().getMatchList(), predictionList);
+        } else {
+
+            getView().reportMessage(message);
+        }
+        getView().enableUI();
+    }
+
+    @Override
+    public void onLatestPerformanceFetched(boolean operationResult, String message, List<Prediction> predictionList) {
+
+        if (operationResult) {
+
+            GlobalData.getInstance().setLatestPerformanceOfUsers(predictionList);
+
         } else {
 
             if (message != null)
                 getView().reportMessage(message);
         }
-        getView().enableUI();
     }
 
     /**
@@ -214,7 +214,7 @@ public class MainPresenter extends PresenterBase<MVP.RequiredMainViewOps,
         getView().disableUI();
 
         // Fetch system data
-        getModel().getInfo(GlobalData.user.getID());
+        getModel().getInfo(GlobalData.getInstance().user.getID());
     }
 
     /**
@@ -241,36 +241,6 @@ public class MainPresenter extends PresenterBase<MVP.RequiredMainViewOps,
         getModel().getPredictions(user);
     }
 
-    /**
-     * Utility method to group countries according to the group stage.
-     *
-     * @param countryList List of countries.
-     *
-     * @return HashMap of the countries grouped together according to group stage
-     */
-    private HashMap<SGroup, Group> setupGroups(List<Country> countryList) {
-        // Set groups
-        HashMap<SGroup, Group> groupsMap = new HashMap<>();
-        for (Country c : countryList) {
-            SGroup group = SGroup.get(c.getGroup());
-
-            if (groupsMap.containsKey(group)) {
-                groupsMap.get(group).add(c);
-            } else {
-                groupsMap.put(group, new Group(group == null? null : group.name));
-                groupsMap.get(group).add(c);
-            }
-        }
-        for (Group group : groupsMap.values())
-            Collections.sort(group.getCountryList(), new Comparator<Country>() {
-                @Override
-                public int compare(Country lhs, Country rhs) {
-                    return lhs.getPosition() - rhs.getPosition();
-                }
-            });
-
-        return groupsMap;
-    }
 
     /**
      * Utility method to group matches according to stage.

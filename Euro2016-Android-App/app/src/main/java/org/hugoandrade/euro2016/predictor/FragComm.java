@@ -1,14 +1,8 @@
 package org.hugoandrade.euro2016.predictor;
 
-import java.util.HashMap;
-import java.util.List;
-
 import org.hugoandrade.euro2016.predictor.common.ContextView;
-import org.hugoandrade.euro2016.predictor.data.Group;
-import org.hugoandrade.euro2016.predictor.data.Match;
-import org.hugoandrade.euro2016.predictor.data.Prediction;
-import org.hugoandrade.euro2016.predictor.data.User;
-import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils.*;
+import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
+import org.hugoandrade.euro2016.predictor.data.raw.User;
 
 public interface FragComm {
 
@@ -56,46 +50,11 @@ public interface FragComm {
 
     /**
      * This interface defines the minimum API provided by any child
-     * Fragment, which desires to receive the list of Matches, to
-     * interact with MainActivity.
-     */
-    interface ProvidedMatchesFragmentOps {
-        /**
-         * Display the List of Matches in the appropriate View
-         *
-         * @param matchMap The List of Matches grouped by stage to display.
-         */
-        void setMatches(HashMap<SStage, List<Match>> matchMap);
-    }
-
-    /**
-     * This interface defines the minimum API provided by any child
-     * Fragment, which desires to receive the list of Countries, to
-     * interact with MainActivity.
-     */
-    interface ProvidedCountriesFragmentOps {
-
-        /**
-         * Display the HashMap of Countries in the appropriate View
-         *
-         * @param groupMap The HashMap of Countries to display.
-         */
-        void setGroups(HashMap<SGroup, Group> groupMap);
-    }
-
-    /**
-     * This interface defines the minimum API provided by any child
      * Fragment, which desires to receive the list of Predictions and
      * the result of Prediction update operation in the cloud, to
      * interact with MainActivity.
      */
     interface ProvidedPredictionsFragmentOps {
-        /**
-         * Display the List of Predictions in the appropriate View
-         *
-         * @param predictionList The List of Predictions to display.
-         */
-        void setPredictions(List<Prediction> predictionList);
 
         /**
          * Prediction updated in cloud. Update the old prediction.
@@ -110,20 +69,5 @@ public interface FragComm {
         void reportNewServerTime();
 
         void updateFailedPrediction(Prediction prediction);
-    }
-
-    /**
-     * This interface defines the minimum API provided by any child
-     * Fragment, which desires to receive the list of Users, to
-     * interact with MainActivity.
-     */
-    interface ProvidedUsersFragmentOps {
-
-        /**
-         * Display the List of Users in the appropriate View
-         *
-         * @param allUsersList The List of Users to display.
-         */
-        void setUsers(List<User> allUsersList);
     }
 }

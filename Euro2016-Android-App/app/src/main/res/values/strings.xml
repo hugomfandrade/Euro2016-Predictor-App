@@ -18,7 +18,7 @@
     <string name="scores">Scores</string>
     <string name="n_a">n/a</string>
     <string name="set">Set</string>
-    <string name="name">Name</string>
+    <string name="name">Team</string>
     <string name="victories_abbr">V</string>
     <string name="draws_abbr">D</string>
     <string name="defeats_abbr">L</string>
@@ -26,6 +26,7 @@
     <string name="goals_against_abbr">GA</string>
     <string name="goals_difference_abbr">GD</string>
     <string name="points_abbr">P</string>
-    <string name="position_abbr">P</string>
-    <string name="loading">Loading...</string>
+    <string name="position_abbr">#</string>
+    <string name="loading">Loading…</string>
+    <string name="result">Result</string>
 </resources>

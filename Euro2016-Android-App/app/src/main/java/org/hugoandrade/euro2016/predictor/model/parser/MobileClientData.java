@@ -3,13 +3,12 @@ package org.hugoandrade.euro2016.predictor.model.parser;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import org.hugoandrade.euro2016.predictor.data.Country;
-import org.hugoandrade.euro2016.predictor.data.LoginData;
-import org.hugoandrade.euro2016.predictor.data.Match;
-import org.hugoandrade.euro2016.predictor.data.Prediction;
-import org.hugoandrade.euro2016.predictor.data.SystemData;
-import org.hugoandrade.euro2016.predictor.data.User;
-import org.hugoandrade.euro2016.predictor.utils.ISO8601;
+import org.hugoandrade.euro2016.predictor.data.raw.Country;
+import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
+import org.hugoandrade.euro2016.predictor.data.raw.Match;
+import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
+import org.hugoandrade.euro2016.predictor.data.raw.SystemData;
+import org.hugoandrade.euro2016.predictor.data.raw.User;
 
 import java.util.Calendar;
 import java.util.List;
@@ -47,6 +46,7 @@ public class MobileClientData implements Parcelable {
         REGISTER,
         GET_INFO,
         GET_PREDICTIONS,
+        GET_LATEST_PERFORMANCE,
         PUT_PREDICTION,
     }
 

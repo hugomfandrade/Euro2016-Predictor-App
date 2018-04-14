@@ -73,11 +73,11 @@ public class MobileServiceJsonTableHelper {
 
         mJsonArray = new JsonArray();
 
+        mFuture = SettableFuture.create();
         if (mWhereField == null || mWhereValues == null || mWhereValues.length == 0) {
-            mFuture = startQueryAllAsync();
+            startQueryAllAsync();
         }
         else {
-            mFuture = SettableFuture.create();
             queryWhere();
         }
         return mFuture;
@@ -154,13 +154,9 @@ public class MobileServiceJsonTableHelper {
         return executableJsonQuery;
     }
 
-    private SettableFuture<JsonElement> startQueryAllAsync() {
-
-        mFuture = SettableFuture.create();
+    private void startQueryAllAsync() {
 
         queryMore(new QueryParameters(0, 50));
-
-        return mFuture;
     }
 
     private void querySync(final QueryParameters queryParameters) {

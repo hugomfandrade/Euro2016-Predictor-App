@@ -10,12 +10,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import org.hugoandrade.euro2016.predictor.DevConstants;
-import org.hugoandrade.euro2016.predictor.data.Country;
-import org.hugoandrade.euro2016.predictor.data.LoginData;
-import org.hugoandrade.euro2016.predictor.data.Match;
-import org.hugoandrade.euro2016.predictor.data.Prediction;
-import org.hugoandrade.euro2016.predictor.data.SystemData;
-import org.hugoandrade.euro2016.predictor.data.User;
+import org.hugoandrade.euro2016.predictor.data.raw.Country;
+import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
+import org.hugoandrade.euro2016.predictor.data.raw.Match;
+import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
+import org.hugoandrade.euro2016.predictor.data.raw.SystemData;
+import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientDataJsonFormatter;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientDataJsonParser;
 import org.hugoandrade.euro2016.predictor.network.HttpConstants;
@@ -231,6 +231,36 @@ public class CloudDatabaseSimAdapter {
         CloudDatabaseSimImpl.ListenableCallback<JsonElement> f
                 = new CloudDatabaseSimImpl(Prediction.Entry.TABLE_NAME, mContentProviderClient)
                 .where().field(Prediction.Entry.Cols.USER_ID).eq(userID)
+                .execute();
+        CloudDatabaseSimImpl.addCallback(f, new CloudDatabaseSimImpl.Callback<JsonElement>() {
+            @Override
+            public void onSuccess(JsonElement jsonElement) {
+                callback.set(MobileServiceData.Builder
+                        .instance(MobileServiceData.GET_PREDICTIONS, MobileServiceData.REQUEST_RESULT_SUCCESS)
+                        .setPredictionList(parser.parsePredictionList(jsonElement))
+                        .create());
+            }
+
+            @Override
+            public void onFailure(@NonNull String throwable) {
+                sendErrorMessage(callback, MobileServiceData.GET_PREDICTIONS, throwable);
+            }
+        });
+
+        return true;
+    }
+
+    public boolean getPredictions(final MobileServiceCallback callback, String userID, int firstMatchNumber, int lastMatchNumber) {
+        if (!DevConstants.CLOUD_DATABASE_SIM)
+            return false;
+
+        Log.e(TAG, "getPredictions: " + userID);
+
+        CloudDatabaseSimImpl.ListenableCallback<JsonElement> f
+                = new CloudDatabaseSimImpl(Prediction.Entry.TABLE_NAME, mContentProviderClient)
+                .where().field(Prediction.Entry.Cols.USER_ID).eq(userID)
+                .and().field(Prediction.Entry.Cols.MATCH_NO).ge(firstMatchNumber)
+                .and().field(Prediction.Entry.Cols.MATCH_NO).le(lastMatchNumber)
                 .execute();
         CloudDatabaseSimImpl.addCallback(f, new CloudDatabaseSimImpl.Callback<JsonElement>() {
             @Override

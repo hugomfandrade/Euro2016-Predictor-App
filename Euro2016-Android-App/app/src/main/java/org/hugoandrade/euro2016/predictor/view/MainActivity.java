@@ -8,26 +8,25 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
+import android.support.v7.widget.Toolbar;
 import android.view.View;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 import org.hugoandrade.euro2016.predictor.FragComm;
 import org.hugoandrade.euro2016.predictor.MVP;
 import org.hugoandrade.euro2016.predictor.R;
-import org.hugoandrade.euro2016.predictor.data.Group;
-import org.hugoandrade.euro2016.predictor.data.Match;
-import org.hugoandrade.euro2016.predictor.data.Prediction;
-import org.hugoandrade.euro2016.predictor.data.User;
+import org.hugoandrade.euro2016.predictor.customview.IconTabLayout;
+import org.hugoandrade.euro2016.predictor.customview.NonSwipeableViewPager;
+import org.hugoandrade.euro2016.predictor.data.raw.Match;
+import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
+import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.presenter.MainPresenter;
-import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils.*;
-import org.hugoandrade.euro2016.predictor.view.fragment.MatchesFragment;
-import org.hugoandrade.euro2016.predictor.view.fragment.StandingsFragment;
 import org.hugoandrade.euro2016.predictor.view.fragment.PredictionsFragment;
+import org.hugoandrade.euro2016.predictor.view.fragment.RulesFragment;
+import org.hugoandrade.euro2016.predictor.view.fragment.StandingsFragment;
 import org.hugoandrade.euro2016.predictor.view.fragment.UsersFragment;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends ActivityBase<MVP.RequiredMainViewOps,
                                                   MVP.ProvidedMainPresenterOps,
@@ -44,13 +43,22 @@ public class MainActivity extends ActivityBase<MVP.RequiredMainViewOps,
      * The Fragments to be displayed in the ViewPager.
      */
     public Fragment[] mFragmentArray = {
-            new PredictionsFragment(), new MatchesFragment(),
-            new StandingsFragment(), new UsersFragment()};
+            new PredictionsFragment(),
+            new StandingsFragment(),
+            new UsersFragment(),
+            new RulesFragment()
+    };
     /**
      * The titles of each Fragment.
      */
     public CharSequence[] mFragmentTitleArray = {
-            "Predictions", "Matches", "Standings", "Scores"};
+            "Predictions", "Standings", "Scores", "Rules"};
+    /**
+     * The titles of each Fragment.
+     */
+    public int[] mFragmentIconArray = {
+            R.drawable.ic_soccer_field, R.drawable.ic_podium,
+            R.drawable.ic_trophy, R.drawable.ic_rules};
 
     /**
      * Factory method that returns an implicit Intent for displaying
@@ -91,11 +99,18 @@ public class MainActivity extends ActivityBase<MVP.RequiredMainViewOps,
         // Set the default layout.
         setContentView(R.layout.activity_main);
 
+        setSupportActionBar((Toolbar) findViewById(R.id.anim_toolbar));
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Euro 2016 Predictor");
+        }
+
         // initialize TabLayout.
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabanim_tabs);
+        TabLayout tabLayout = findViewById(R.id.tabanim_tabs);
 
         // initialize ViewPager.
-        ViewPager viewPager = (ViewPager) findViewById(R.id.container);
+        NonSwipeableViewPager viewPager = findViewById(R.id.container);
+        viewPager.setSmoothTransition(false);
 
         // Store the RelativeLayout for fast access when setting view available or not available.
         // This RelativeLayout is layout'ed over the remaining content and consumes all touch events.
@@ -132,44 +147,6 @@ public class MainActivity extends ActivityBase<MVP.RequiredMainViewOps,
     @Override
     public void reportMessage(String message) {
         showSnackBar(message);
-    }
-
-    @Override
-    public void setUserList(List<User> userList) {
-        // Get all fragments which implement "FragmentCommunication.ProvidedAllUsersFragmentOps"
-        // and send the list of Users to those Fragments
-        for (FragComm.ProvidedUsersFragmentOps IAllUsersFrag :
-                getAllFragmentsByInterfaceType(FragComm.ProvidedUsersFragmentOps.class))
-            IAllUsersFrag.setUsers(userList);
-    }
-
-    @Override
-    public void setGroups(HashMap<SGroup, Group> groupMap) {
-        // Get all fragments which implement "FragmentCommunication.ProvidedAllCountriesFragmentOps"
-        // and send the map of Groups to those Fragments
-        for (FragComm.ProvidedCountriesFragmentOps IAllCountriesFrag :
-                getAllFragmentsByInterfaceType(FragComm.ProvidedCountriesFragmentOps.class))
-            IAllCountriesFrag.setGroups(groupMap);
-    }
-
-    @Override
-    public void setMatches(HashMap<SStage, List<Match>> matchMap) {
-        // Get all fragments which implement "FragmentCommunication.ProvidedAllMatchesFragmentOps"
-        // and send the map of Matches to those Fragments
-        for (FragComm.ProvidedMatchesFragmentOps IAllMatchesFrag :
-                getAllFragmentsByInterfaceType(FragComm.ProvidedMatchesFragmentOps.class))
-            IAllMatchesFrag.setMatches(matchMap);
-    }
-
-    @Override
-    public void setPredictions(List<Prediction> predictionList) {
-
-        // Get all fragments which implement "FragmentCommunication.ProvidedAllPredictionsFragmentOps"
-        // and send the list of Predictions to those Fragments
-
-        for (FragComm.ProvidedPredictionsFragmentOps IAllPredictionsFrag :
-                getAllFragmentsByInterfaceType(FragComm.ProvidedPredictionsFragmentOps.class))
-            IAllPredictionsFrag.setPredictions(predictionList);
     }
 
     @Override
@@ -211,7 +188,6 @@ public class MainActivity extends ActivityBase<MVP.RequiredMainViewOps,
                                               List<Prediction> predictionList) {
         startActivity(UsersPredictionsActivity.makeIntent(
                 this, selectedUser, matchesList, predictionList));
-        overridePendingTransition(R.anim.right_to_center, R.anim.center_to_left);
     }
 
     /**
@@ -249,7 +225,7 @@ public class MainActivity extends ActivityBase<MVP.RequiredMainViewOps,
      * @brief The Adapter that initializes, manages and displays the Fragments into the
      * ViewPager's layout.
      */
-    private class SectionsPagerAdapter extends FragmentPagerAdapter {
+    private class SectionsPagerAdapter extends FragmentPagerAdapter implements IconTabLayout.IconTabLayoutListener {
 
         /**
          * Creates the SectionsPagerAdapter and provides the FragmentManager.
@@ -274,6 +250,11 @@ public class MainActivity extends ActivityBase<MVP.RequiredMainViewOps,
         @Override
         public int getCount() {
             return mFragmentArray.length;
+        }
+
+        @Override
+        public int getPageIcon(int position) {
+            return mFragmentIconArray[position];
         }
 
         /**

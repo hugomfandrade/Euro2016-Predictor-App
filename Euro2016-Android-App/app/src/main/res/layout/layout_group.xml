@@ -16,7 +16,7 @@
         android:layout_marginRight="8dp"
         android:layout_marginTop="4dp"
         android:layout_marginBottom="4dp"
-        app:cardCornerRadius="4dp"
+        app:cardCornerRadius="0dp"
         app:cardElevation="@dimen/cardview_default_elevation"
         app:cardBackgroundColor="#aaffffff"
         app:contentPadding="5dp">
@@ -26,15 +26,17 @@
             android:layout_height="wrap_content"
             android:orientation="vertical" >
 
-            <TextView
+            <!--TextView
                 android:id="@+id/tv_group"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="3dp"
                 android:textStyle="bold"
-                android:textSize="18sp" />
+                android:textAllCaps="true"
+                android:fontFamily="sans-serif-condensed"
+                android:textSize="18sp" /-->
 
-            <include layout="@layout/list_item_group"
+            <include layout="@layout/list_item_group_header"
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
                 android:id="@+id/tv_group_row"/>

@@ -8,11 +8,11 @@ import android.util.Log;
 
 import com.microsoft.windowsazure.mobileservices.authentication.MobileServiceUser;
 
-import org.hugoandrade.euro2016.predictor.data.Country;
-import org.hugoandrade.euro2016.predictor.data.LoginData;
-import org.hugoandrade.euro2016.predictor.data.Match;
-import org.hugoandrade.euro2016.predictor.data.Prediction;
-import org.hugoandrade.euro2016.predictor.data.User;
+import org.hugoandrade.euro2016.predictor.data.raw.Country;
+import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
+import org.hugoandrade.euro2016.predictor.data.raw.Match;
+import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
+import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.model.IMobileClientService;
 import org.hugoandrade.euro2016.predictor.model.IMobileClientServiceCallback;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
@@ -23,11 +23,11 @@ import org.hugoandrade.euro2016.predictor.network.MultipleCloudStatus;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 public class MobileService extends LifecycleLoggingService {
 
     private IMobileClientServiceCallback mCallback;
-
 
     private final Object syncObj = new Object();
 
@@ -77,12 +77,12 @@ public class MobileService extends LifecycleLoggingService {
     private final IMobileClientService.Stub mBinder = new IMobileClientService.Stub() {
 
         @Override
-        public void registerCallback(IMobileClientServiceCallback cb) throws RemoteException {
+        public void registerCallback(IMobileClientServiceCallback cb) {
             mCallback = cb;
         }
 
         @Override
-        public void unregisterCallback(IMobileClientServiceCallback cb) throws RemoteException {
+        public void unregisterCallback(IMobileClientServiceCallback cb) {
             if (mCallback == cb)
                 mCallback = null;
         }
@@ -257,8 +257,9 @@ public class MobileService extends LifecycleLoggingService {
 
                             m.setUsers(data.getUserList());
 
-                            if (n.isFinished())
+                            if (n.isFinished()) {
                                 sendMobileDataMessage(m);
+                            }
 
                         } else {
                             n.abort();
@@ -342,6 +343,41 @@ public class MobileService extends LifecycleLoggingService {
                     sendMobileDataMessage(m);
                 }
             });
+            return true;
+        }
+
+        @Override
+        public boolean getLatestPerformanceOfUsers(List<User> userList, int firstMatchNumber, int lastMatchNumber) {
+            final MultipleCloudStatus n = new MultipleCloudStatus(userList.size());
+            final List<Prediction> predictionList = new ArrayList<>();
+
+            for (User user : userList) {
+                MobileServiceCallback i = MobileServiceAdapter.getInstance().getPredictions(user.getID(), firstMatchNumber, lastMatchNumber);
+                MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
+                    @Override
+                    public void onResult(MobileServiceData data) {
+
+                        synchronized (syncObj) {
+
+                            n.operationCompleted();
+
+                            if (data.wasSuccessful()) {
+                                predictionList.addAll(data.getPredictionList());
+                            }
+
+                            if (n.isFinished()) {
+
+                                MobileClientData m = MobileClientData.makeMessage(
+                                        MobileClientData.OperationType.GET_LATEST_PERFORMANCE.ordinal(),
+                                        MobileClientData.REQUEST_RESULT_SUCCESS);
+                                m.setPredictionList(predictionList);
+
+                                sendMobileDataMessage(m);
+                            }
+                        }
+                    }
+                });
+            }
             return true;
         }
     };
