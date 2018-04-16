@@ -365,7 +365,8 @@ class CloudDatabaseSimImpl {
                 systemDate.setTimeInMillis(systemDate.getTimeInMillis() + diff);
 
                 jsonElement.getAsJsonObject().remove(SystemData.Entry.Cols.DATE_OF_CHANGE);
-                jsonElement.getAsJsonObject().addProperty(SystemData.Entry.Cols.DATE_OF_CHANGE,
+                jsonElement.getAsJsonObject().addProperty(SystemData.Entry.Cols.SYSTEM_DATE,
+                //jsonElement.getAsJsonObject().addProperty(SystemData.Entry.Cols.DATE_OF_CHANGE,
                         ISO8601.fromCalendar(systemDate));
             }
             else {
