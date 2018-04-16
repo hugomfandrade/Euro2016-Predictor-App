@@ -16,9 +16,12 @@ import com.google.gson.JsonObject;
 import org.hugoandrade.euro2016.predictor.cloudsim.parser.CloudContentValuesFormatter;
 import org.hugoandrade.euro2016.predictor.cloudsim.parser.CloudJsonObjectFormatter;
 import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
+import org.hugoandrade.euro2016.predictor.data.raw.SystemData;
 import org.hugoandrade.euro2016.predictor.network.HttpConstants;
+import org.hugoandrade.euro2016.predictor.utils.ISO8601;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 class CloudDatabaseSimImpl {
@@ -34,6 +37,7 @@ class CloudDatabaseSimImpl {
 
     private List<FilteringOperation> filteringOperationList;
     private String[] selectFields;
+    private Pair<String, SortOrder> sortField;
 
     CloudDatabaseSimImpl(String table, ContentProviderClient contentProviderClient) {
         this.provider = contentProviderClient;
@@ -56,7 +60,7 @@ class CloudDatabaseSimImpl {
         if (isApi) {
             task.api(apiType, apiJsonObject);
         }
-        task.execute(filteringOperationList, selectFields);
+        task.execute(filteringOperationList, selectFields, sortField);
         return task;
     }
 
@@ -135,6 +139,11 @@ class CloudDatabaseSimImpl {
         }
     }
 
+    public CloudDatabaseSimImpl orderBy(String field, SortOrder sortOrder) {
+        sortField = new Pair<>(field, sortOrder);
+        return this;
+    }
+
     CloudDatabaseSimImpl select(String... fields) {
         this.selectFields = new String[fields.length];
         System.arraycopy(fields, 0, this.selectFields, 0, fields.length);
@@ -166,6 +175,7 @@ class CloudDatabaseSimImpl {
         private JsonObject jsonObject;
         private int taskType;
         private Callback<V> mFuture;
+        private Pair<String, SortOrder> sortField;
 
         ListenableCallback(ContentProviderClient contentProviderClient, String tableName) {
             this(contentProviderClient, tableName, null, TASK_GET);
@@ -220,9 +230,10 @@ class CloudDatabaseSimImpl {
             return null;
         }
 
-        void execute(List<FilteringOperation> filteringOperationList, String[] selectFields) {
+        void execute(List<FilteringOperation> filteringOperationList, String[] selectFields, Pair<String, SortOrder> sortField) {
             this.filteringOperationList = filteringOperationList;
             this.selectFields = selectFields;
+            this.sortField = sortField;
             this.execute();
         }
 
@@ -369,7 +380,12 @@ class CloudDatabaseSimImpl {
                 }
             }
 
-            Cursor c = provider.query(baseUri, selectFields, selection, selectionArgs, null);
+            String sortField = null;
+            if (this.sortField != null) {
+                sortField = this.sortField.first + " " + (this.sortField.second == SortOrder.Ascending ? "ASC" : "DESC");
+            }
+
+            Cursor c = provider.query(baseUri, selectFields, selection, selectionArgs, sortField);
 
             if (c == null) {
                 throw new IllegalArgumentException("Cursor not found");
@@ -424,16 +440,17 @@ class CloudDatabaseSimImpl {
 
     private static JsonElement adjustIfItIsSystemData(JsonElement jsonElement) {
 
-        /*if (!jsonElement.isJsonObject())
+        if (!jsonElement.isJsonObject())
             return jsonElement;
 
+        final String DATE_OF_CHANGE = "DateOfChange";
         if (jsonElement.getAsJsonObject().has(SystemData.Entry.Cols.RULES)
                 && jsonElement.getAsJsonObject().has(SystemData.Entry.Cols.APP_STATE)
-                && jsonElement.getAsJsonObject().has(SystemData.Entry.Cols.DATE_OF_CHANGE)
+                && jsonElement.getAsJsonObject().has(DATE_OF_CHANGE)
                 && jsonElement.getAsJsonObject().has(SystemData.Entry.Cols.SYSTEM_DATE)) {
 
             Calendar dateOfChange =
-                    ISO8601.toCalendar(getJsonPrimitive(jsonElement.getAsJsonObject(), SystemData.Entry.Cols.DATE_OF_CHANGE, null));
+                    ISO8601.toCalendar(getJsonPrimitive(jsonElement.getAsJsonObject(), DATE_OF_CHANGE, null));
             Calendar systemDate =
                     ISO8601.toCalendar(getJsonPrimitive(jsonElement.getAsJsonObject(), SystemData.Entry.Cols.SYSTEM_DATE, null));
 
@@ -442,8 +459,8 @@ class CloudDatabaseSimImpl {
                 long diff = c.getTimeInMillis() - dateOfChange.getTimeInMillis();
                 systemDate.setTimeInMillis(systemDate.getTimeInMillis() + diff);
 
-                jsonElement.getAsJsonObject().remove(SystemData.Entry.Cols.DATE_OF_CHANGE);
-                jsonElement.getAsJsonObject().addProperty(SystemData.Entry.Cols.DATE_OF_CHANGE, ISO8601.fromCalendar(systemDate));
+                jsonElement.getAsJsonObject().remove(DATE_OF_CHANGE);
+                jsonElement.getAsJsonObject().addProperty(SystemData.Entry.Cols.SYSTEM_DATE, ISO8601.fromCalendar(systemDate));
             }
             else {
                 return jsonElement;
@@ -451,4 +468,8 @@ class CloudDatabaseSimImpl {
         }/**/
         return jsonElement;
     }/**/
+
+    public enum SortOrder {
+        Ascending, Descending
+    }
 }

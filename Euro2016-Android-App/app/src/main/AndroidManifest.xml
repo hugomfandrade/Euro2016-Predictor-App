@@ -19,6 +19,9 @@
             android:name=".view.UsersPredictionsActivity"
             android:configChanges="orientation|screenSize" />
         <activity
+            android:name=".view.CountryDetailsActivity"
+            android:configChanges="orientation|screenSize" />
+        <activity
             android:name=".view.SignUpActivity"
             android:configChanges="orientation|screenSize"
             android:windowSoftInputMode="stateAlwaysVisible"/>

@@ -16,11 +16,16 @@ import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.SystemData;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
+import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientDataJsonFormatter;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientDataJsonParser;
 import org.hugoandrade.euro2016.predictor.network.HttpConstants;
 import org.hugoandrade.euro2016.predictor.network.MobileServiceCallback;
 import org.hugoandrade.euro2016.predictor.network.MobileServiceData;
+import org.hugoandrade.euro2016.predictor.network.MultipleCloudStatus;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class CloudDatabaseSimAdapter {
 
@@ -28,6 +33,7 @@ public class CloudDatabaseSimAdapter {
     private final static String TAG = CloudDatabaseSimAdapter.class.getSimpleName();
 
     private static CloudDatabaseSimAdapter mInstance = null;
+    private final Object syncObj = new Object();
 
     // org name in java package format
     private static final String ORGANIZATIONAL_NAME = "org.hugoandrade";
@@ -155,7 +161,9 @@ public class CloudDatabaseSimAdapter {
             return false;
 
         CloudDatabaseSimImpl.ListenableCallback<JsonElement> future
-                = new CloudDatabaseSimImpl(Match.Entry.TABLE_NAME, mContentProviderClient).execute();
+                = new CloudDatabaseSimImpl(Match.Entry.TABLE_NAME, mContentProviderClient)
+                .orderBy(Match.Entry.Cols.MATCH_NUMBER, CloudDatabaseSimImpl.SortOrder.Ascending)
+                .execute();
         CloudDatabaseSimImpl.addCallback(future, new CloudDatabaseSimImpl.Callback<JsonElement>() {
             @Override
             public void onSuccess(JsonElement jsonElement) {
@@ -203,7 +211,8 @@ public class CloudDatabaseSimAdapter {
             return false;
 
         CloudDatabaseSimImpl.ListenableCallback<JsonElement> f
-                = new CloudDatabaseSimImpl(User.Entry.TABLE_NAME, mContentProviderClient).execute();
+                = new CloudDatabaseSimImpl(User.Entry.TABLE_NAME, mContentProviderClient)
+                .orderBy(User.Entry.Cols.SCORE, CloudDatabaseSimImpl.SortOrder.Descending).execute();
         CloudDatabaseSimImpl.addCallback(f, new CloudDatabaseSimImpl.Callback<JsonElement>() {
             @Override
             public void onSuccess(JsonElement jsonElement) {
@@ -254,8 +263,6 @@ public class CloudDatabaseSimAdapter {
         if (!DevConstants.CLOUD_DATABASE_SIM)
             return false;
 
-        Log.e(TAG, "getPredictions: " + userID);
-
         CloudDatabaseSimImpl.ListenableCallback<JsonElement> f
                 = new CloudDatabaseSimImpl(Prediction.Entry.TABLE_NAME, mContentProviderClient)
                 .where().field(Prediction.Entry.Cols.USER_ID).eq(userID)
@@ -276,6 +283,55 @@ public class CloudDatabaseSimAdapter {
                 sendErrorMessage(callback, MobileServiceData.GET_PREDICTIONS, throwable);
             }
         });
+
+        return true;
+    }
+
+    public boolean getPredictions(final MobileServiceCallback callback, String[] users, int firstMatchNumber, int lastMatchNumber) {
+        if (!DevConstants.CLOUD_DATABASE_SIM)
+            return false;
+
+        final MultipleCloudStatus n = new MultipleCloudStatus(users.length);
+        final List<Prediction> predictionList = new ArrayList<>();
+
+        for (String userID : users) {
+            CloudDatabaseSimImpl.ListenableCallback<JsonElement> f
+                    = new CloudDatabaseSimImpl(Prediction.Entry.TABLE_NAME, mContentProviderClient)
+                    .where().field(Prediction.Entry.Cols.USER_ID).eq(userID)
+                    .and().field(Prediction.Entry.Cols.MATCH_NO).ge(firstMatchNumber)
+                    .and().field(Prediction.Entry.Cols.MATCH_NO).le(lastMatchNumber)
+                    .execute();
+            CloudDatabaseSimImpl.addCallback(f, new CloudDatabaseSimImpl.Callback<JsonElement>() {
+                @Override
+                public void onSuccess(JsonElement jsonElement) {
+                    synchronized (syncObj) {
+
+                        if (n.isAborted()) return;
+
+                        n.operationCompleted();
+
+                        predictionList.addAll(parser.parsePredictionList(jsonElement));
+
+                        if (n.isFinished()) {
+
+                            callback.set(MobileServiceData.Builder
+                                    .instance(MobileServiceData.GET_PREDICTIONS, MobileServiceData.REQUEST_RESULT_SUCCESS)
+                                    .setPredictionList(predictionList)
+                                    .create());
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull String throwable) {
+                    synchronized (syncObj) {
+                        n.abort();
+
+                        sendErrorMessage(callback, MobileServiceData.GET_PREDICTIONS, throwable);
+                    }
+                }
+            });
+        }
 
         return true;
     }

@@ -36,7 +36,7 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 
-        rvPredictions = (RecyclerView) view.findViewById(R.id.rv_predictions);
+        rvPredictions = view.findViewById(R.id.rv_predictions);
         rvPredictions.setLayoutManager(
                 new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 

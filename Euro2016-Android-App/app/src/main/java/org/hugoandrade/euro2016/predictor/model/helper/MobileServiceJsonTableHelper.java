@@ -7,6 +7,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.util.Pair;
 import android.util.Log;
 
 import com.google.common.util.concurrent.FutureCallback;
@@ -18,9 +19,14 @@ import com.google.gson.JsonElement;
 import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
 import com.microsoft.windowsazure.mobileservices.table.MobileServiceJsonTable;
 import com.microsoft.windowsazure.mobileservices.table.query.ExecutableJsonQuery;
+import com.microsoft.windowsazure.mobileservices.table.query.Query;
+import com.microsoft.windowsazure.mobileservices.table.query.QueryOperations;
+import com.microsoft.windowsazure.mobileservices.table.query.QueryOrder;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,9 +43,11 @@ public class MobileServiceJsonTableHelper {
     private SettableFuture<JsonElement> mFuture;
     private JsonArray mJsonArray;
 
-    private String mWhereField;
-    private String[] mWhereValues;
-    private String[] mSelectFields;
+    private Pair<String, String[]> mSpecialWhere;
+    private List<WhereClause> whereClauseList;
+
+    //private String mOrderField;
+    //private QueryOrder mOrderOrder;
 
     private MHandler mHandler;
 
@@ -57,15 +65,34 @@ public class MobileServiceJsonTableHelper {
         mExecutableJsonQuery = executableJsonQuery;
     }
 
-    public MobileServiceJsonTableHelper where(String field, String... values) {
-        mWhereField = field;
-        mWhereValues = values;
+    public MobileServiceJsonTableHelper orderBy(String field, QueryOrder order) {
+        mExecutableJsonQuery.orderBy(field, order);
         return this;
     }
 
     public MobileServiceJsonTableHelper select(String... selectFields) {
-        mSelectFields = selectFields;
+        mExecutableJsonQuery.select(selectFields);
         return this;
+    }
+
+    /*public MobileServiceJsonTableHelper where(String field, String... values) {
+        if (getNumberOfWhereClauses() >= 10) {
+            throw new IllegalArgumentException("Too many where clauses");
+        }
+        mSpecialWhere = new Pair<>(field, values);
+        return this;
+    }/**/
+
+    public WhereClause where() {
+        if (getNumberOfWhereClauses() >= 10) {
+            throw new IllegalArgumentException("Too many where clauses");
+        }
+        if (whereClauseList == null)
+            whereClauseList = new ArrayList<>();
+
+        WhereClause filteringOperation = new WhereClause(this);
+        whereClauseList.add(filteringOperation);
+        return filteringOperation;
     }
 
     public ListenableFuture<JsonElement> execute() {
@@ -74,7 +101,7 @@ public class MobileServiceJsonTableHelper {
         mJsonArray = new JsonArray();
 
         mFuture = SettableFuture.create();
-        if (mWhereField == null || mWhereValues == null || mWhereValues.length == 0) {
+        if (mSpecialWhere == null) {
             startQueryAllAsync();
         }
         else {
@@ -85,23 +112,35 @@ public class MobileServiceJsonTableHelper {
 
     private void queryWhere() {
 
+        buildQuery();
+
         final int[] whereParameters = {0 /* skip */, 1 /* n times */, 10 /* max where values */, 1/* was aborted */};
+
+        final boolean hasRegularWhereClauses = whereClauseList != null && whereClauseList.size() != 0;
+
+        if (whereClauseList != null && whereClauseList.size() != 0) {
+
+            whereParameters[2] = 10 - whereClauseList.size();
+        }
+
+
+        String mWhereField = mSpecialWhere.first;
+        String[] mWhereValues = mSpecialWhere.second;
 
         whereParameters[1] = mWhereValues.length / whereParameters[2] + 1;
 
-        for (int i = 0 ; i < whereParameters[1]; i++) {
+        for (int i = 0; i < whereParameters[1]; i++) {
+
             final int from = i * whereParameters[2];
-            final int to = (i != (whereParameters[1] - 1))?
-                    (i + 1) * whereParameters[2]:
+            final int to = (i != (whereParameters[1] - 1)) ?
+                    (i + 1) * whereParameters[2] :
                     mWhereValues.length;
 
             final ExecutableJsonQuery executableJsonQuery = buildExecutableJsonWhereQuery(
                     mExecutableJsonQuery.deepClone(),
+                    hasRegularWhereClauses,
                     mWhereField,
                     Arrays.copyOfRange(mWhereValues, from, to));
-
-            if (mSelectFields != null && mSelectFields.length > 0)
-                executableJsonQuery.select(mSelectFields);
 
             Futures.addCallback(MobileServiceJsonTableHelper.instance(executableJsonQuery).execute(),
 
@@ -136,25 +175,8 @@ public class MobileServiceJsonTableHelper {
         }
     }
 
-    private static ExecutableJsonQuery buildExecutableJsonWhereQuery(ExecutableJsonQuery executableJsonQuery,
-                                                                     String field,
-                                                                     String... values) {
-
-        if (values.length == 0) {
-            return executableJsonQuery;
-        }
-
-        //Log.e(TAG, executableJsonQuery.getTableName() + " --> " + Integer.toString(values.length));
-        for (int i = 0 ; i < values.length ; i++) {
-            if (i != 0)
-                executableJsonQuery.or();
-            executableJsonQuery.field(field).eq(values[i]);
-        }
-
-        return executableJsonQuery;
-    }
-
     private void startQueryAllAsync() {
+        buildQuery();
 
         queryMore(new QueryParameters(0, 50));
     }
@@ -162,9 +184,6 @@ public class MobileServiceJsonTableHelper {
     private void querySync(final QueryParameters queryParameters) {
 
         try {
-
-            if (mSelectFields != null && mSelectFields.length > 0)
-                mExecutableJsonQuery.select(mSelectFields);
 
             JsonElement jsonElement = mExecutableJsonQuery.skip(queryParameters.skip).top(queryParameters.top).execute().get();
 
@@ -201,6 +220,147 @@ public class MobileServiceJsonTableHelper {
         mHandler.shutdown();
         if (mFuture.setException(throwable))
             Log.d(TAG, "exception successfully set");
+    }
+
+    private void buildQuery() {
+
+        if (whereClauseList != null && whereClauseList.size() != 0) {
+
+            for (int i = 0 ; i < whereClauseList.size() ; i++) {
+                if (i != 0) {
+                    mExecutableJsonQuery.and();
+                }
+                String field = whereClauseList.get(i).field;
+
+                mExecutableJsonQuery.field(field);
+
+                String operation = whereClauseList.get(i).operation;
+                String valueString = whereClauseList.get(i).valueString;
+                Number valueNumber = whereClauseList.get(i).valueNumber;
+
+                if (operation.equals(">=")) {
+                    if (valueString != null)
+                        mExecutableJsonQuery.ge(valueString);
+                    else
+                        mExecutableJsonQuery.ge(valueNumber);
+                }
+                else if (operation.equals("<=")) {
+                    mExecutableJsonQuery.le(valueNumber);
+                }
+                else if (operation.equals("=")) {
+                    if (valueString != null)
+                        mExecutableJsonQuery.eq(valueString);
+                    else
+                        mExecutableJsonQuery.eq(valueNumber);
+                }
+                else {
+                    if (valueString != null)
+                        mExecutableJsonQuery.eq(valueString);
+                    else
+                        mExecutableJsonQuery.eq(valueNumber);
+                }
+            }
+        }
+    }
+
+    private static ExecutableJsonQuery buildExecutableJsonWhereQuery(ExecutableJsonQuery executableJsonQuery,
+                                                                     boolean hasRegularWhereClauses,
+                                                                     String field,
+                                                                     String... values) {
+
+
+        if (values.length == 0) {
+            return executableJsonQuery;
+        }
+
+        //Log.e(TAG, executableJsonQuery.getTableName() + " --> " + Integer.toString(values.length));
+        if (hasRegularWhereClauses) {
+            Query query = QueryOperations.query(null);
+
+            //Log.e(TAG, executableJsonQuery.getTableName() + " --> " + Integer.toString(values.length));
+            for (int i = 0 ; i < values.length ; i++) {
+                if (i != 0)
+                    query.or();
+                query.field(field).eq(values[i]);
+            }
+
+
+            return executableJsonQuery.and(query);
+        }
+        else {
+            for (int i = 0 ; i < values.length ; i++) {
+                if (i != 0)
+                    executableJsonQuery.or();
+                executableJsonQuery.field(field).eq(values[i]);
+            }
+
+            return executableJsonQuery;
+        }
+    }
+
+    private int getNumberOfWhereClauses() {
+        return (whereClauseList == null ? 0 : whereClauseList.size()) +
+                (mSpecialWhere == null ? 0 : 1);
+    }
+
+    public class WhereClause {
+
+        MobileServiceJsonTableHelper base;
+
+        String field;
+        String operation;
+        String valueString;
+        Number valueNumber;
+        String[] values;
+        boolean isSpecial;
+
+        WhereClause(MobileServiceJsonTableHelper base) {
+            this.base = base;
+        }
+
+        public WhereClause field(String field) {
+            this.field = field;
+            return this;
+        }
+
+        public WhereClause eq(String value) {
+            this.operation = "=";
+            this.valueString = value;
+            return this;
+        }
+        public WhereClause eq(String... values) {
+            isSpecial = true;
+            this.operation = "=";
+            this.values = values;
+            return this;
+        }/**/
+        public WhereClause lt(Number matchNo) {
+            this.operation = "<";
+            this.valueNumber = matchNo;
+            return this;
+        }
+        public WhereClause ge(Number matchNo) {
+            this.operation = ">=";
+            this.valueNumber = matchNo;
+            return this;
+        }
+        public WhereClause le(Number matchNo) {
+            this.operation = "<=";
+            this.valueNumber = matchNo;
+            return this;
+        }
+
+        public WhereClause and() {
+            if (isSpecial) {
+                base.mSpecialWhere = new Pair<>(field, values);
+                base.whereClauseList.remove(this);
+            }
+            return this.base.where();
+        }
+
+        public ListenableFuture<JsonElement> execute() {
+            return base.execute();
+        }
     }
 
     private static class MHandler extends Handler {

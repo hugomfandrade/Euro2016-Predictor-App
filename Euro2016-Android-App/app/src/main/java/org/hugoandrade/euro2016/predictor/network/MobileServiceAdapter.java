@@ -13,6 +13,7 @@ import com.google.gson.JsonObject;
 import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
 import com.microsoft.windowsazure.mobileservices.authentication.MobileServiceUser;
 import com.microsoft.windowsazure.mobileservices.table.MobileServiceJsonTable;
+import com.microsoft.windowsazure.mobileservices.table.query.QueryOrder;
 
 import org.hugoandrade.euro2016.predictor.DevConstants;
 import org.hugoandrade.euro2016.predictor.cloudsim.CloudDatabaseSimAdapter;
@@ -23,6 +24,7 @@ import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.SystemData;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.model.helper.MobileServiceJsonTableHelper;
+import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientDataJsonFormatter;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientDataJsonParser;
 import org.hugoandrade.euro2016.predictor.utils.NetworkBroadcastReceiverUtils;
@@ -197,12 +199,16 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
                 !isNetworkAvailable(callback, MobileServiceData.GET_MATCHES))
             return callback;
 
-        ListenableFuture<JsonElement> futureCountries =  MobileServiceJsonTableHelper
+        ListenableFuture<JsonElement> futureCountries = MobileServiceJsonTableHelper
                 .instance(Match.Entry.TABLE_NAME, mClient)
+                .orderBy(Match.Entry.Cols.MATCH_NUMBER, QueryOrder.Ascending)
                 .execute();
         Futures.addCallback(futureCountries, new FutureCallback<JsonElement>() {
             @Override
             public void onSuccess(JsonElement jsonElement) {
+                for (Match m : parser.parseMatchList(jsonElement)) {
+                    Log.e(TAG, "Get Matches: " + Integer.toString(m.getMatchNumber()));
+                }
                 callback.set(MobileServiceData.Builder
                         .instance(MobileServiceData.GET_MATCHES, MobileServiceData.REQUEST_RESULT_SUCCESS)
                         .setMatchList(parser.parseMatchList(jsonElement))
@@ -255,9 +261,12 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
                 !isNetworkAvailable(callback, MobileServiceData.GET_USERS))
             return callback;
 
-        ListenableFuture<JsonElement> future =  MobileServiceJsonTableHelper
-                .instance(User.Entry.TABLE_NAME, mClient)
-                .execute();
+        ListenableFuture<JsonElement> future =
+                //new MobileServiceJsonTable(User.Entry.TABLE_NAME, mClient)
+                //.orderBy(User.Entry.Cols.SCORE, QueryOrder.Descending)
+                MobileServiceJsonTableHelper.instance(User.Entry.TABLE_NAME, mClient)
+                        .orderBy(User.Entry.Cols.SCORE, QueryOrder.Descending)
+                        .execute();
         Futures.addCallback(future, new FutureCallback<JsonElement>() {
             @Override
             public void onSuccess(JsonElement jsonElement) {
@@ -286,11 +295,12 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
 
         ListenableFuture<JsonElement> i = MobileServiceJsonTableHelper
                 .instance(Prediction.Entry.TABLE_NAME, mClient)
-                .where(Prediction.Entry.Cols.USER_ID, userID)
+                .where().field(Prediction.Entry.Cols.USER_ID).eq(userID)
                 .execute();
         Futures.addCallback(i, new FutureCallback<JsonElement>() {
             @Override
             public void onSuccess(JsonElement jsonElement) {
+
                 callback.set(MobileServiceData.Builder
                         .instance(MobileServiceData.GET_PREDICTIONS, MobileServiceData.REQUEST_RESULT_SUCCESS)
                         .setPredictionList(parser.parsePredictionList(jsonElement))
@@ -318,6 +328,37 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
                 .where().field(Prediction.Entry.Cols.USER_ID).eq(userID)
                 .and().field(Prediction.Entry.Cols.MATCH_NO).ge(firstMatchNumber)
                 .and().field(Prediction.Entry.Cols.MATCH_NO).le(firstMatchNumber)
+                .execute();
+        Futures.addCallback(i, new FutureCallback<JsonElement>() {
+            @Override
+            public void onSuccess(JsonElement jsonElement) {
+                callback.set(MobileServiceData.Builder
+                        .instance(MobileServiceData.GET_PREDICTIONS, MobileServiceData.REQUEST_RESULT_SUCCESS)
+                        .setPredictionList(parser.parsePredictionList(jsonElement))
+                        .create());
+            }
+
+            @Override
+            public void onFailure(@NonNull Throwable throwable) {
+                sendErrorMessage(callback, MobileServiceData.GET_PREDICTIONS, throwable.getMessage());
+            }
+        });
+
+        return callback;
+    }
+
+    public MobileServiceCallback getPredictions(String[] users, int firstMatchNumber, int lastMatchNumber) {
+
+        final MobileServiceCallback callback = new MobileServiceCallback();
+
+        if (CloudDatabaseSimAdapter.getInstance().getPredictions(callback, users, firstMatchNumber, lastMatchNumber) ||
+                !isNetworkAvailable(callback, MobileServiceData.GET_PREDICTIONS))
+            return callback;
+
+        ListenableFuture<JsonElement> i = MobileServiceJsonTableHelper.instance(Prediction.Entry.TABLE_NAME, mClient)
+                .where().field(Prediction.Entry.Cols.USER_ID).eq(users)
+                .and().field(Prediction.Entry.Cols.MATCH_NO).ge(firstMatchNumber)
+                .and().field(Prediction.Entry.Cols.MATCH_NO).le(lastMatchNumber)
                 .execute();
         Futures.addCallback(i, new FutureCallback<JsonElement>() {
             @Override

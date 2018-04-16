@@ -348,6 +348,28 @@ public class MobileService extends LifecycleLoggingService {
 
         @Override
         public boolean getLatestPerformanceOfUsers(List<User> userList, int firstMatchNumber, int lastMatchNumber) {
+
+            String[] userIDs = new String[userList.size()];
+            for (int i = 0 ; i < userList.size() ; i++) {
+                userIDs[i] = userList.get(i).getID();
+            }
+
+            MobileServiceCallback i = MobileServiceAdapter.getInstance().getPredictions(userIDs, firstMatchNumber, lastMatchNumber);
+            MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
+                @Override
+                public void onResult(MobileServiceData data) {
+
+                    MobileClientData m = MobileClientData.makeMessage(
+                            MobileClientData.OperationType.GET_LATEST_PERFORMANCE.ordinal(),
+                            MobileClientData.REQUEST_RESULT_SUCCESS);
+                    m.setPredictionList(data.getPredictionList());
+
+                    sendMobileDataMessage(m);
+                }
+            }); /**/
+
+            /*
+
             final MultipleCloudStatus n = new MultipleCloudStatus(userList.size());
             final List<Prediction> predictionList = new ArrayList<>();
 
@@ -377,7 +399,7 @@ public class MobileService extends LifecycleLoggingService {
                         }
                     }
                 });
-            }
+            }/**/
             return true;
         }
     };

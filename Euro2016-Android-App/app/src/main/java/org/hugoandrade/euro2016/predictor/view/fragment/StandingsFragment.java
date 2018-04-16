@@ -64,7 +64,7 @@ public class StandingsFragment extends FragmentBase<FragComm.RequiredActivityOps
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 
         setupGroupLayout(view.findViewById(R.id.layout_group_a),
                 mGroupViewStructMap.get(SGroup.A));

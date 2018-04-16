@@ -103,6 +103,7 @@ public final class MatchUtils {
                     return matchList.get(i).getMatchNumber();
                 }
             }
+            return matchList.size() + 1;
         }
         return 0;
     }
