@@ -1,5 +1,7 @@
 
 module.exports = function (requestQuery, fromQuery, extraWhere) {
+	console.log("REQUESTQUERY");
+	console.log(requestQuery);
 	
 	var query = 'SELECT ' + getProperty(requestQuery.$select, '*')
 			+ ' FROM (' + fromQuery + ') m'
@@ -13,6 +15,11 @@ module.exports = function (requestQuery, fromQuery, extraWhere) {
 function getFullWhere(whereProperty, extraWhere) {
 	var requestWhere  = getWhere(whereProperty);
 	var filteredWhere = buildWhereClause(extraWhere);
+	
+	console.log("FULLWHERE (0)");
+	console.log(whereProperty);
+	console.log("FULLWHERE (1)");
+	console.log(requestWhere);
 	
 	if (requestWhere === null && filteredWhere === null)
 	{
@@ -56,15 +63,21 @@ function buildWhereClause(extraWhere) {
 function getWhere(whereProperty) {
 	if (typeof whereProperty !== undefined && whereProperty )
 	{
-		return '(' + removeEqs(whereProperty) + ')';
+		return '(' + removeGes(removeLes(removeEqs(whereProperty))) + ')';
 	}
 	return null;
 }
 
 function removeEqs(originalWhereClause) {
+	console.log("RemoveEQS init");
+	console.log(originalWhereClause);
+	
 	var filteredWhereClause = '';
 	var whereClause = originalWhereClause;
 	var i = whereClause.indexOf(" eq (");
+	if (i === -1) {
+		filteredWhereClause = filteredWhereClause + whereClause;
+	}
 	while (i !== -1) {
 		filteredWhereClause = filteredWhereClause + whereClause.substring(0, i);
 		filteredWhereClause = filteredWhereClause + " = ";
@@ -97,11 +110,122 @@ function removeEqs(originalWhereClause) {
         while (n !== 0);
         
         filteredWhereClause = filteredWhereClause + whereClause.substring(itOpen, itClose + 1);
-        whereClause = whereClause.substring(itClose + 1, whereClause.length);
+		whereClause = whereClause.substring(itClose + 1, whereClause.length);
         i = whereClause.indexOf(" eq (");
-        
 		
+		if (i === -1) {
+			filteredWhereClause = filteredWhereClause + whereClause;
+		}
 	}
+	console.log("RemoveEQS");
+	console.log(filteredWhereClause);
+	return filteredWhereClause;
+}
+
+function removeGes(originalWhereClause) {
+	console.log("RemoveGES");
+	console.log(originalWhereClause);
+	
+	var filteredWhereClause = '';
+	var whereClause = originalWhereClause;
+	var i = whereClause.indexOf(" ge (");
+	if (i === -1) {
+		filteredWhereClause = filteredWhereClause + whereClause;
+	}
+	while (i !== -1) {
+		filteredWhereClause = filteredWhereClause + whereClause.substring(0, i);
+		filteredWhereClause = filteredWhereClause + " >= ";
+		whereClause = whereClause.substring(i, whereClause.length);
+		
+		var itOpen = whereClause.indexOf("(");
+        var itClose = itOpen;
+		var n = 0;
+        var iDelta = 0;
+        var size = 0;
+		
+		do {
+			
+			var nextItOpen = whereClause.indexOf("(", iDelta + 1);
+			itClose = whereClause.indexOf(")", iDelta + 1);
+			
+			if (nextItOpen === -1) {
+				n = n - 1;
+                iDelta = itClose;
+			}
+			else if (itClose < nextItOpen) {
+				n = n - 1;
+                iDelta = itClose;
+			}
+			else {
+				n = n + 1;
+                iDelta = nextItOpen;
+			}
+		}
+        while (n !== 0);
+        
+        filteredWhereClause = filteredWhereClause + whereClause.substring(itOpen, itClose + 1);
+		whereClause = whereClause.substring(itClose + 1, whereClause.length);
+        i = whereClause.indexOf(" ge (");
+		
+		if (i === -1) {
+			filteredWhereClause = filteredWhereClause + whereClause;
+		}
+	}
+	console.log("RemoveGES");
+	console.log(filteredWhereClause);
+	return filteredWhereClause;
+}
+
+function removeLes(originalWhereClause) {
+	console.log("RemoveLES");
+	console.log(originalWhereClause);
+	var filteredWhereClause = '';
+	var whereClause = originalWhereClause;
+	var i = whereClause.indexOf(" le (");
+	if (i === -1) {
+		filteredWhereClause = filteredWhereClause + whereClause;
+	}
+	while (i !== -1) {
+		filteredWhereClause = filteredWhereClause + whereClause.substring(0, i);
+		filteredWhereClause = filteredWhereClause + " <= ";
+		whereClause = whereClause.substring(i, whereClause.length);
+		
+		var itOpen = whereClause.indexOf("(");
+        var itClose = itOpen;
+		var n = 0;
+        var iDelta = 0;
+        var size = 0;
+		
+		do {
+			
+			var nextItOpen = whereClause.indexOf("(", iDelta + 1);
+			itClose = whereClause.indexOf(")", iDelta + 1);
+			
+			if (nextItOpen === -1) {
+				n = n - 1;
+                iDelta = itClose;
+			}
+			else if (itClose < nextItOpen) {
+				n = n - 1;
+                iDelta = itClose;
+			}
+			else {
+				n = n + 1;
+                iDelta = nextItOpen;
+			}
+		}
+        while (n !== 0);
+        
+        filteredWhereClause = filteredWhereClause + whereClause.substring(itOpen, itClose + 1);
+		whereClause = whereClause.substring(itClose + 1, whereClause.length);
+        i = whereClause.indexOf(" le (");
+		
+		if (i === -1) {
+			filteredWhereClause = filteredWhereClause + whereClause;
+		}
+	}
+	console.log("RemoveLEs");
+	console.log(filteredWhereClause);
 	return filteredWhereClause;
 }
 

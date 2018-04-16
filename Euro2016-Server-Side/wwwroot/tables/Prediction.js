@@ -53,14 +53,16 @@ table.insert(function (context) {
     });
 });
 
-
 table.read.use(ValidateToken, table.operation);
 table.read(function (context) {
+    console.log(context.req.originalUrl);
     var accountID = context.user.id;
     
     return GetSystemData(context.req.azureMobile).then(function(systemData) {
         
         var query = buildReadQuery(accountID, context.req.query, systemData.SystemDate);
+        
+        console.log(query);
         
         return context.data.execute({sql: query});
     });

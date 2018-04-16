@@ -13,60 +13,66 @@ module.exports = function (azureMobile, match) {
 		var query = 'SELECT ps.*, p.HomeTeamGoals, p.AwayTeamGoals, p.id AS OriginalPredictionID'
 	         + ' FROM Prediction p'
 	         + ' LEFT JOIN PredictionScore ps ON p.id = ps.PredictionID'
-	         + ' WHERE p.MatchNumber = \'' + matchNumber + '\''
+	         + ' WHERE p.MatchNumber = \'' + matchNumber + '\'';
 		var predictionScoreTable = azureMobile.tables('PredictionScore');
     	
 	    azureMobile.data.execute({sql: query}).then(function (predictions) { 
-			
+				
 			var total = predictions.length;
 			var completed = 0;
 			
-			predictions.forEach(function(prediction) {
+			if (completed === total) {
+				return defer.resolve(match);
+			}
+			else {
 				
-				prediction.Score = ComputePredictionScore(match, prediction, systemData);
-			
-				if (prediction.id === null) {
-					// Insert
-					var predictionID = prediction.OriginalPredictionID;
-					var score = prediction.Score;
-					predictionScoreTable.insert({PredictionID: predictionID, 
-												 Score: score}).then(function(predictionScore) {
-						completed = completed + 1;
-						
-						if (completed === total) {
-    						return defer.resolve(match);
-						}
-					}).catch(function(error) {
-						completed = completed + 1;
-							
-						if (completed === total) {
-    						return defer.resolve(match);
-						}
-					});
-				}
-				else {
-					// Update
-					delete prediction.HomeTeamGoals;
-					delete prediction.AwayTeamGoals;
-					delete prediction.OriginalPredictionID;
+				predictions.forEach(function(prediction) {
 					
-					predictionScoreTable.update(prediction).then(function(predictionScore) {
+					prediction.Score = ComputePredictionScore(match, prediction, systemData);
+				
+					if (prediction.id === null) {
+						// Insert
+						var predictionID = prediction.OriginalPredictionID;
+						var score = prediction.Score;
+						predictionScoreTable.insert({PredictionID: predictionID, 
+													 Score: score}).then(function(predictionScore) {
+							completed = completed + 1;
+							
+							if (completed === total) {
+	    						return defer.resolve(match);
+							}
+						}).catch(function(error) {
+							completed = completed + 1;
+								
+							if (completed === total) {
+	    						return defer.resolve(match);
+							}
+						});
+					}
+					else {
+						// Update
+						delete prediction.HomeTeamGoals;
+						delete prediction.AwayTeamGoals;
+						delete prediction.OriginalPredictionID;
 						
-						completed = completed + 1;
-						
-						if (completed === total) {
-    						return defer.resolve(match);
-						}
-					}).catch(function(error) {
-						
-						completed = completed + 1;
-						
-						if (completed === total) {
-    						return defer.resolve(match);
-						}
-					});
-				}
-			});
+						predictionScoreTable.update(prediction).then(function(predictionScore) {
+							
+							completed = completed + 1;
+							
+							if (completed === total) {
+	    						return defer.resolve(match);
+							}
+						}).catch(function(error) {
+							
+							completed = completed + 1;
+							
+							if (completed === total) {
+	    						return defer.resolve(match);
+							}
+						});
+					}
+				});
+			}
 		}).catch(function(error) {
             return defer.reject(error);
 		});

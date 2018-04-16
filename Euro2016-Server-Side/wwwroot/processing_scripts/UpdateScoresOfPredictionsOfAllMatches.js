@@ -21,7 +21,7 @@ module.exports = function (azureMobile) {
 				}
 			}).catch(function(error) {
 				completed = completed + 1;
-				console.log("--completed-- " + completed);
+				console.log("--completed (error)-- " + completed);
 				console.log("--total-- " + total);
 				
 				if (completed === total) {
