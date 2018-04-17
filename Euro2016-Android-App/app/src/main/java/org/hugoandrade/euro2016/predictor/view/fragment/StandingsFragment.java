@@ -141,11 +141,11 @@ public class StandingsFragment extends FragmentBase<FragComm.RequiredActivityOps
 
     private void setupGroupLayout(View view, GroupViewStruct groupViewStruct) {
         // Setup title
-        TextView tvGroupTitle = (TextView) view.findViewById(R.id.tv_group);
+        TextView tvGroupTitle = view.findViewById(R.id.tv_group);
         tvGroupTitle.setText(getString(groupViewStruct.getTitleResource()));
 
         // Setup recycler view
-        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.rv_group);
+        RecyclerView recyclerView = view.findViewById(R.id.rv_group);
         recyclerView.setAdapter(groupViewStruct.getAdapter());
         recyclerView.setNestedScrollingEnabled(false);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
@@ -153,11 +153,11 @@ public class StandingsFragment extends FragmentBase<FragComm.RequiredActivityOps
 
     private void setupKnockOutLayout(View view, KnockOutViewStruct knockOutViewStruct) {
         // Setup title
-        TextView tvKnockOutTitle = (TextView) view.findViewById(R.id.tv_knockout_name);
+        TextView tvKnockOutTitle = view.findViewById(R.id.tv_knockout_name);
         tvKnockOutTitle.setText(getString(knockOutViewStruct.getTitleResource()));
 
         // Setup recycler view
-        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.rv_knockout);
+        RecyclerView recyclerView = view.findViewById(R.id.rv_knockout);
         recyclerView.setAdapter(knockOutViewStruct.getAdapter());
         recyclerView.setNestedScrollingEnabled(false);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));

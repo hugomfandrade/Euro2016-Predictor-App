@@ -199,6 +199,7 @@ public class Country implements Comparable<Country>, Parcelable {
         mDraws = in.readInt();
         mDefeats = in.readInt();
         mFairPlayPoints = in.readInt();
+        mHasAdvancedGroupStage = in.readByte() != 0;
     }
 
     public static final Creator<Country> CREATOR = new Creator<Country>() {
@@ -298,6 +299,7 @@ public class Country implements Comparable<Country>, Parcelable {
         dest.writeInt(mDraws);
         dest.writeInt(mDefeats);
         dest.writeInt(mFairPlayPoints);
+        dest.writeInt((byte) (mHasAdvancedGroupStage ? 1 : 0));
     }
 
     public static int getImageID(Country country) {

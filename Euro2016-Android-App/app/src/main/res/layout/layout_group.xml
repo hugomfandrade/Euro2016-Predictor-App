@@ -19,7 +19,9 @@
         app:cardCornerRadius="0dp"
         app:cardElevation="@dimen/cardview_default_elevation"
         app:cardBackgroundColor="#aaffffff"
-        app:contentPadding="5dp">
+        app:contentPaddingTop="5dp"
+        app:contentPaddingBottom="5dp"
+        >
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -39,6 +41,8 @@
             <include layout="@layout/list_item_group_header"
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
+                android:layout_marginStart="5dp"
+                android:layout_marginEnd="5dp"
                 android:id="@+id/tv_group_row"/>
 
             <android.support.v7.widget.RecyclerView

@@ -261,6 +261,27 @@ public class PredictionListAdapter extends RecyclerView.Adapter<PredictionListAd
             tvPoints = itemView.findViewById(R.id.tv_points);
             detailsContainer = itemView.findViewById(R.id.viewGroup_details_container);
 
+            ivHomeTeam.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Country c = mInputPredictionList.get(getAdapterPosition()).mMatch.getHomeTeam();
+
+                    if (c != null && mListener != null) {
+                        mListener.onCountryClicked(c);
+                    }
+                }
+            });
+            ivAwayTeam.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Country c = mInputPredictionList.get(getAdapterPosition()).mMatch.getAwayTeam();
+
+                    if (c != null && mListener != null) {
+                        mListener.onCountryClicked(c);
+                    }
+                }
+            });
+
             etHomeTeamGoals.addTextChangedListener(new SimpleTextWatcher() {
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -363,6 +384,7 @@ public class PredictionListAdapter extends RecyclerView.Adapter<PredictionListAd
 
     public interface OnPredictionSetListener {
         void onPredictionSet(Prediction prediction);
+        void onCountryClicked(Country country);
     }
 
     private int getCardColor(Prediction prediction) {

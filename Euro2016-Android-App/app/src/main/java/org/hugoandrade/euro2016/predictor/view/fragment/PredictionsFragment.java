@@ -9,23 +9,38 @@ import android.support.v7.widget.SimpleItemAnimator;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import org.hugoandrade.euro2016.predictor.FragComm;
 import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.R;
+import org.hugoandrade.euro2016.predictor.data.raw.Country;
+import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
+import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils;
+import org.hugoandrade.euro2016.predictor.view.CountryDetailsActivity;
 import org.hugoandrade.euro2016.predictor.view.listadapter.PredictionListAdapter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityOps>
 
         implements FragComm.ProvidedPredictionsFragmentOps {
 
+    private List<String> mPredictionFilter;
+    private int currentFilter = 0;
+
+    private TextView tvFilterText;
     private RecyclerView rvPredictions;
     private PredictionListAdapter mPredictionsAdapter;
+
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        mPredictionFilter = buildPredictionFilter();
 
         GlobalData.getInstance().addOnMatchesChangedListener(mOnMatchesChangedListener);
         GlobalData.getInstance().addOnPredictionsChangedListener(mOnPredictionsChangedListener);
@@ -35,6 +50,23 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+
+        tvFilterText = view.findViewById(R.id.tv_filter_title);
+        View ivFilterNext = view.findViewById(R.id.iv_filter_next);
+        ivFilterNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                filterNext();
+            }
+        });
+        View ivFilterPrevious = view.findViewById(R.id.iv_filter_previous);
+        ivFilterPrevious.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                filterPrevious();
+            }
+        });
+
 
         rvPredictions = view.findViewById(R.id.rv_predictions);
         rvPredictions.setLayoutManager(
@@ -49,11 +81,22 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
                 getParentActivity().putPrediction(prediction);
 
             }
+
+            @Override
+            public void onCountryClicked(Country country) {
+
+                startActivity(CountryDetailsActivity.makeIntent(getActivity(),
+                        GlobalData.getInstance().getCountry(country),
+                        GlobalData.getInstance().getMatchList(country),
+                        GlobalData.getInstance().getCountryList(country)));
+            }
         });
 
         rvPredictions.setAdapter(mPredictionsAdapter);
         rvPredictions.scrollToPosition(getStartingItemPosition());
         ((SimpleItemAnimator) rvPredictions.getItemAnimator()).setSupportsChangeAnimations(false);
+
+        setupFilter();
     }
 
     @Override
@@ -64,22 +107,81 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
         GlobalData.getInstance().removeOnPredictionsChangedListener(mOnPredictionsChangedListener);
     }
 
+    private List<String> buildPredictionFilter() {
+        List<String> predictionFilter = new ArrayList<>();
+        predictionFilter.add(getString(R.string.prediction_filter_all));
+        predictionFilter.add(getString(R.string.prediction_matchday_1));
+        predictionFilter.add(getString(R.string.prediction_matchday_2));
+        predictionFilter.add(getString(R.string.prediction_matchday_3));
+        predictionFilter.add(getString(R.string.prediction_round_of_16));
+        predictionFilter.add(getString(R.string.prediction_quarter_finals));
+        predictionFilter.add(getString(R.string.prediction_semi_finals));
+        predictionFilter.add(getString(R.string.prediction_final));
+        return predictionFilter;
+    }
+
+    private void setupFilter() {
+        tvFilterText.setText(mPredictionFilter.get(currentFilter));
+        List<Match> matchList = new ArrayList<>();
+        int startingPosition = 0;
+        switch (currentFilter) {
+            case 0:
+                matchList = GlobalData.getInstance().getMatchList();
+                startingPosition = getStartingItemPosition();
+                break;
+            case 1:
+                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.groupStage, 1);
+                break;
+            case 2:
+                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.groupStage, 2);
+                break;
+            case 3:
+                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.groupStage, 3);
+                break;
+            case 4:
+                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.roundOf16);
+                break;
+            case 5:
+                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.quarterFinals);
+                break;
+            case 6:
+                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.semiFinals);
+                break;
+            case 7:
+                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.finals);
+                break;
+        }
+
+        if (mPredictionsAdapter != null) {
+            mPredictionsAdapter.setMatchList(matchList);
+            mPredictionsAdapter.notifyDataSetChanged();
+        }
+        if (rvPredictions != null) {
+            rvPredictions.scrollToPosition(startingPosition);
+        }
+    }
+
+    private void filterNext() {
+        if ((currentFilter + 1) < mPredictionFilter.size()) {
+            currentFilter = currentFilter + 1;
+            setupFilter();
+        }
+    }
+
+    private void filterPrevious() {
+        if (currentFilter != 0) {
+            currentFilter = currentFilter - 1;
+            setupFilter();
+        }
+    }
+
     private GlobalData.OnMatchesChangedListener mOnMatchesChangedListener
             = new GlobalData.OnMatchesChangedListener() {
 
         @Override
         public void onMatchesChanged() {
-            //int prevSize = mMatchList.size();
 
-            //mMatchList = setupMatchList(matchMap);
-
-            if (mPredictionsAdapter != null) {
-                mPredictionsAdapter.setMatchList(GlobalData.getInstance().getMatchList());
-                mPredictionsAdapter.notifyDataSetChanged();
-            }
-            if (rvPredictions != null) {// && mMatchList.size() != prevSize)
-                rvPredictions.scrollToPosition(getStartingItemPosition());
-            }
+            setupFilter();
         }
     };
 
@@ -88,6 +190,8 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
 
         @Override
         public void onPredictionsChanged() {
+
+            setupFilter();
             if (mPredictionsAdapter != null) {
                 mPredictionsAdapter.setPredictionList(GlobalData.getInstance().getPredictionList());
                 mPredictionsAdapter.notifyDataSetChanged();

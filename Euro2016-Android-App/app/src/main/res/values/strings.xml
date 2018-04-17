@@ -29,4 +29,13 @@
     <string name="position_abbr">#</string>
     <string name="loading">Loading…</string>
     <string name="result">Result</string>
+    <string name="in_group"> in Group </string>
+    <string name="prediction_filter_all">Euro 2016</string>
+    <string name="prediction_matchday_1">Matchday 1</string>
+    <string name="prediction_matchday_2">Matchday 2</string>
+    <string name="prediction_matchday_3">Matchday 3</string>
+    <string name="prediction_round_of_16">Round of 16</string>
+    <string name="prediction_quarter_finals">Quarter Finals</string>
+    <string name="prediction_semi_finals">Semi Finals</string>
+    <string name="prediction_final">Final</string>
 </resources>

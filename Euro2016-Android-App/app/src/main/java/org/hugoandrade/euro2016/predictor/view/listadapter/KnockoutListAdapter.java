@@ -2,6 +2,7 @@ package org.hugoandrade.euro2016.predictor.view.listadapter;
 
 import android.annotation.SuppressLint;
 import android.graphics.Typeface;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
@@ -27,15 +28,16 @@ public class KnockoutListAdapter extends RecyclerView.Adapter<KnockoutListAdapte
         mMatchList = matchList;
     }
 
+    @NonNull
     @Override
-    public KnockoutListAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public KnockoutListAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater vi = LayoutInflater.from(parent.getContext());
         return new ViewHolder(vi.inflate(R.layout.list_item_knockout, parent, false));
     }
 
     @SuppressLint("SetTextI18n")
     @Override
-    public void onBindViewHolder(final KnockoutListAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
+    public void onBindViewHolder(@NonNull final KnockoutListAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
         final Match mMatchInfo = mMatchList.get(holder.getAdapterPosition());
         holder.tvHomeTeam.setText(mMatchInfo.getHomeTeamName());
         holder.tvAwayTeam.setText(mMatchInfo.getAwayTeamName());
@@ -43,10 +45,12 @@ public class KnockoutListAdapter extends RecyclerView.Adapter<KnockoutListAdapte
         holder.ivAwayTeam.setImageResource(Country.getImageID(mMatchInfo.getAwayTeam()));
         holder.etHomeTeamGoalsScored.setText(
                 (mMatchInfo.getHomeTeamGoals() == -1)? "" :
-                        (mMatchInfo.getHomeTeamNotes() + String.valueOf(mMatchInfo.getHomeTeamGoals())));
+                        ((mMatchInfo.getHomeTeamNotes() == null ? "" : mMatchInfo.getHomeTeamNotes())
+                                + String.valueOf(mMatchInfo.getHomeTeamGoals())));
         holder.etAwayTeamGoalsScored.setText(
                 (mMatchInfo.getAwayTeamGoals() == -1)? "" :
-                        (String.valueOf(mMatchInfo.getAwayTeamGoals()) + mMatchInfo.getAwayTeamNotes()));
+                        (String.valueOf(mMatchInfo.getAwayTeamGoals())
+                                + (mMatchInfo.getAwayTeamNotes() == null ? "" : mMatchInfo.getAwayTeamNotes())));
         holder.tvStadium.setText(mMatchInfo.getStadium());
         holder.tvDateAndTime.setText(
                 DateFormat.format("dd-MM-yyyy HH:mm", mMatchInfo.getDateAndTime()).toString());
@@ -96,14 +100,14 @@ public class KnockoutListAdapter extends RecyclerView.Adapter<KnockoutListAdapte
         ViewHolder(View itemView) {
             super(itemView);
 
-            tvHomeTeam = (TextView) itemView.findViewById(R.id.tv_match_home_team);
-            tvAwayTeam = (TextView) itemView.findViewById(R.id.tv_match_away_team);
-            ivHomeTeam = (ImageView) itemView.findViewById(R.id.iv_match_home_team);
-            ivAwayTeam = (ImageView) itemView.findViewById(R.id.iv_match_away_team);
-            etHomeTeamGoalsScored = (EditText) itemView.findViewById(R.id.ed_match_home_team_goals);
-            etAwayTeamGoalsScored = (EditText) itemView.findViewById(R.id.ed_match_away_team_goals);
-            tvDateAndTime = (TextView) itemView.findViewById(R.id.tv_date_time);
-            tvStadium = (TextView)  itemView.findViewById(R.id.tv_stadium);
+            tvHomeTeam = itemView.findViewById(R.id.tv_match_home_team);
+            tvAwayTeam = itemView.findViewById(R.id.tv_match_away_team);
+            ivHomeTeam = itemView.findViewById(R.id.iv_match_home_team);
+            ivAwayTeam = itemView.findViewById(R.id.iv_match_away_team);
+            etHomeTeamGoalsScored = itemView.findViewById(R.id.ed_match_home_team_goals);
+            etAwayTeamGoalsScored = itemView.findViewById(R.id.ed_match_away_team_goals);
+            tvDateAndTime = itemView.findViewById(R.id.tv_date_time);
+            tvStadium = itemView.findViewById(R.id.tv_stadium);
         }
     }
 }

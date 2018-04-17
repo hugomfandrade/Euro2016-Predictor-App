@@ -1,5 +1,6 @@
 package org.hugoandrade.euro2016.predictor.view.listadapter;
 
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -18,21 +19,26 @@ import org.hugoandrade.euro2016.predictor.data.raw.Country;
 
 public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.ViewHolder> {
 
-    private List<Country> mCountryList = new ArrayList<>();
+    private List<Country> mCountryList;
+    private Country mPrimaryCountry;
 
     public GroupListAdapter(List<Country> matchList) {
         mCountryList = matchList;
     }
 
+    @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater vi = LayoutInflater.from(parent.getContext());
         return new ViewHolder(vi.inflate(R.layout.list_item_group, parent, false));
     }
 
     @Override
-    public void onBindViewHolder(final GroupListAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull final GroupListAdapter.ViewHolder holder, int position) {
         final Country country = mCountryList.get(holder.getAdapterPosition());
+
+        boolean isPrimary = mPrimaryCountry != null && mPrimaryCountry.getID().equals(country.getID());
+        holder.itemView.setBackgroundColor(isPrimary? Color.parseColor("#6626629e") : Color.TRANSPARENT);
 
         holder.tvPosition.setText(String.valueOf(country.getPosition()));
         holder.tvCountryName.setText(country.getName());
@@ -71,6 +77,10 @@ public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.View
     public void set(@NonNull List<Country> countryList) {
         mCountryList = countryList;
         notifyDataSetChanged();
+    }
+
+    public void setPrimaryCountry(Country country) {
+        mPrimaryCountry = country;
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {

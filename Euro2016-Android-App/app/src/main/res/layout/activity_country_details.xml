@@ -55,6 +55,7 @@
                 </org.hugoandrade.euro2016.predictor.customview.RoundedCornerLayout>
 
                 <TextView
+                    android:id="@+id/tv_country_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
@@ -63,6 +64,7 @@
                     tools:text="Portugal"/>
 
                 <TextView
+                    android:id="@+id/tv_country_status"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"

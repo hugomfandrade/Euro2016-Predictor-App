@@ -4,9 +4,12 @@ import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 
 import org.hugoandrade.euro2016.predictor.data.raw.Country;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
@@ -14,6 +17,7 @@ import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.SystemData;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
+import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils;
 
 public class GlobalData {
 
@@ -172,6 +176,76 @@ public class GlobalData {
         }
 
         return a;
+    }
+
+    public Country getCountry(Country country) {
+        if (country == null) return null;
+        for (Country c : mCountryList) {
+            if (c.getID().equals(country.getID())) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    public List<Match> getMatchList(Country country) {
+        if (country == null || country.getName() == null) return new ArrayList<>();
+        List<Match> matchList = new ArrayList<>();
+        for (Match m : mMatchList) {
+            if (country.getName().equals(m.getHomeTeamName())) {
+                matchList.add(m);
+            }
+            if (country.getName().equals(m.getAwayTeamName())) {
+                matchList.add(m);
+            }
+        }
+        return matchList;
+    }
+
+    public List<Match> getMatchList(StaticVariableUtils.SStage stage) {
+        List<Match> matchList = new ArrayList<>();
+        for (Match m : mMatchList) {
+            if (stage.name.equals(m.getStage())) {
+                matchList.add(m);
+            }
+        }
+        return matchList;
+    }
+
+    public List<Match> getMatchList(StaticVariableUtils.SStage stage, int matchday) {
+        List<Match> matchList = new ArrayList<>();
+        for (Match m : mMatchList) {
+            if (stage.name.equals(m.getStage())) {
+                if (matchday == 1 && m.getMatchNumber() >= 1 && m.getMatchNumber() <= 12) {
+                    matchList.add(m);
+                }
+                else if (matchday == 2 && m.getMatchNumber() >= 13 && m.getMatchNumber() <= 24) {
+                    matchList.add(m);
+                }
+                else if (matchday == 3 && m.getMatchNumber() >= 25 && m.getMatchNumber() <= 36) {
+                    matchList.add(m);
+                }
+            }
+        }
+        return matchList;
+    }
+
+    public List<Country> getCountryList(Country country) {
+        if (country == null || country.getGroup() == null) return new ArrayList<>();
+        List<Country> countryList = new ArrayList<>();
+        for (Country c : mCountryList) {
+            if (country.getGroup().equals(c.getGroup())) {
+                countryList.add(c);
+            }
+        }
+
+        Collections.sort(countryList, new Comparator<Country>() {
+            @Override
+            public int compare(Country o1, Country o2) {
+                return o1.getPosition() - o2.getPosition();
+            }
+        });
+        return countryList;
     }
 
     public interface OnLatestPerformanceChangedListener {
