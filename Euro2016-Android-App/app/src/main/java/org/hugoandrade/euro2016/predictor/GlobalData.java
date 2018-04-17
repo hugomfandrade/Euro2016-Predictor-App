@@ -1,6 +1,8 @@
 package org.hugoandrade.euro2016.predictor;
 
+import android.support.v4.util.Pair;
 import android.util.Log;
+import android.util.SparseArray;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -9,7 +11,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.StringJoiner;
 
 import org.hugoandrade.euro2016.predictor.data.raw.Country;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
@@ -188,6 +192,15 @@ public class GlobalData {
         return null;
     }
 
+    public Match getMatch(int matchNumber) {
+        for (Match m : mMatchList) {
+            if (m.getMatchNumber() == matchNumber) {
+                return m;
+            }
+        }
+        return null;
+    }
+
     public List<Match> getMatchList(Country country) {
         if (country == null || country.getName() == null) return new ArrayList<>();
         List<Match> matchList = new ArrayList<>();
@@ -203,31 +216,11 @@ public class GlobalData {
     }
 
     public List<Match> getMatchList(StaticVariableUtils.SStage stage) {
-        List<Match> matchList = new ArrayList<>();
-        for (Match m : mMatchList) {
-            if (stage.name.equals(m.getStage())) {
-                matchList.add(m);
-            }
-        }
-        return matchList;
+        return MatchUtils.getMatchList(mMatchList, stage);
     }
 
     public List<Match> getMatchList(StaticVariableUtils.SStage stage, int matchday) {
-        List<Match> matchList = new ArrayList<>();
-        for (Match m : mMatchList) {
-            if (stage.name.equals(m.getStage())) {
-                if (matchday == 1 && m.getMatchNumber() >= 1 && m.getMatchNumber() <= 12) {
-                    matchList.add(m);
-                }
-                else if (matchday == 2 && m.getMatchNumber() >= 13 && m.getMatchNumber() <= 24) {
-                    matchList.add(m);
-                }
-                else if (matchday == 3 && m.getMatchNumber() >= 25 && m.getMatchNumber() <= 36) {
-                    matchList.add(m);
-                }
-            }
-        }
-        return matchList;
+        return MatchUtils.getMatchList(mMatchList, stage, matchday);
     }
 
     public List<Country> getCountryList(Country country) {
@@ -246,6 +239,67 @@ public class GlobalData {
             }
         });
         return countryList;
+    }
+
+
+    // UserID, list of matches whose predictions where fetched
+    private Map<String, List<Integer>> mPredictionOfUserMap = new HashMap<>();
+    // UserID, list of predictions
+    private HashMap<String, SparseArray<Prediction>> mMatchPredictionMap = new HashMap<>();
+
+    public void setPredictionsOfUsers(int matchNumber, List<User> userList, List<Prediction> predictionList) {
+        for (User u : userList) {
+            String userID = u.getID();
+
+            if (mPredictionOfUserMap.containsKey(userID)) {
+                mPredictionOfUserMap.get(userID).add(matchNumber);
+            } else {
+                mPredictionOfUserMap.put(userID, new ArrayList<Integer>());
+                mPredictionOfUserMap.get(userID).add(matchNumber);
+            }
+
+            Prediction prediction = null;
+            for (Prediction p : predictionList) {
+                if (p.getMatchNumber() == matchNumber && userID.equals(p.getUserID())) {
+                    prediction = p;
+                }
+            }
+            if (prediction == null) {
+                prediction = Prediction.emptyInstance(matchNumber, userID);
+            }
+
+            if (mMatchPredictionMap.containsKey(userID)) {
+                mMatchPredictionMap.get(userID).put(matchNumber, prediction);
+            } else {
+                mMatchPredictionMap.put(userID, new SparseArray<Prediction>());
+                mMatchPredictionMap.get(userID).put(matchNumber, prediction);
+            }
+        }
+    }
+
+    public List<Pair<User, Prediction>> getPredictionsOfUsers(int matchNumber, List<User> userList) {
+        List<Pair<User, Prediction>> m = new ArrayList<>();
+
+        for (User user : userList) {
+            Prediction defaultPrediction = Prediction.emptyInstance(matchNumber, user.getID());
+            Prediction p = !mMatchPredictionMap.containsKey(user.getID())?
+                    defaultPrediction :
+                    mMatchPredictionMap.get(user.getID()).get(matchNumber, defaultPrediction);
+
+            m.add(new Pair<>(user, p));
+        }
+        return m;
+    }
+
+    public boolean wasPredictionFetched(User user, int matchNumber) {
+        if (mPredictionOfUserMap.containsKey(user.getID())) {
+            for (Integer matchNo : mPredictionOfUserMap.get(user.getID())) {
+                if (matchNo == matchNumber)
+                    return true;
+            }
+            return false;
+        }
+        return false;
     }
 
     public interface OnLatestPerformanceChangedListener {

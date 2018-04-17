@@ -33,6 +33,7 @@ public class MobileClientData implements Parcelable {
     private String mPredictionUserID;
     private String mErrorMessage;
     private boolean mNetworkState;
+    private int mInteger;
 
     // Data Extras Key
     public static final int REQUEST_RESULT_FAILURE = 1;
@@ -47,6 +48,7 @@ public class MobileClientData implements Parcelable {
         GET_INFO,
         GET_PREDICTIONS,
         GET_LATEST_PERFORMANCE,
+        GET_PREDICTIONS_OF_USERS,
         PUT_PREDICTION,
     }
 
@@ -77,6 +79,7 @@ public class MobileClientData implements Parcelable {
         mErrorMessage = in.readString();
         mNetworkState = in.readByte() != 0;
         mServerTime = (Calendar) in.readSerializable();
+        mInteger = in.readInt();
     }
 
     @Override
@@ -98,6 +101,7 @@ public class MobileClientData implements Parcelable {
         dest.writeString(mErrorMessage);
         dest.writeByte((byte) (mNetworkState ? 1 : 0));
         dest.writeSerializable(mServerTime);
+        dest.writeInt(mInteger);
     }
 
     @Override
@@ -133,6 +137,14 @@ public class MobileClientData implements Parcelable {
 
     public int getOperationResult() {
         return mOperationResult;
+    }
+
+    public void setInteger(int integer) {
+        mInteger = integer;
+    }
+
+    public int getInteger() {
+        return mInteger;
     }
 
     public void setSystemData(SystemData systemData) {

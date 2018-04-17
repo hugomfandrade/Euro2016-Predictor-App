@@ -27,6 +27,10 @@ public class Prediction implements Parcelable {
         public static String PastMatchDate = "Past match date";
     }
 
+    public static Prediction emptyInstance(int matchNumber, String userID) {
+        return new Prediction(-1, -1, matchNumber, userID);
+    }
+
     public Prediction(int awayTeamGoals, int homeTeamGoals, int matchNo, int score) {
         mAwayTeamGoals = awayTeamGoals;
         mHomeTeamGoals = homeTeamGoals;

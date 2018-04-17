@@ -347,7 +347,7 @@ public class MobileService extends LifecycleLoggingService {
         }
 
         @Override
-        public boolean getLatestPerformanceOfUsers(List<User> userList, int firstMatchNumber, int lastMatchNumber) {
+        public boolean getLatestPerformanceOfUsers(final List<User> userList, int firstMatchNumber, int lastMatchNumber) {
 
             String[] userIDs = new String[userList.size()];
             for (int i = 0 ; i < userList.size() ; i++) {
@@ -362,44 +362,38 @@ public class MobileService extends LifecycleLoggingService {
                     MobileClientData m = MobileClientData.makeMessage(
                             MobileClientData.OperationType.GET_LATEST_PERFORMANCE.ordinal(),
                             MobileClientData.REQUEST_RESULT_SUCCESS);
+                    m.setUsers(userList);
                     m.setPredictionList(data.getPredictionList());
 
                     sendMobileDataMessage(m);
                 }
-            }); /**/
+            });
+            return true;
+        }
 
-            /*
+        @Override
+        public boolean getPredictionsOfUsers(final List<User> userList, final int matchNumber) {
 
-            final MultipleCloudStatus n = new MultipleCloudStatus(userList.size());
-            final List<Prediction> predictionList = new ArrayList<>();
+            String[] userIDs = new String[userList.size()];
+            for (int i = 0 ; i < userList.size() ; i++) {
+                userIDs[i] = userList.get(i).getID();
+            }
 
-            for (User user : userList) {
-                MobileServiceCallback i = MobileServiceAdapter.getInstance().getPredictions(user.getID(), firstMatchNumber, lastMatchNumber);
-                MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
-                    @Override
-                    public void onResult(MobileServiceData data) {
+            MobileServiceCallback i = MobileServiceAdapter.getInstance().getPredictions(userIDs, matchNumber);
+            MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
+                @Override
+                public void onResult(MobileServiceData data) {
 
-                        synchronized (syncObj) {
+                    MobileClientData m = MobileClientData.makeMessage(
+                            MobileClientData.OperationType.GET_PREDICTIONS_OF_USERS.ordinal(),
+                            MobileClientData.REQUEST_RESULT_SUCCESS);
+                    m.setInteger(matchNumber);
+                    m.setUsers(userList);
+                    m.setPredictionList(data.getPredictionList());
 
-                            n.operationCompleted();
-
-                            if (data.wasSuccessful()) {
-                                predictionList.addAll(data.getPredictionList());
-                            }
-
-                            if (n.isFinished()) {
-
-                                MobileClientData m = MobileClientData.makeMessage(
-                                        MobileClientData.OperationType.GET_LATEST_PERFORMANCE.ordinal(),
-                                        MobileClientData.REQUEST_RESULT_SUCCESS);
-                                m.setPredictionList(predictionList);
-
-                                sendMobileDataMessage(m);
-                            }
-                        }
-                    }
-                });
-            }/**/
+                    sendMobileDataMessage(m);
+                }
+            });
             return true;
         }
     };

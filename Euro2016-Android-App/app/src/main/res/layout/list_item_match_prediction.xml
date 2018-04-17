@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="4dp"
+    android:paddingRight="4dp"
+    android:paddingTop="4dp"
+    tools:background="#26629e">
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/cardView_container"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        custom:cardCornerRadius="4dp"
+        custom:cardElevation="@dimen/cardview_default_elevation"
+        custom:cardBackgroundColor="#aaff0000"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:layout_marginBottom="4dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:baselineAligned="false"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:gravity="center_vertical">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <org.hugoandrade.euro2016.predictor.customview.RoundedCornerLayout
+                        style="@style/Prediction.CountryFlagContainer.Small">
+
+                        <ImageView
+                            android:id="@+id/iv_match_home_team"
+                            style="@style/Prediction.CountryFlag"/>
+
+                    </org.hugoandrade.euro2016.predictor.customview.RoundedCornerLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_margin="2dp">
+
+                    <EditText
+                        android:id="@+id/et_home_team_goals"
+                        style="@style/Prediction.InputScore.Small"
+                        android:enabled="false"
+                        />
+
+                    <View
+                        android:layout_width="5dp"
+                        android:layout_height="2dp"
+                        android:background="#26629e"/>
+
+                    <EditText
+                        android:id="@+id/et_away_team_goals"
+                        style="@style/Prediction.InputScore.Small"
+                        android:enabled="false"
+                        />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <org.hugoandrade.euro2016.predictor.customview.RoundedCornerLayout
+                        style="@style/Prediction.CountryFlagContainer.Small">
+
+                        <ImageView
+                            android:id="@+id/iv_match_away_team"
+                            style="@style/Prediction.CountryFlag"/>
+
+                    </org.hugoandrade.euro2016.predictor.customview.RoundedCornerLayout>
+
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="#d6d6d6" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="5dp">
+
+
+                <TextView
+                    android:id="@+id/tv_user"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:gravity="center"
+                    android:textColor="#fff"
+                    android:textSize="18sp"
+                    android:layout_marginStart="30dp"
+                    android:layout_marginEnd="30dp"
+                    android:lines="1"
+                    android:ellipsize="end"
+                    tools:text="Hugo"/>
+
+                <org.hugoandrade.euro2016.predictor.customview.RoundedCornerLayout
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentEnd="true"
+                    custom:corner_radius="50dp"
+                    custom:border_color="#fff"
+                    custom:border_elevation="0.5dp"
+                    android:layout_gravity="end"
+                    android:padding="4dp">
+
+                    <TextView
+                        android:id="@+id/tv_points"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:textColor="#fff"
+                        android:lines="1"
+                        android:ellipsize="end"
+                        tools:text="4"/>
+
+                </org.hugoandrade.euro2016.predictor.customview.RoundedCornerLayout>
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+    </android.support.v7.widget.CardView>
+
+</LinearLayout>

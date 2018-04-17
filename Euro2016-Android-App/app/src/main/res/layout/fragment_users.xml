@@ -2,13 +2,25 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+    <TextView
+        android:id="@+id/tv_latest_match"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_margin="16dp"
+        android:background="#aaffffff"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textAllCaps="true"
+        android:textColor="#26629e"
+        android:fontFamily="sans-serif-condensed"
+        android:gravity="center"
+        android:text="Latest Match"/>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv_all_users"
-        android:layout_marginTop="10dp"
+        android:layout_below="@id/tv_latest_match"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentTop="true"
         android:layout_gravity="center_horizontal"
         android:descendantFocusability="afterDescendants"/>
 

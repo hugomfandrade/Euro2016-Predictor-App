@@ -222,7 +222,7 @@ public interface MVP {
          */
         void onPredictionsFetched(boolean operationResult, String message, User user, List<Prediction> predictionList);
 
-        void onLatestPerformanceFetched(boolean operationResult, String message, List<Prediction> predictionList);
+        void onLatestPerformanceFetched(boolean operationResult, String message, List<User> userList, List<Prediction> predictionList);
     }
 
     /**
@@ -259,5 +259,16 @@ public interface MVP {
         void getPredictions(User user);
 
         void getLatestPerformanceOfUsers(List<User> userList, int firstMatchNumber, int lastMatchNumber);
+    }
+
+
+    /** For MATCH PREDICTION **/
+    interface RequiredMatchPredictionViewOps extends RequiredMobileClientViewBaseOps {
+        List<User> getUserList();
+
+        void setMatchPredictionList(int matchNumber, List<User> userList);
+    }
+    interface ProvidedMatchPredictionPresenterOps extends PresenterOps<RequiredMatchPredictionViewOps> {
+        void getPredictions(List<User> userList, int matchNumber);
     }
 }

@@ -75,7 +75,9 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
         mPredictionsAdapter = new PredictionListAdapter(GlobalData.getInstance().getMatchList(),
                                                         GlobalData.getInstance().getPredictionList(),
                                                         PredictionListAdapter.VIEW_TYPE_DISPLAY_AND_UPDATE);
-        mPredictionsAdapter.setOnButtonClickedListener(new PredictionListAdapter.OnPredictionSetListener() {
+        mPredictionsAdapter.setOnPredictionSetListener(new PredictionListAdapter.OnPredictionSetListener() {
+
+
             @Override
             public void onPredictionSet(Prediction prediction) {
                 getParentActivity().putPrediction(prediction);
@@ -89,12 +91,14 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
                         GlobalData.getInstance().getCountry(country),
                         GlobalData.getInstance().getMatchList(country),
                         GlobalData.getInstance().getCountryList(country)));
+
             }
         });
 
         rvPredictions.setAdapter(mPredictionsAdapter);
         rvPredictions.scrollToPosition(getStartingItemPosition());
         ((SimpleItemAnimator) rvPredictions.getItemAnimator()).setSupportsChangeAnimations(false);
+
 
         setupFilter();
     }
@@ -157,6 +161,10 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
             mPredictionsAdapter.notifyDataSetChanged();
         }
         if (rvPredictions != null) {
+            if (currentFilter == 0) {
+                rvPredictions.setLayoutManager(
+                        new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+            }
             rvPredictions.scrollToPosition(startingPosition);
         }
     }

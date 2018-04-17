@@ -2,6 +2,7 @@ package org.hugoandrade.euro2016.predictor.utils;
 
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -106,6 +107,33 @@ public final class MatchUtils {
             return matchList.size() + 1;
         }
         return 0;
+    }
+
+    public static List<Match> getMatchList(List<Match> matchList, StaticVariableUtils.SStage stage, int matchday) {
+
+        List<Match> mList = new ArrayList<>();
+        for (Match m : matchList) {
+            if (stage.name.equals(m.getStage())) {
+                if (matchday == 1 && m.getMatchNumber() >= 1 && m.getMatchNumber() <= 12) {
+                    mList.add(m);
+                } else if (matchday == 2 && m.getMatchNumber() >= 13 && m.getMatchNumber() <= 24) {
+                    mList.add(m);
+                } else if (matchday == 3 && m.getMatchNumber() >= 25 && m.getMatchNumber() <= 36) {
+                    mList.add(m);
+                }
+            }
+        }
+        return mList;
+    }
+
+    public static List<Match> getMatchList(List<Match> matchList, StaticVariableUtils.SStage stage) {
+        List<Match> mList = new ArrayList<>();
+        for (Match m : matchList) {
+            if (stage.name.equals(m.getStage())) {
+                mList.add(m);
+            }
+        }
+        return mList;
     }
 }
 

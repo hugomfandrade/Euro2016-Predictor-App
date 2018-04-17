@@ -336,6 +336,54 @@ public class CloudDatabaseSimAdapter {
         return true;
     }
 
+    public boolean getPredictions(final MobileServiceCallback callback, String[] users, int matchNumber) {
+        if (!DevConstants.CLOUD_DATABASE_SIM)
+            return false;
+
+        final MultipleCloudStatus n = new MultipleCloudStatus(users.length);
+        final List<Prediction> predictionList = new ArrayList<>();
+
+        for (String userID : users) {
+            CloudDatabaseSimImpl.ListenableCallback<JsonElement> f
+                    = new CloudDatabaseSimImpl(Prediction.Entry.TABLE_NAME, mContentProviderClient)
+                    .where().field(Prediction.Entry.Cols.USER_ID).eq(userID)
+                    .and().field(Prediction.Entry.Cols.MATCH_NO).eq(matchNumber)
+                    .execute();
+            CloudDatabaseSimImpl.addCallback(f, new CloudDatabaseSimImpl.Callback<JsonElement>() {
+                @Override
+                public void onSuccess(JsonElement jsonElement) {
+                    synchronized (syncObj) {
+
+                        if (n.isAborted()) return;
+
+                        n.operationCompleted();
+
+                        predictionList.addAll(parser.parsePredictionList(jsonElement));
+
+                        if (n.isFinished()) {
+
+                            callback.set(MobileServiceData.Builder
+                                    .instance(MobileServiceData.GET_PREDICTIONS, MobileServiceData.REQUEST_RESULT_SUCCESS)
+                                    .setPredictionList(predictionList)
+                                    .create());
+                        }
+                    }
+                }
+
+                @Override
+                public void onFailure(@NonNull String throwable) {
+                    synchronized (syncObj) {
+                        n.abort();
+
+                        sendErrorMessage(callback, MobileServiceData.GET_PREDICTIONS, throwable);
+                    }
+                }
+            });
+        }
+
+        return true;
+    }
+
     public boolean insertPrediction(final MobileServiceCallback callback, final Prediction prediction) {
         if (!DevConstants.CLOUD_DATABASE_SIM)
             return false;

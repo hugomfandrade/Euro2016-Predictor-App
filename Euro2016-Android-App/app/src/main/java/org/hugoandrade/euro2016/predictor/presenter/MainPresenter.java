@@ -189,9 +189,20 @@ public class MainPresenter extends PresenterBase<MVP.RequiredMainViewOps,
     }
 
     @Override
-    public void onLatestPerformanceFetched(boolean operationResult, String message, List<Prediction> predictionList) {
+    public void onLatestPerformanceFetched(boolean operationResult, String message, List<User> userList, List<Prediction> predictionList) {
 
         if (operationResult) {
+
+            int to = MatchUtils.getMatchNumberOfFirstNotPlayedMatched(
+                    GlobalData.getInstance().getMatchList(),
+                    GlobalData.getInstance().getServerTime().getTime());
+            to = to == 0? 0 : to - 1;
+
+            int from = (to < 4) ? 0 : to - 4;
+
+            for (int i = from ; i <= to ; i++) {
+                GlobalData.getInstance().setPredictionsOfUsers(i, userList, predictionList);
+            }
 
             GlobalData.getInstance().setLatestPerformanceOfUsers(predictionList);
 

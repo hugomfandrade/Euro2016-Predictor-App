@@ -378,6 +378,36 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
         return callback;
     }
 
+    public MobileServiceCallback getPredictions(String[] users, int matchNumber) {
+
+        final MobileServiceCallback callback = new MobileServiceCallback();
+
+        if (CloudDatabaseSimAdapter.getInstance().getPredictions(callback, users, matchNumber) ||
+                !isNetworkAvailable(callback, MobileServiceData.GET_PREDICTIONS))
+            return callback;
+
+        ListenableFuture<JsonElement> i = MobileServiceJsonTableHelper.instance(Prediction.Entry.TABLE_NAME, mClient)
+                .where().field(Prediction.Entry.Cols.USER_ID).eq(users)
+                .and().field(Prediction.Entry.Cols.MATCH_NO).eq(matchNumber)
+                .execute();
+        Futures.addCallback(i, new FutureCallback<JsonElement>() {
+            @Override
+            public void onSuccess(JsonElement jsonElement) {
+                callback.set(MobileServiceData.Builder
+                        .instance(MobileServiceData.GET_PREDICTIONS, MobileServiceData.REQUEST_RESULT_SUCCESS)
+                        .setPredictionList(parser.parsePredictionList(jsonElement))
+                        .create());
+            }
+
+            @Override
+            public void onFailure(@NonNull Throwable throwable) {
+                sendErrorMessage(callback, MobileServiceData.GET_PREDICTIONS, throwable.getMessage());
+            }
+        });
+
+        return callback;
+    }
+
     public MobileServiceCallback insertPrediction(final Prediction prediction) {
 
         final MobileServiceCallback callback = new MobileServiceCallback();

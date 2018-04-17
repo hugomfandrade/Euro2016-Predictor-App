@@ -328,6 +328,12 @@ public class MobileServiceJsonTableHelper {
             this.valueString = value;
             return this;
         }
+
+        public WhereClause eq(int value) {
+            this.operation = "=";
+            this.valueString = String.valueOf(value);
+            return this;
+        }
         public WhereClause eq(String... values) {
             isSpecial = true;
             this.operation = "=";

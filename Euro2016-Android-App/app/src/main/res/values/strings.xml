@@ -38,4 +38,5 @@
     <string name="prediction_quarter_finals">Quarter Finals</string>
     <string name="prediction_semi_finals">Semi Finals</string>
     <string name="prediction_final">Final</string>
+    <string name="match_number">Match Number</string>
 </resources>

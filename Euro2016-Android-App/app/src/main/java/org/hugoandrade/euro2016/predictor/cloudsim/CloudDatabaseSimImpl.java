@@ -114,6 +114,11 @@ class CloudDatabaseSimImpl {
             this.value = value;
             return this;
         }
+        FilteringOperation eq(int value) {
+            this.operation = "=";
+            this.value = String.valueOf(value);
+            return this;
+        }
         FilteringOperation lt(Number matchNo) {
             this.operation = "<";
             this.value = String.valueOf(matchNo);

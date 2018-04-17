@@ -378,7 +378,7 @@ public class PredictionListAdapter extends RecyclerView.Adapter<PredictionListAd
         }
     }
 
-    public void setOnButtonClickedListener(OnPredictionSetListener listener) {
+    public void setOnPredictionSetListener(OnPredictionSetListener listener) {
         mListener = listener;
     }
 

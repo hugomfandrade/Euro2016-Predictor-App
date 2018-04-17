@@ -26,4 +26,6 @@ interface IMobileClientService {
     boolean getPredictions(in User user);
 
     boolean getLatestPerformanceOfUsers(in List<User> userList, int firstMatchNumber, int lastMatchNumber);
+
+    boolean getPredictionsOfUsers(in List<User> userList, int matchNumber);
 }

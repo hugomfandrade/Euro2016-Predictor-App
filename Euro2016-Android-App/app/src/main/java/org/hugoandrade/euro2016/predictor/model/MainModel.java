@@ -56,6 +56,7 @@ public class MainModel extends MobileClientModelBase<MVP.RequiredMainPresenterOp
             getPresenter().onLatestPerformanceFetched(
                     isOperationSuccessful,
                     data.getErrorMessage(),
+                    data.getUserList(),
                     data.getPredictionList());
         }
     }
@@ -120,18 +121,18 @@ public class MainModel extends MobileClientModelBase<MVP.RequiredMainPresenterOp
     @Override
     public void getLatestPerformanceOfUsers(List<User> userList, int firstMatchNumber, int lastMatchNumber) {
         if (getService() == null) {
-            getPresenter().onLatestPerformanceFetched(false, "Not bound to the service", null);
+            getPresenter().onLatestPerformanceFetched(false, "Not bound to the service", null, null);
             return;
         }
 
         try {
             boolean isFetching = getService().getLatestPerformanceOfUsers(userList, firstMatchNumber, lastMatchNumber);
             if (!isFetching) {
-                getPresenter().onLatestPerformanceFetched(false, "No Network Connection", null);
+                getPresenter().onLatestPerformanceFetched(false, "No Network Connection", null, null);
             }
         } catch (RemoteException e) {
             e.printStackTrace();
-            getPresenter().onLatestPerformanceFetched(false, "Error sending message", null);
+            getPresenter().onLatestPerformanceFetched(false, "Error sending message", null, null);
         }
     }
 }
