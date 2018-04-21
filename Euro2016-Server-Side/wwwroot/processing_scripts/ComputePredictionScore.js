@@ -4,8 +4,8 @@ module.exports = function (match, prediction, systemData) {
 	var arrayOfRules = systemData.Rules.split(",");
 	
 	var incorrectPrediction = arrayOfRules[0];
-	var correctOutcomeViaPenalties = arrayOfRules[1];
-	var correctOutcome = arrayOfRules[2];
+	var correctOutcome = arrayOfRules[1];
+	var correctMarginOfVictory = arrayOfRules[2];
 	var correctPrediction = arrayOfRules[3];
     
     if (isMatchPlayed(match) === false) {
@@ -16,16 +16,13 @@ module.exports = function (match, prediction, systemData) {
     }
 
     // Both (match and prediction) home teams win
-    if (didHomeTeamWin(match) && didPredictHomeTeamWin(prediction)) {
+    if ((didHomeTeamWin(match) && didPredictHomeTeamWin(prediction)) ||
+        (didAwayTeamWin(match) && didPredictAwayTeamWin(prediction))) {
         if (isPredictionCorrect(match, prediction))
             return correctPrediction;
-        else
-            return correctOutcome;
-    }
-    else if (didAwayTeamWin(match) && didPredictAwayTeamWin(prediction)) {
-        if (isPredictionCorrect(match, prediction))
-            return correctPrediction;
-        else
+        else if (isMarginOfVictoryCorrect(match, prediction))
+            return correctMarginOfVictory;
+        else 
             return correctOutcome;
     }
     else if (didTeamsTied(match) && didPredictTie(prediction) && wasThereAPenaltyShootout(match) === false) {
@@ -36,10 +33,10 @@ module.exports = function (match, prediction, systemData) {
     }
     else if (didTeamsTied(match) && wasThereAPenaltyShootout(match)) {
         if (didHomeTeamWinByPenaltyShootout(match) && didPredictHomeTeamWin(prediction)) {
-            return correctOutcomeViaPenalties;
+            return correctOutcome;
         }
         if (didAwayTeamWinByPenaltyShootout(match) && didPredictAwayTeamWin(prediction)) {
-            return correctOutcomeViaPenalties;
+            return correctOutcome;
         }
     }
     return incorrectPrediction;
@@ -93,6 +90,11 @@ function didPredictAwayTeamWin(prediction) {
 function isPredictionCorrect(match, prediction) {
     return prediction.HomeTeamGoals == match.HomeTeamGoals
             && prediction.AwayTeamGoals == match.AwayTeamGoals;
+}
+
+function isMarginOfVictoryCorrect(match, prediction) {
+    return prediction.HomeTeamGoals - prediction.AwayTeamGoals ==
+            match.HomeTeamGoals - match.AwayTeamGoals;
 }
 
 function didPredictTie(prediction) {

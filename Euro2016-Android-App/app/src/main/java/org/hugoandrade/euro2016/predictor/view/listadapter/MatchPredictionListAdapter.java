@@ -5,7 +5,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.util.Pair;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,15 +22,12 @@ import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
 
 import java.util.List;
 
-import static android.view.View.GONE;
-import static android.view.View.VISIBLE;
-
 public class MatchPredictionListAdapter extends RecyclerView.Adapter<MatchPredictionListAdapter.ViewHolder> {
 
     private static final int COLOR_DEFAULT = Color.parseColor("#aaffffff");
     private static final int COLOR_INCORRECT_PREDICTION = Color.parseColor("#aaff0000");
-    private static final int COLOR_CORRECT_OUTCOME_VIA_PENALTIES = Color.parseColor("#aaFF5500");
-    private static final int COLOR_CORRECT_OUTCOME = Color.parseColor("#aaAAAA00");
+    private static final int COLOR_CORRECT_MARGIN_OF_VICTORY = Color.parseColor("#aaAAAA00");
+    private static final int COLOR_CORRECT_OUTCOME = Color.parseColor("#aaFF5500");
     private static final int COLOR_CORRECT_PREDICTION = Color.parseColor("#aa00AA00");
 
     private Match mMatch;
@@ -128,8 +124,8 @@ public class MatchPredictionListAdapter extends RecyclerView.Adapter<MatchPredic
             return COLOR_INCORRECT_PREDICTION;
         }
         else {
-            if (prediction.getScore() == GlobalData.getInstance().systemData.getRules().getRuleCorrectOutcomeViaPenalties()) {
-                return COLOR_CORRECT_OUTCOME_VIA_PENALTIES;
+            if (prediction.getScore() == GlobalData.getInstance().systemData.getRules().getRuleCorrectMarginOfVictory()) {
+                return COLOR_CORRECT_MARGIN_OF_VICTORY;
             }
             else if (prediction.getScore() == GlobalData.getInstance().systemData.getRules().getRuleCorrectOutcome()) {
                 return COLOR_CORRECT_OUTCOME;

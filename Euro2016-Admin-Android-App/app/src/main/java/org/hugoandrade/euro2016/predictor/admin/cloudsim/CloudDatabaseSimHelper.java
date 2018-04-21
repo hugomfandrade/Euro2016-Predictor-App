@@ -3,6 +3,7 @@ package org.hugoandrade.euro2016.predictor.admin.cloudsim;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteQueryBuilder;
+import android.util.Log;
 
 import org.hugoandrade.euro2016.predictor.admin.cloudsim.parser.CloudContentValuesFormatter;
 import org.hugoandrade.euro2016.predictor.admin.cloudsim.parser.CloudPOJOFormatter;
@@ -138,6 +139,10 @@ class CloudDatabaseSimHelper {
     }
 
     void updateScoresOfPredictionsOfMatch(DatabaseHelper dbHelper, Match match, SystemData systemData) {
+        Log.e("TAG", "updateScoresOfPredictionsOfMatch: " + match.getMatchNumber()
+                + " , " + MatchUtils.isMatchPlayed(match)
+                + " , " + match.getHomeTeamGoals()
+                + " , " + match.getAwayTeamGoals());
 
         if (systemData == null) return;
 
@@ -161,6 +166,8 @@ class CloudDatabaseSimHelper {
                 // Get new prediction score
                 prediction = computePredictionScore(match, prediction, systemData);
 
+                Log.e("TAG", "updateScoresOfPredictionsOfMatch (p): " + prediction.getScore());
+                Log.e("TAG", "updateScoresOfPredictionsOfMatch (p): " + prediction.getScore());
                 // Update entry
                 ContentValues predictionValues = cvFormatter.getAsContentValues(prediction);
                 predictionValues.remove("_" + Prediction.Entry.Cols.ID);
@@ -214,8 +221,8 @@ class CloudDatabaseSimHelper {
     private Prediction computePredictionScore(Match match, Prediction prediction, SystemData systemData) {
 
         int incorrectPrediction = systemData.getRules().getRuleIncorrectPrediction();
-        int correctOutcomeViaPenalties = systemData.getRules().getRuleCorrectOutcomeViaPenalties();
         int correctOutcome = systemData.getRules().getRuleCorrectOutcome();
+        int correctMarginOfVictory = systemData.getRules().getRuleCorrectMarginOfVictory();
         int correctPrediction = systemData.getRules().getRuleCorrectPrediction();
 
         if (!MatchUtils.isMatchPlayed(match)) {
@@ -228,16 +235,12 @@ class CloudDatabaseSimHelper {
         }
 
         // Both (match and prediction) home teams win
-        if (MatchUtils.didHomeTeamWin(match) && PredictionUtils.didPredictHomeTeamWin(prediction)) {
+        if ((MatchUtils.didHomeTeamWin(match) && PredictionUtils.didPredictHomeTeamWin(prediction)) ||
+                (MatchUtils.didAwayTeamWin(match) && PredictionUtils.didPredictAwayTeamWin(prediction))) {
             if (PredictionUtils.isPredictionCorrect(match, prediction))
                 prediction.setScore(correctPrediction);
-            else
-                prediction.setScore(correctOutcome);
-            return prediction;
-        }
-        else if (MatchUtils.didAwayTeamWin(match) && PredictionUtils.didPredictAwayTeamWin(prediction)) {
-            if (PredictionUtils.isPredictionCorrect(match, prediction))
-                prediction.setScore(correctPrediction);
+            else if (PredictionUtils.isMarginOfVictoryCorrect(match, prediction))
+                prediction.setScore(correctMarginOfVictory);
             else
                 prediction.setScore(correctOutcome);
             return prediction;
@@ -251,11 +254,11 @@ class CloudDatabaseSimHelper {
         }
         else if (MatchUtils.didTeamsTied(match) && MatchUtils.wasThereAPenaltyShootout(match)) {
             if (MatchUtils.didHomeTeamWinByPenaltyShootout(match) && PredictionUtils.didPredictHomeTeamWin(prediction)) {
-                prediction.setScore(correctOutcomeViaPenalties);
+                prediction.setScore(correctOutcome);
                 return prediction;
             }
             if (MatchUtils.didAwayTeamWinByPenaltyShootout(match) && PredictionUtils.didPredictAwayTeamWin(prediction)) {
-                prediction.setScore(correctOutcomeViaPenalties);
+                prediction.setScore(correctOutcome);
                 return prediction;
             }
         }

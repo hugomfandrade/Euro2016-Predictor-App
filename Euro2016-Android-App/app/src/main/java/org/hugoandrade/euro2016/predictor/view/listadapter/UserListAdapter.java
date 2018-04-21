@@ -12,14 +12,13 @@ import java.util.List;
 
 import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.R;
-import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
 
 public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHolder> {
 
     private static final int COLOR_INCORRECT_PREDICTION = Color.parseColor("#aaff0000");
-    private static final int COLOR_CORRECT_OUTCOME_VIA_PENALTIES = Color.parseColor("#aaFF5500");
-    private static final int COLOR_CORRECT_OUTCOME = Color.parseColor("#aaAAAA00");
+    private static final int COLOR_CORRECT_OUTCOME = Color.parseColor("#aaFF5500");
+    private static final int COLOR_CORRECT_MARGIN_OF_VICTORY = Color.parseColor("#aaAAAA00");
     private static final int COLOR_CORRECT_PREDICTION = Color.parseColor("#aa00AA00");
 
     private List<User> mUserList;
@@ -75,8 +74,8 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.ViewHo
     }
 
     private int getCardColor(int points) {
-        if (points == GlobalData.getInstance().systemData.getRules().getRuleCorrectOutcomeViaPenalties()) {
-            return COLOR_CORRECT_OUTCOME_VIA_PENALTIES;
+        if (points == GlobalData.getInstance().systemData.getRules().getRuleCorrectMarginOfVictory()) {
+            return COLOR_CORRECT_MARGIN_OF_VICTORY;
         }
         else if (points == GlobalData.getInstance().systemData.getRules().getRuleCorrectOutcome()) {
             return COLOR_CORRECT_OUTCOME;

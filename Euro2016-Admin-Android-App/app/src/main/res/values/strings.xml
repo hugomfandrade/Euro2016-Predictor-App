@@ -14,7 +14,7 @@
     <string name="set_system_date"><u>System Date:</u></string>
     <string name="correct_prediction">Correct prediction</string>
     <string name="correct_outcome">Correct outcome</string>
-    <string name="correct_outcome_via_penalties">Correct outcome via penalty shootout</string>
+    <string name="correct_margin_of_victory">Correct margin of victory</string>
     <string name="incorrect_prediction_and_outcome">Incorrect prediction and outcome</string>
     <string name="set">Set</string>
     <string name="zero_value">0</string>

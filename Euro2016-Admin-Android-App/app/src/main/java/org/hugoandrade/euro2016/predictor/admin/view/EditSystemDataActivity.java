@@ -27,7 +27,7 @@ public class EditSystemDataActivity extends AppCompatActivity {
     private Switch switchAppEnabled;
     private ViewStruct viewStructCorrectPrediction;
     private ViewStruct viewStructCorrectOutcome;
-    private ViewStruct viewStructCorrectOutcomeViaPenalties;
+    private ViewStruct viewStructCorrectMarginOfVictory;
     private ViewStruct viewStructIncorrectPrediction;
 
     private TextView tvSystemDate;
@@ -64,12 +64,12 @@ public class EditSystemDataActivity extends AppCompatActivity {
         viewStructCorrectPrediction
                 = new ViewStruct(findViewById(R.id.layout_correct_prediction),
                                  R.string.correct_prediction);
+        viewStructCorrectMarginOfVictory
+                = new ViewStruct(findViewById(R.id.layout_correct_margin_of_victory),
+                R.string.correct_margin_of_victory);
         viewStructCorrectOutcome
                 = new ViewStruct(findViewById(R.id.layout_correct_outcome),
                                  R.string.correct_outcome);
-        viewStructCorrectOutcomeViaPenalties
-                = new ViewStruct(findViewById(R.id.layout_correct_outcome_via_penalties),
-                                 R.string.correct_outcome_via_penalties);
         viewStructIncorrectPrediction
                 = new ViewStruct(findViewById(R.id.layout_incorrect_prediction_and_outcome),
                                  R.string.incorrect_prediction_and_outcome);
@@ -132,7 +132,7 @@ public class EditSystemDataActivity extends AppCompatActivity {
 
         viewStructCorrectPrediction.setProgress(mSystemData.getRules().getRuleCorrectPrediction());
         viewStructCorrectOutcome.setProgress(mSystemData.getRules().getRuleCorrectOutcome());
-        viewStructCorrectOutcomeViaPenalties.setProgress(mSystemData.getRules().getRuleCorrectOutcomeViaPenalties());
+        viewStructCorrectMarginOfVictory.setProgress(mSystemData.getRules().getRuleCorrectMarginOfVictory());
         viewStructIncorrectPrediction.setProgress(mSystemData.getRules().getRuleIncorrectPrediction());
 
         cvSelect.setDate(mSystemData.getSystemDate().getTimeInMillis());
@@ -151,8 +151,8 @@ public class EditSystemDataActivity extends AppCompatActivity {
         mSystemData.setAppState(switchAppEnabled.isChecked());
         mSystemData.setRules(new SystemData.Rules(
                 viewStructIncorrectPrediction.getProgress(),
-                viewStructCorrectOutcomeViaPenalties.getProgress(),
                 viewStructCorrectOutcome.getProgress(),
+                viewStructCorrectMarginOfVictory.getProgress(),
                 viewStructCorrectPrediction.getProgress()));
 
         setResult(RESULT_OK, new Intent().putExtra(INTENT_EXTRA_SYSTEM_DATA, mSystemData));

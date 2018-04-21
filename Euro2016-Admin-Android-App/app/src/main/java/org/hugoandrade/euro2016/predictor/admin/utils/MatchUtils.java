@@ -20,36 +20,36 @@ public final class MatchUtils {
         throw new AssertionError();
     }
 
-    public static boolean isMachValid(Match match) {
+    public static boolean isMatchValid(Match match) {
         return match != null;
     }
 
     public static boolean isMatchPlayed(Match match) {
-        return isMachValid(match) && match.getHomeTeamGoals() != -1 && match.getAwayTeamGoals() != -1;
+        return isMatchValid(match) && match.getHomeTeamGoals() != -1 && match.getAwayTeamGoals() != -1;
     }
 
     public static boolean didHomeTeamWin(Match match) {
-        return isMachValid(match) && match.getHomeTeamGoals() > match.getAwayTeamGoals();
+        return isMatchValid(match) && match.getHomeTeamGoals() > match.getAwayTeamGoals();
     }
 
     public static boolean didAwayTeamWin(Match match) {
-        return isMachValid(match) && match.getAwayTeamGoals() > match.getHomeTeamGoals();
+        return isMatchValid(match) && match.getAwayTeamGoals() > match.getHomeTeamGoals();
     }
 
     public static boolean didTeamsTied(Match match) {
-        return isMachValid(match) && match.getHomeTeamGoals() == match.getAwayTeamGoals();
+        return isMatchValid(match) && match.getHomeTeamGoals() == match.getAwayTeamGoals();
     }
 
     public static boolean didHomeTeamWinByPenaltyShootout(Match match) {
-        return isMachValid(match) && match.getHomeTeamNotes() != null && match.getHomeTeamNotes().equals("p");
+        return isMatchValid(match) && match.getHomeTeamNotes() != null && match.getHomeTeamNotes().equals("p");
     }
 
     public static boolean didAwayTeamWinByPenaltyShootout(Match match) {
-        return isMachValid(match) && match.getAwayTeamNotes() != null && match.getAwayTeamNotes().equals("p");
+        return isMatchValid(match) && match.getAwayTeamNotes() != null && match.getAwayTeamNotes().equals("p");
     }
 
     public static boolean wasThereAPenaltyShootout(Match match) {
-        return isMachValid(match) &&
+        return isMatchValid(match) &&
                 (match.getHomeTeamNotes() != null && match.getHomeTeamNotes().equals("p") ||
                 (match.getAwayTeamNotes() != null && match.getAwayTeamNotes().equals("p")));
     }

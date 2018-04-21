@@ -105,8 +105,8 @@ public class SystemData implements Parcelable {
     public void setRules(Rules rules) {
 
         mRules = Integer.toString(rules.getRuleIncorrectPrediction()) + "," +
-                Integer.toString(rules.getRuleCorrectOutcomeViaPenalties()) + "," +
                 Integer.toString(rules.getRuleCorrectOutcome()) + "," +
+                Integer.toString(rules.getRuleCorrectMarginOfVictory()) + "," +
                 Integer.toString(rules.getRuleCorrectPrediction());
     }
 
@@ -168,17 +168,17 @@ public class SystemData implements Parcelable {
     public static class Rules {
 
         private final int mRuleCorrectPrediction;
+        private final int mRuleCorrectMarginOfVictory;
         private final int mRuleCorrectOutcome;
-        private final int mRuleCorrectOutcomeViaPenalties;
         private final int mRuleIncorrectPrediction;
 
         public Rules(int incorrectPrediction,
-                     int correctOutcomeViaPenalties,
                      int correctOutcome,
+                     int correctMarginOfVictory,
                      int correctPrediction) {
             mRuleIncorrectPrediction = incorrectPrediction;
-            mRuleCorrectOutcomeViaPenalties = correctOutcomeViaPenalties;
             mRuleCorrectOutcome = correctOutcome;
+            mRuleCorrectMarginOfVictory = correctMarginOfVictory;
             mRuleCorrectPrediction = correctPrediction;
         }
 
@@ -190,8 +190,8 @@ public class SystemData implements Parcelable {
             return mRuleCorrectOutcome;
         }
 
-        public int getRuleCorrectOutcomeViaPenalties() {
-            return mRuleCorrectOutcomeViaPenalties;
+        public int getRuleCorrectMarginOfVictory() {
+            return mRuleCorrectMarginOfVictory;
         }
 
         public int getRuleIncorrectPrediction() {

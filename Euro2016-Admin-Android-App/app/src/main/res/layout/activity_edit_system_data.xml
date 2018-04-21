@@ -58,13 +58,13 @@
                         android:layout_height="wrap_content" />
 
                     <include
-                        android:id="@+id/layout_correct_outcome"
+                        android:id="@+id/layout_correct_margin_of_victory"
                         layout="@layout/layout_seekbar_with_textview"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />
 
                     <include
-                        android:id="@+id/layout_correct_outcome_via_penalties"
+                        android:id="@+id/layout_correct_outcome"
                         layout="@layout/layout_seekbar_with_textview"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content" />

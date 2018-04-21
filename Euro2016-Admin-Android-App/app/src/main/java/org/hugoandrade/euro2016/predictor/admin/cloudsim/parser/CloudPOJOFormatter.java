@@ -2,6 +2,7 @@ package org.hugoandrade.euro2016.predictor.admin.cloudsim.parser;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.util.Log;
 
 import org.hugoandrade.euro2016.predictor.admin.data.Country;
 import org.hugoandrade.euro2016.predictor.admin.data.LoginData;
@@ -130,7 +131,11 @@ public class CloudPOJOFormatter {
 
     private int getColumnValue(Cursor cursor, String columnName, int defaultValue) {
         try {
-            return cursor.getInt(cursor.getColumnIndex(columnName));
+            int index = cursor.getColumnIndex(columnName);
+            if (cursor.isNull(index))
+                return defaultValue;
+            else
+                return cursor.getInt(index);
         } catch (Exception e) {
             return defaultValue;
         }
@@ -139,7 +144,11 @@ public class CloudPOJOFormatter {
     private float getColumnValue(Cursor cursor, String columnName,
                                  @SuppressWarnings("SameParameterValue") float defaultValue) {
         try {
-            return cursor.getFloat(cursor.getColumnIndex(columnName));
+            int index = cursor.getColumnIndex(columnName);
+            if (cursor.isNull(index))
+                return defaultValue;
+            else
+                return cursor.getFloat(index);
         } catch (Exception e) {
             return defaultValue;
         }
@@ -148,7 +157,11 @@ public class CloudPOJOFormatter {
     private String getColumnValue(Cursor cursor, String columnName,
                                   @SuppressWarnings("SameParameterValue") String defaultValue) {
         try {
-            return cursor.getString(cursor.getColumnIndex(columnName));
+            int index = cursor.getColumnIndex(columnName);
+            if (cursor.isNull(index))
+                return defaultValue;
+            else
+                return cursor.getString(index);
         } catch (Exception e) {
             return defaultValue;
         }

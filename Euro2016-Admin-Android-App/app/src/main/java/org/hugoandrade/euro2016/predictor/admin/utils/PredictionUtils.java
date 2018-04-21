@@ -37,6 +37,11 @@ public final class PredictionUtils {
                 && prediction.getAwayTeamGoals() == match.getAwayTeamGoals();
     }
 
+    public static boolean isMarginOfVictoryCorrect(Match match, Prediction prediction) {
+        return prediction.getHomeTeamGoals() - prediction.getAwayTeamGoals() ==
+                match.getHomeTeamGoals() - match.getAwayTeamGoals();
+    }
+
     public static boolean didPredictTie(Prediction prediction) {
         return prediction.getHomeTeamGoals() == prediction.getAwayTeamGoals();
     }

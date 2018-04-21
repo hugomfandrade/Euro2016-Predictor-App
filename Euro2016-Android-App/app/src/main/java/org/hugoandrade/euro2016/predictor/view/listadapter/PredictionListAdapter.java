@@ -51,8 +51,8 @@ public class PredictionListAdapter extends RecyclerView.Adapter<PredictionListAd
     private static final int COLOR_DEFAULT = Color.parseColor("#aaffffff");
     private static final int COLOR_INCORRECT_PREDICTION = Color.parseColor("#aaff0000");
     //private static final int COLOR_INCORRECT_PREDICTION = Color.parseColor("#aaff5f5f");
-    private static final int COLOR_CORRECT_OUTCOME_VIA_PENALTIES = Color.parseColor("#aaFF5500");
-    private static final int COLOR_CORRECT_OUTCOME = Color.parseColor("#aaAAAA00");
+    private static final int COLOR_CORRECT_MARGIN_OF_VICTORY = Color.parseColor("#aaAAAA00");
+    private static final int COLOR_CORRECT_OUTCOME = Color.parseColor("#aaFF5500");
     private static final int COLOR_CORRECT_PREDICTION = Color.parseColor("#aa00AA00");
 
     private static final int TEXT_COLOR = Color.parseColor("#222222");
@@ -392,8 +392,8 @@ public class PredictionListAdapter extends RecyclerView.Adapter<PredictionListAd
             return COLOR_INCORRECT_PREDICTION;
         }
         else {
-            if (prediction.getScore() == GlobalData.getInstance().systemData.getRules().getRuleCorrectOutcomeViaPenalties()) {
-                return COLOR_CORRECT_OUTCOME_VIA_PENALTIES;
+            if (prediction.getScore() == GlobalData.getInstance().systemData.getRules().getRuleCorrectMarginOfVictory()) {
+                return COLOR_CORRECT_MARGIN_OF_VICTORY;
             }
             else if (prediction.getScore() == GlobalData.getInstance().systemData.getRules().getRuleCorrectOutcome()) {
                 return COLOR_CORRECT_OUTCOME;

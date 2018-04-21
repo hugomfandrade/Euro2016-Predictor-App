@@ -30,17 +30,17 @@ public class RulesFragment extends FragmentBase<FragComm.RequiredActivityOps> {
         SystemData.Rules rules = GlobalData.getInstance().systemData.getRules();
         ((TextView) view.findViewById(R.id.tv_rule_correct_prediction)).setText(
                 " - Correct prediction: " + rules.getRuleCorrectPrediction() + " point" +
-                        (rules.getRuleCorrectPrediction() != 1? "s" : "") +
-                        ".");
+                        (rules.getRuleCorrectPrediction() != 1? "s" : ""));
         ((TextView) view.findViewById(R.id.tv_rule_correct_outcome)).setText(
                 " - Correct outcome: " + rules.getRuleCorrectOutcome() + " point" +
                         (rules.getRuleCorrectOutcome() != 1? "s" : ""));
-        ((TextView) view.findViewById(R.id.tv_rule_correct_outcome_via_penalties)).setText(
-                " - Correct outcome via penalty shootout: " + rules.getRuleCorrectOutcomeViaPenalties() + " point" +
-                        (rules.getRuleCorrectOutcomeViaPenalties() != 1? "s" : ""));
+        ((TextView) view.findViewById(R.id.tv_rule_correct_margin_of_victory)).setText(
+                " - Correct margin of victory: " + rules.getRuleCorrectMarginOfVictory() + " point" +
+                        (rules.getRuleCorrectMarginOfVictory() != 1? "s" : ""));
         ((TextView) view.findViewById(R.id.tv_rule_incorrect_prediction)).setText(
                 " - Incorrect prediction: " + rules.getRuleIncorrectPrediction() + " point" +
                         (rules.getRuleIncorrectPrediction() != 1? "s" : ""));
+        view.findViewById(R.id.tv_rule_incorrect_prediction).setVisibility(View.GONE);
 
     }
 }

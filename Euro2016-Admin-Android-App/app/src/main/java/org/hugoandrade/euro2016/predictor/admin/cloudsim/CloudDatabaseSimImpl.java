@@ -178,16 +178,17 @@ class CloudDatabaseSimImpl {
             Uri uri = provider.insert(baseUri, jsonObject == null ? null: cvFormatter.getAsContentValues(jsonObject));
 
 
-            if (uri == null)
-                throw new IllegalArgumentException("Operation failed");
-
             if (tableName.contains(SystemData.Entry.API_NAME_UPDATE_SCORES)) {
                 if (mFuture != null)
                     mFuture.onSuccess(null);
 
                 return;
             }
-            else if (tableName.contains(SystemData.Entry.API_NAME)) {
+
+            if (uri == null)
+                throw new IllegalArgumentException("Operation failed");
+
+            if (tableName.contains(SystemData.Entry.API_NAME)) {
                 getApiOperation(baseUri);
                 return;
             }
