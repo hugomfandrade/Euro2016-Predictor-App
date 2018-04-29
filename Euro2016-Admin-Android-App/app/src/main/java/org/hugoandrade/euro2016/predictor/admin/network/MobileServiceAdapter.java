@@ -17,9 +17,11 @@ import com.microsoft.windowsazure.mobileservices.table.MobileServiceJsonTable;
 import org.hugoandrade.euro2016.predictor.admin.DevConstants;
 import org.hugoandrade.euro2016.predictor.admin.cloudsim.CloudDatabaseSimAdapter;
 import org.hugoandrade.euro2016.predictor.admin.data.Country;
+import org.hugoandrade.euro2016.predictor.admin.data.League;
 import org.hugoandrade.euro2016.predictor.admin.data.LoginData;
 import org.hugoandrade.euro2016.predictor.admin.data.Match;
 import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
+import org.hugoandrade.euro2016.predictor.admin.data.WaitingLeagueUser;
 import org.hugoandrade.euro2016.predictor.admin.model.helper.MobileServiceJsonTableHelper;
 import org.hugoandrade.euro2016.predictor.admin.model.parser.MobileClientDataJsonFormatter;
 import org.hugoandrade.euro2016.predictor.admin.model.parser.MobileClientDataJsonParser;
@@ -42,7 +44,7 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
 
     private BroadcastReceiver mNetworkBroadcastReceiver;
 
-    private boolean mIsNetworkAvailable = false;
+    private boolean mIsNetworkAvailable;
 
     public static MobileServiceAdapter getInstance() {
         if (mInstance == null) {
@@ -457,6 +459,68 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
             @Override
             public void onFailure(@NonNull Throwable t) {
                 sendErrorMessage(callback, MobileServiceData.UPDATE_SCORES_OF_PREDICTIONS, t.getMessage());
+            }
+        });
+        return callback;
+    }
+
+    public MobileServiceCallback createLeague(final League league) {
+
+        final MobileServiceCallback callback = new MobileServiceCallback();
+
+        if (CloudDatabaseSimAdapter.getInstance().createLeague(callback, league) ||
+                !isNetworkAvailable(callback, MobileServiceData.CREATE_LEAGUE))
+            return callback;
+
+        ListenableFuture<JsonElement> future =
+                mClient.invokeApi(League.Entry.API_NAME_CREATE_LEAGUE,
+                        formatter.getAsJsonObject(league),
+                        HttpConstants.PostMethod,
+                        null);
+
+        Futures.addCallback(future, new FutureCallback<JsonElement>() {
+            @Override
+            public void onSuccess(JsonElement jsonObject) {
+                callback.set(MobileServiceData.Builder
+                        .instance(MobileServiceData.CREATE_LEAGUE, MobileServiceData.REQUEST_RESULT_SUCCESS)
+                        .setLeague(parser.parseLeague(jsonObject.getAsJsonObject()))
+                        .create());
+            }
+
+            @Override
+            public void onFailure(@NonNull Throwable t) {
+                sendErrorMessage(callback, MobileServiceData.CREATE_LEAGUE, t.getMessage());
+            }
+        });
+        return callback;
+    }
+
+    public MobileServiceCallback joinLeague(final WaitingLeagueUser waitingLeagueUser) {
+
+        final MobileServiceCallback callback = new MobileServiceCallback();
+
+        if (CloudDatabaseSimAdapter.getInstance().joinLeague(callback, waitingLeagueUser) ||
+                !isNetworkAvailable(callback, MobileServiceData.JOIN_LEAGUE))
+            return callback;
+
+        ListenableFuture<JsonElement> future =
+                mClient.invokeApi(League.Entry.API_NAME_JOIN_LEAGUE,
+                        formatter.getAsJsonObject(waitingLeagueUser),
+                        HttpConstants.PostMethod,
+                        null);
+
+        Futures.addCallback(future, new FutureCallback<JsonElement>() {
+            @Override
+            public void onSuccess(JsonElement jsonObject) {
+                callback.set(MobileServiceData.Builder
+                        .instance(MobileServiceData.JOIN_LEAGUE, MobileServiceData.REQUEST_RESULT_SUCCESS)
+                        .setLeague(parser.parseLeague(jsonObject.getAsJsonObject()))
+                        .create());
+            }
+
+            @Override
+            public void onFailure(@NonNull Throwable t) {
+                sendErrorMessage(callback, MobileServiceData.JOIN_LEAGUE, t.getMessage());
             }
         });
         return callback;

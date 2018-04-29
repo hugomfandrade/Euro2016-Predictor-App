@@ -9,6 +9,8 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import org.hugoandrade.euro2016.predictor.admin.cloudsim.parser.CloudContentValuesFormatter;
 import org.hugoandrade.euro2016.predictor.admin.cloudsim.parser.CloudPOJOFormatter;
 import org.hugoandrade.euro2016.predictor.admin.data.Country;
+import org.hugoandrade.euro2016.predictor.admin.data.League;
+import org.hugoandrade.euro2016.predictor.admin.data.LeagueUser;
 import org.hugoandrade.euro2016.predictor.admin.data.Match;
 import org.hugoandrade.euro2016.predictor.admin.data.Prediction;
 import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
@@ -28,7 +30,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private final static String TAG = DatabaseHelper.class.getSimpleName();
 
     private static final String DATABASE_NAME = "Euro2016Predictor";
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 8;
 
     private static final String CREATE_DB_TABLE_MATCH =
             " CREATE TABLE " + Match.Entry.TABLE_NAME +
@@ -91,6 +93,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     ", " + User.Entry.Cols.SCORE + " INTEGER NOT NULL" +
                     " );";
 
+    private static final String CREATE_DB_TABLE_LEAGUE =
+            " CREATE TABLE " + League.Entry.TABLE_NAME +
+                    " (" + "_" + League.Entry.Cols.ID + " INTEGER PRIMARY KEY AUTOINCREMENT " +
+                    ", " + League.Entry.Cols.NAME + " TEXT UNIQUE NOT NULL " +
+                    ", " + League.Entry.Cols.ADMIN_ID + " TEXT NOT NULL " +
+                    ", " + League.Entry.Cols.CODE + " TEXT UNIQUE NOT NULL" +
+                    " );";
+
+    private static final String CREATE_DB_TABLE_LEAGUE_USER =
+            " CREATE TABLE " + LeagueUser.Entry.TABLE_NAME +
+                    " (" + "_" + LeagueUser.Entry.Cols.ID + " INTEGER PRIMARY KEY AUTOINCREMENT " +
+                    ", " + LeagueUser.Entry.Cols.LEAGUE_ID + " TEXT NOT NULL " +
+                    ", " + LeagueUser.Entry.Cols.USER_ID + " TEXT NOT NULL " +
+                    " );";
+
     DatabaseHelper(Context context){
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -102,6 +119,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_DB_TABLE_COUNTRY);
         db.execSQL(CREATE_DB_TABLE_ACCOUNT);
         db.execSQL(CREATE_DB_TABLE_SYSTEM_DATA);
+        db.execSQL(CREATE_DB_TABLE_LEAGUE);
+        db.execSQL(CREATE_DB_TABLE_LEAGUE_USER);
         populateTable(db);
     }
 
@@ -112,6 +131,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " +  Country.Entry.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " +  User.Entry.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " +  SystemData.Entry.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " +  League.Entry.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " +  LeagueUser.Entry.TABLE_NAME);
         onCreate(db);
     }
 

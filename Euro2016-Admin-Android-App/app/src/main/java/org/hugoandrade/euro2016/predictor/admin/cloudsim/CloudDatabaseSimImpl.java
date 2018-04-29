@@ -30,6 +30,8 @@ class CloudDatabaseSimImpl {
     private final boolean isApi;
     private JsonObject apiJsonObject;
     private String apiType;
+    private int skip = -1;
+    private int top = -1;
 
     CloudDatabaseSimImpl(String table, ContentResolver contentResolver) {
         this.provider = contentResolver;
@@ -45,12 +47,26 @@ class CloudDatabaseSimImpl {
         this.isApi = true;
     }
 
+    public CloudDatabaseSimImpl skip(int skip) {
+        this.skip = skip;
+        return this;
+    }
+
+    public CloudDatabaseSimImpl top(int top) {
+        this.top = top;
+        return this;
+    }
+
     ListenableCallback<JsonElement> execute() {
         Log.d(TAG, "execute(getTable): " + tableName);
         ListenableCallback<JsonElement> task = new ListenableCallback<>(provider, tableName);
 
         if (isApi) {
             task.api(apiType, apiJsonObject);
+        }
+        else {
+            task.skip(skip);
+            task.top(top);
         }
         task.execute();
         return task;
@@ -98,6 +114,8 @@ class CloudDatabaseSimImpl {
         private JsonObject jsonObject;
         private int taskType;
         private Callback<V> mFuture;
+        private int skip = -1;
+        private int top = -1;
 
         ListenableCallback(ContentResolver contentResolver, String tableName) {
             this(contentResolver, tableName, null, TASK_GET);
@@ -121,6 +139,14 @@ class CloudDatabaseSimImpl {
             else if (apiType.equals(HttpConstants.GetMethod))
                 this.taskType = TASK_API_GET;
             return this;
+        }
+
+        public void skip(int skip) {
+            this.skip = skip;
+        }
+
+        public void top(int top) {
+            this.top = top;
         }
 
         @Override
@@ -154,6 +180,18 @@ class CloudDatabaseSimImpl {
 
         private void getApiOperation(Uri baseUri) {
 
+            /*Uri.Builder builder = baseUri.buildUpon();
+            if (top != -1) {
+                builder.appendQueryParameter(CloudDatabaseSimVariables.QUERY_PARAMETER_LIMIT, String.valueOf(top));
+            }
+            if (skip != -1) {
+                builder.appendQueryParameter(CloudDatabaseSimVariables.QUERY_PARAMETER_OFFSET, String.valueOf(skip));
+            }
+
+            Uri uri = builder.build();
+            Log.e(TAG, "::" + uri);
+
+            Cursor c = provider.query(uri, null, null, null, null);/**/
             Cursor c = provider.query(baseUri, null, null, null, null);
 
             if (c == null) {
@@ -294,7 +332,17 @@ class CloudDatabaseSimImpl {
 
         private void getOperation(Uri baseUri) {
 
-            Cursor c = provider.query(baseUri, null, null, null, null);
+            Uri.Builder builder = baseUri.buildUpon();
+            if (top != -1) {
+                builder.appendQueryParameter(CloudDatabaseSimVariables.QUERY_PARAMETER_LIMIT, String.valueOf(top));
+            }
+            if (skip != -1) {
+                builder.appendQueryParameter(CloudDatabaseSimVariables.QUERY_PARAMETER_OFFSET, String.valueOf(skip));
+            }
+
+            Uri uri = builder.build();
+
+            Cursor c = provider.query(uri, null, null, null, null);
 
             if (c == null) {
                 throw new IllegalArgumentException("Cursor not found");

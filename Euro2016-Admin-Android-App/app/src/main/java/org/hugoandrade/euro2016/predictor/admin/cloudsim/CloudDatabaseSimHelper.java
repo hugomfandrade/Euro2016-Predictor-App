@@ -2,11 +2,14 @@ package org.hugoandrade.euro2016.predictor.admin.cloudsim;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.util.Log;
 
 import org.hugoandrade.euro2016.predictor.admin.cloudsim.parser.CloudContentValuesFormatter;
 import org.hugoandrade.euro2016.predictor.admin.cloudsim.parser.CloudPOJOFormatter;
+import org.hugoandrade.euro2016.predictor.admin.data.League;
+import org.hugoandrade.euro2016.predictor.admin.data.LeagueUser;
 import org.hugoandrade.euro2016.predictor.admin.data.Match;
 import org.hugoandrade.euro2016.predictor.admin.data.Prediction;
 import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
@@ -22,6 +25,32 @@ class CloudDatabaseSimHelper {
     private CloudContentValuesFormatter cvFormatter = new CloudContentValuesFormatter();
 
     CloudDatabaseSimHelper() {
+    }
+
+    String[] getLeagues(SQLiteDatabase sQLiteDatabase, String selection) {
+
+        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+        qb.setTables(LeagueUser.Entry.TABLE_NAME);
+
+        Cursor c = qb.query(sQLiteDatabase,
+                null,
+                selection,
+                null,
+                null,
+                null,
+                "_" + LeagueUser.Entry.Cols.ID);
+
+        String[] r = new String[c.getCount()];
+        int i = 0;
+        if (c.moveToFirst()) {
+            do {
+                r[i] = cvParser.parseLeagueUser(c).getLeagueID();
+                i++;
+
+            } while (c.moveToNext());
+        }
+        c.close();
+        return r;
     }
 
     SystemData getSystemData(DatabaseHelper dbHelper) {
@@ -98,6 +127,76 @@ class CloudDatabaseSimHelper {
         return systemData.getSystemDate();
     }
 
+    League getLeague(DatabaseHelper dbHelper, String name) {
+        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+        qb.setTables(League.Entry.TABLE_NAME);
+
+        Cursor c = qb.query(dbHelper.getReadableDatabase(),
+                null,
+                League.Entry.Cols.NAME + " = \"" + name + "\"",
+                null,
+                null,
+                null,
+                "_" + League.Entry.Cols.ID);
+
+        if (c.getCount() > 0 && c.moveToFirst()) {
+            League league = cvParser.parseLeague(c);
+            c.close();
+            return league;
+        }
+
+        c.close();
+        return null;
+    }
+
+    League getLeagueByCode(DatabaseHelper dbHelper, String code) {
+        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+        qb.setTables(League.Entry.TABLE_NAME);
+
+        Cursor c = qb.query(dbHelper.getReadableDatabase(),
+                null,
+                League.Entry.Cols.CODE + " = \"" + code + "\"",
+                null,
+                null,
+                null,
+                "_" + League.Entry.Cols.ID);
+
+        if (c.getCount() > 0 && c.moveToFirst()) {
+            League league = cvParser.parseLeague(c);
+            c.close();
+            return league;
+        }
+
+        c.close();
+        return null;
+    }
+
+    private static int CODE_LENGTH = 8;
+
+    String generateUniqueLeagueCode(DatabaseHelper dbHelper) {
+        String code = generateCode(CODE_LENGTH);
+
+        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+        qb.setTables(League.Entry.TABLE_NAME);
+
+        Cursor c = qb.query(dbHelper.getReadableDatabase(),
+                null,
+                League.Entry.Cols.CODE + " = \"" + code + "\"",
+                null,
+                null,
+                null,
+                "_" + League.Entry.Cols.ID);
+
+        if (c.getCount() > 0 && c.moveToFirst()) {
+            // Generate another one
+            c.close();
+            return generateCode(CODE_LENGTH);
+        }
+        c.close();
+
+        return code;
+    }
+
     User getAccount(DatabaseHelper dbHelper, String email) {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         qb.setTables(User.Entry.TABLE_NAME);
@@ -139,11 +238,6 @@ class CloudDatabaseSimHelper {
     }
 
     void updateScoresOfPredictionsOfMatch(DatabaseHelper dbHelper, Match match, SystemData systemData) {
-        Log.e("TAG", "updateScoresOfPredictionsOfMatch: " + match.getMatchNumber()
-                + " , " + MatchUtils.isMatchPlayed(match)
-                + " , " + match.getHomeTeamGoals()
-                + " , " + match.getAwayTeamGoals());
-
         if (systemData == null) return;
 
         // Get all Predictions with the MATCH_NUMBER
@@ -166,8 +260,6 @@ class CloudDatabaseSimHelper {
                 // Get new prediction score
                 prediction = computePredictionScore(match, prediction, systemData);
 
-                Log.e("TAG", "updateScoresOfPredictionsOfMatch (p): " + prediction.getScore());
-                Log.e("TAG", "updateScoresOfPredictionsOfMatch (p): " + prediction.getScore());
                 // Update entry
                 ContentValues predictionValues = cvFormatter.getAsContentValues(prediction);
                 predictionValues.remove("_" + Prediction.Entry.Cols.ID);
@@ -271,5 +363,16 @@ class CloudDatabaseSimHelper {
         SystemData preSystemData = getSystemData(dbHelper);
 
         return preSystemData == null || !preSystemData.getRawRules().equals(newSystemData.getRawRules());
+    }
+
+    private static String generateCode(int length) {
+        String _sym = "'abcdefghijklmnopqrstuvwxyz1234567890";
+        StringBuilder str = new StringBuilder();
+
+        for(int i = 0; i < length; i++) {
+            str.append(_sym.charAt((int) (Math.random() * (_sym.length()))));
+        }
+
+        return str.toString();
     }
 }

@@ -18,9 +18,11 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.microsoft.windowsazure.mobileservices.authentication.MobileServiceUser;
 
 import org.hugoandrade.euro2016.predictor.admin.data.Country;
+import org.hugoandrade.euro2016.predictor.admin.data.League;
 import org.hugoandrade.euro2016.predictor.admin.data.LoginData;
 import org.hugoandrade.euro2016.predictor.admin.data.Match;
 import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
+import org.hugoandrade.euro2016.predictor.admin.data.WaitingLeagueUser;
 import org.hugoandrade.euro2016.predictor.admin.network.MultipleCloudStatus;
 import org.hugoandrade.euro2016.predictor.admin.model.parser.MessageBase;
 import org.hugoandrade.euro2016.predictor.admin.network.MobileServiceAdapter;
@@ -304,6 +306,49 @@ public class MobileService extends Service {
         });
     }
 
+    private void createLeague(final Messenger replyTo, final int requestCode, final League league) {
+
+        MobileServiceCallback i = MobileServiceAdapter.getInstance().createLeague(league);
+        MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
+
+            @Override
+            public void onResult(MobileServiceData data) {
+
+                int requestResult = data.wasSuccessful() ?
+                        MessageBase.REQUEST_RESULT_SUCCESS:
+                        MessageBase.REQUEST_RESULT_FAILURE;
+
+                MessageBase requestMessage = MessageBase.makeMessage(requestCode, requestResult);
+                requestMessage.setLeague(data.getLeague());
+                requestMessage.setErrorMessage(data.getMessage());
+
+                sendRequestMessage(replyTo, requestMessage);
+            }
+        });
+    }
+
+    private void joinLeague(final Messenger replyTo, final int requestCode, final WaitingLeagueUser waitingLeagueUser) {
+
+
+        MobileServiceCallback i = MobileServiceAdapter.getInstance().joinLeague(waitingLeagueUser);
+        MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
+
+            @Override
+            public void onResult(MobileServiceData data) {
+
+                int requestResult = data.wasSuccessful() ?
+                        MessageBase.REQUEST_RESULT_SUCCESS:
+                        MessageBase.REQUEST_RESULT_FAILURE;
+
+                MessageBase requestMessage = MessageBase.makeMessage(requestCode, requestResult);
+                requestMessage.setLeague(data.getLeague());
+                requestMessage.setErrorMessage(data.getMessage());
+
+                sendRequestMessage(replyTo, requestMessage);
+            }
+        });
+    }
+
     private void sendErrorMessage(Messenger replyTo, int requestCode, String errorMessage) {
         MessageBase requestMessage = MessageBase.makeMessage(
                 requestCode,
@@ -440,6 +485,30 @@ public class MobileService extends Service {
                                 messenger,
                                 requestCode,
                                 loginData);
+                    }
+                };
+            }
+            else if (requestCode == MessageBase.OperationType.CREATE_LEAGUE.ordinal()) {
+                final League league = requestMessage.getLeague();
+                sendDataToHub = new Runnable() {
+                    @Override
+                    public void run() {
+                        mService.get().createLeague(
+                                messenger,
+                                requestCode,
+                                league);
+                    }
+                };
+            }
+            else if (requestCode == MessageBase.OperationType.JOIN_LEAGUE.ordinal()) {
+                final WaitingLeagueUser waitingLeagueUser = requestMessage.getWaitingLeagueUser();
+                sendDataToHub = new Runnable() {
+                    @Override
+                    public void run() {
+                        mService.get().joinLeague(
+                                messenger,
+                                requestCode,
+                                waitingLeagueUser);
                     }
                 };
             }

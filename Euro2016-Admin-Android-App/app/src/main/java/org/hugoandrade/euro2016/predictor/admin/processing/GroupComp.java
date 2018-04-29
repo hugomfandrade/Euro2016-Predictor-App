@@ -120,6 +120,7 @@ public class GroupComp {
                 // if they were separated, it this sorting. just a quick update of GroupStats and return.
                 for (CountryComp c : cloneCountriesTiedList)
                     c.compute();
+
                 return cloneCountriesTiedList;
             }
             else {

@@ -6,6 +6,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import org.hugoandrade.euro2016.predictor.admin.data.Country;
+import org.hugoandrade.euro2016.predictor.admin.data.League;
+import org.hugoandrade.euro2016.predictor.admin.data.LeagueUser;
 import org.hugoandrade.euro2016.predictor.admin.data.Match;
 import org.hugoandrade.euro2016.predictor.admin.data.User;
 import org.hugoandrade.euro2016.predictor.admin.data.Prediction;
@@ -30,6 +32,15 @@ public class CloudContentValuesFormatter {
                 .put(Prediction.Entry.Cols.USER_ID, prediction.getUserID())
                 .put(Prediction.Entry.Cols.SCORE, prediction.getScore() == -1 ?
                         null : prediction.getScore())
+                .create();
+    }
+
+    public ContentValues getAsContentValues(League league) {
+        return ContentValuesBuilder.instance()
+                .put("_" + League.Entry.Cols.ID, league.getID())
+                .put(League.Entry.Cols.NAME, league.getName())
+                .put(League.Entry.Cols.ADMIN_ID, league.getAdminID())
+                .put(League.Entry.Cols.CODE, league.getCode())
                 .create();
     }
 
@@ -100,6 +111,14 @@ public class CloudContentValuesFormatter {
                 .put(Country.Entry.Cols.POINTS, country.getPoints())
                 .put(Country.Entry.Cols.FAIR_PLAY_POINTS, country.getFairPlayPoints())
                 .put(Country.Entry.Cols.COEFFICIENT, country.getCoefficient())
+                .create();
+    }
+
+    public ContentValues getAsContentValues(LeagueUser leagueUser) {
+        return ContentValuesBuilder.instance()
+                .put("_" + LeagueUser.Entry.Cols.ID,  leagueUser.getID())
+                .put(LeagueUser.Entry.Cols.LEAGUE_ID, leagueUser.getLeagueID())
+                .put(LeagueUser.Entry.Cols.USER_ID, leagueUser.getUserID())
                 .create();
     }
 

@@ -4,10 +4,12 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import org.hugoandrade.euro2016.predictor.admin.data.Country;
+import org.hugoandrade.euro2016.predictor.admin.data.League;
 import org.hugoandrade.euro2016.predictor.admin.data.LoginData;
 import org.hugoandrade.euro2016.predictor.admin.data.Match;
 import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
 import org.hugoandrade.euro2016.predictor.admin.data.User;
+import org.hugoandrade.euro2016.predictor.admin.data.WaitingLeagueUser;
 
 import java.util.List;
 
@@ -27,6 +29,8 @@ public class MobileServiceData implements Parcelable {
     public static final int DELETE_MATCH = 12;
     public static final int INSERT_COUNTRY = 13;
     public static final int INSERT_MATCH = 14;
+    public static final int JOIN_LEAGUE = 15;
+    public static final int CREATE_LEAGUE = 16;
 
     public static final int REQUEST_RESULT_FAILURE = 0;
     public static final int REQUEST_RESULT_SUCCESS = 1;
@@ -41,6 +45,8 @@ public class MobileServiceData implements Parcelable {
     private User mUser;
     private List<User> mUserList;
     private LoginData mLoginData;
+    private League mLeague;
+    private WaitingLeagueUser mWaitingLeagueUser;
     private String mMessage;
 
     public MobileServiceData(int operationType, int operationResult) {
@@ -120,6 +126,22 @@ public class MobileServiceData implements Parcelable {
         mLoginData = loginData;
     }
 
+    public void setLeague(League league) {
+        mLeague = league;
+    }
+
+    public League getLeague() {
+        return mLeague;
+    }
+
+    public void getWaitingLeagueUser(WaitingLeagueUser waitingLeagueUser) {
+        mWaitingLeagueUser = waitingLeagueUser;
+    }
+
+    public WaitingLeagueUser setWaitingLeagueUser() {
+        return mWaitingLeagueUser;
+    }
+
     public String getMessage() {
         return mMessage;
     }
@@ -183,6 +205,11 @@ public class MobileServiceData implements Parcelable {
             return this;
         }
 
+        public Builder setLeague(League league) {
+            m.setLeague(league);
+            return this;
+        }
+
         public Builder setMessage(String message) {
             m.setMessage(message);
             return this;
@@ -204,6 +231,8 @@ public class MobileServiceData implements Parcelable {
         mUser = in.readParcelable(User.class.getClassLoader());
         mUserList = in.createTypedArrayList(User.CREATOR);
         mLoginData = in.readParcelable(LoginData.class.getClassLoader());
+        mLeague = in.readParcelable(League.class.getClassLoader());
+        mWaitingLeagueUser = in.readParcelable(WaitingLeagueUser.class.getClassLoader());
         mMessage = in.readString();
     }
 
@@ -219,6 +248,8 @@ public class MobileServiceData implements Parcelable {
         dest.writeParcelable(mUser, flags);
         dest.writeTypedList(mUserList);
         dest.writeParcelable(mLoginData, flags);
+        dest.writeParcelable(mLeague, flags);
+        dest.writeParcelable(mWaitingLeagueUser, flags);
         dest.writeString(mMessage);
     }
 

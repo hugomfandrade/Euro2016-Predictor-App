@@ -3,9 +3,11 @@ package org.hugoandrade.euro2016.predictor.admin.model.parser;
 import com.google.gson.JsonObject;
 
 import org.hugoandrade.euro2016.predictor.admin.data.Country;
+import org.hugoandrade.euro2016.predictor.admin.data.League;
 import org.hugoandrade.euro2016.predictor.admin.data.LoginData;
 import org.hugoandrade.euro2016.predictor.admin.data.Match;
 import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
+import org.hugoandrade.euro2016.predictor.admin.data.WaitingLeagueUser;
 import org.hugoandrade.euro2016.predictor.admin.utils.ISO8601;
 
 /**
@@ -75,6 +77,23 @@ public class MobileClientDataJsonFormatter {
         return JsonObjectBuilder.instance()
                 .addProperty(LoginData.Entry.Cols.EMAIL, loginData.getEmail())
                 .addProperty(LoginData.Entry.Cols.PASSWORD, loginData.getPassword())
+                .create();
+    }
+
+    public JsonObject getAsJsonObject(League league) {
+
+        return JsonObjectBuilder.instance()
+                .addProperty(League.Entry.Cols.NAME, league.getName())
+                .addProperty(League.Entry.Cols.ADMIN_ID, league.getAdminID())
+                .addProperty(League.Entry.Cols.CODE, league.getCode())
+                .create();
+    }
+
+    public JsonObject getAsJsonObject(WaitingLeagueUser waitingLeagueUser) {
+
+        return JsonObjectBuilder.instance()
+                .addProperty(WaitingLeagueUser.Entry.Cols.USER_ID, waitingLeagueUser.getUserID())
+                .addProperty(WaitingLeagueUser.Entry.Cols.LEAGUE_CODE, waitingLeagueUser.getLeagueCode())
                 .create();
     }
 

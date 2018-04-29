@@ -1,5 +1,6 @@
 package org.hugoandrade.euro2016.predictor.admin.cloudsim;
 
+import android.accounts.Account;
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -9,15 +10,19 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import org.hugoandrade.euro2016.predictor.admin.cloudsim.parser.CloudContentValuesFormatter;
 import org.hugoandrade.euro2016.predictor.admin.cloudsim.parser.CloudPOJOFormatter;
 import org.hugoandrade.euro2016.predictor.admin.data.Country;
+import org.hugoandrade.euro2016.predictor.admin.data.League;
+import org.hugoandrade.euro2016.predictor.admin.data.LeagueUser;
 import org.hugoandrade.euro2016.predictor.admin.data.LoginData;
 import org.hugoandrade.euro2016.predictor.admin.data.Match;
 import org.hugoandrade.euro2016.predictor.admin.data.Prediction;
 import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
 import org.hugoandrade.euro2016.predictor.admin.data.User;
+import org.hugoandrade.euro2016.predictor.admin.data.WaitingLeagueUser;
 import org.hugoandrade.euro2016.predictor.admin.utils.ISO8601;
 import org.hugoandrade.euro2016.predictor.admin.utils.InitConfigUtils;
 
@@ -63,6 +68,12 @@ public class CloudDatabaseSimProvider extends ContentProvider {
         matcher.addURI(AUTHORITY, Country.Entry.PATH_FOR_ID, Country.Entry.PATH_FOR_ID_TOKEN);
         matcher.addURI(AUTHORITY, User.Entry.PATH, User.Entry.PATH_TOKEN);
         matcher.addURI(AUTHORITY, User.Entry.PATH_FOR_ID, User.Entry.PATH_FOR_ID_TOKEN);
+        matcher.addURI(AUTHORITY, League.Entry.PATH, League.Entry.PATH_TOKEN);
+        matcher.addURI(AUTHORITY, League.Entry.PATH_FOR_ID, League.Entry.PATH_FOR_ID_TOKEN);
+        matcher.addURI(AUTHORITY, League.Entry.PATH_JOIN_LEAGUE, League.Entry.PATH_JOIN_LEAGUE_TOKEN);
+        matcher.addURI(AUTHORITY, League.Entry.PATH_CREATE_LEAGUE, League.Entry.PATH_CREATE_LEAGUE_TOKEN);
+        matcher.addURI(AUTHORITY, LeagueUser.Entry.PATH, LeagueUser.Entry.PATH_TOKEN);
+        matcher.addURI(AUTHORITY, LeagueUser.Entry.PATH_FOR_ID, LeagueUser.Entry.PATH_FOR_ID_TOKEN);
 
         return matcher;
     }
@@ -189,17 +200,131 @@ public class CloudDatabaseSimProvider extends ContentProvider {
                 break;
             }
 
+            case League.Entry.PATH_TOKEN: {
+
+                /*return mDbHelper.getReadableDatabase().rawQuery(
+                        "SELECT l.* " +
+                        "FROM League l, LeagueUser le " +
+                        "WHERE " + "l._id = le.LeagueID " +
+                        "AND le.UserID = " + selectionArgs[0],
+                        null
+                );/**/
+                /*Log.e(TAG, "League.Entry.PATH_TOKEN");
+                Log.e(TAG, modifiedSelection);
+                for (String s : selectionArgs)
+                    Log.e(TAG, s);/**/
+
+                if (sortOrder == null || sortOrder.isEmpty())
+                    updatedSortOrder = "_" + League.Entry.Cols.ID + " ASC";
+
+                //tableName = League.Entry.TABLE_NAME;
+                tableName = "League INNER JOIN LeagueUser ON League._id = LeagueUser.LeagueID";
+
+                break;/**/
+            }
+
+            case League.Entry.PATH_FOR_ID_TOKEN: {
+                Log.e(TAG, "League.Entry.PATH_FOR_ID_TOKEN");
+
+                String[] leagueIDs = mSimHelper.getLeagues(
+                        mDbHelper.getReadableDatabase(),
+                        "_" + LeagueUser.Entry.Cols.USER_ID + " = " + uri.getLastPathSegment());
+
+                if (leagueIDs.length == 0) {
+                    if (modifiedSelection == null)
+                        modifiedSelection = "_" + LeagueUser.Entry.Cols.ID + " = " + "-1";
+                    else
+                        modifiedSelection += " AND " + "_" + LeagueUser.Entry.Cols.ID + " = " + "-1";
+                }
+                else {
+                    for (String leagueID : leagueIDs) {
+                        if (modifiedSelection == null)
+                            modifiedSelection = "_" + League.Entry.Cols.ID + " = " + leagueID;
+                        else
+                            modifiedSelection += " AND " + "_" + League.Entry.Cols.ID + " = " + leagueID;
+                    }
+                }
+
+
+                SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
+                builder.setTables(League.Entry.TABLE_NAME);
+
+                tableName = League.Entry.TABLE_NAME;
+
+                break;
+            }
+
+            case LeagueUser.Entry.PATH_TOKEN: {
+                /*return mDbHelper.getReadableDatabase().rawQuery(
+                        "SELECT u." + "_" + User.Entry.Cols.ID + ", " +
+                                "u." + User.Entry.Cols.EMAIL + ", " +
+                                "u." + User.Entry.Cols.SCORE + " " +
+                                "FROM LeagueUser le, Account u " +
+                                "WHERE " + "le.UserID = u._id " +
+                                "AND le.LeagueID = " + selectionArgs[0],
+                        null
+                );/**/
+
+                if (sortOrder == null || sortOrder.isEmpty())
+                    updatedSortOrder = "_" + League.Entry.Cols.ID + " ASC";
+
+                tableName = "Account INNER JOIN LeagueUser ON LeagueUser.UserID = Account._id";
+                //tableName = LeagueUser.Entry.TABLE_NAME;
+
+                break;/**/
+            }
+
+            case LeagueUser.Entry.PATH_FOR_ID_TOKEN: {
+
+                String idSelection = "_" + LeagueUser.Entry.Cols.ID + " = " + uri.getLastPathSegment();
+                if (selection == null)
+                    modifiedSelection = idSelection;
+                else
+                    modifiedSelection += " AND " + idSelection;
+
+                tableName = LeagueUser.Entry.TABLE_NAME;
+
+                break;
+            }
+
             default:
                 throw new IllegalArgumentException("Invalid URI: " + uri.toString());
 
         }
+
+        String limit = uri.getQueryParameter(CloudDatabaseSimVariables.QUERY_PARAMETER_LIMIT);
+        String offset = uri.getQueryParameter(CloudDatabaseSimVariables.QUERY_PARAMETER_OFFSET);
+        String l = null;
+        if (limit != null) {
+            l = limit;
+            //updatedSortOrder = updatedSortOrder + " LIMIT " + limit;
+
+            if (offset != null) {
+                l = l + "," + offset;
+                //updatedSortOrder = updatedSortOrder + " OFFSET " + offset;
+            }
+        }
+        /*if (offset != null) {
+            l = offset;
+            updatedSortOrder = updatedSortOrder + " OFFSET " + offset;
+        }
+        else {
+            l = "0";
+            if (limit != null) {
+                l = l + "," + limit;
+            }
+            ///updatedSortOrder = updatedSortOrder + " LIMIT " + limit;
+        }/**/
+        //Log.e(TAG, "::" + uri);
+        //Log.e(TAG, "::" + updatedSortOrder);
 
         Cursor cursor = query(uri,
                               tableName,
                               projection,
                               modifiedSelection,
                               selectionArgs,
-                              updatedSortOrder);
+                              updatedSortOrder,
+                              l/**/);
         //Cursor cursor = qb.query(db,	projection,	selection, selectionArgs, null, null, sortOrder);
 
         /*
@@ -236,6 +361,33 @@ public class CloudDatabaseSimProvider extends ContentProvider {
     }
 
     /**
+     * Private query that does the actual query based on the table.
+     * <p>
+     * This method makes use of SQLiteQueryBuilder to build a simple query.
+     */
+    synchronized private Cursor query(@SuppressWarnings("unused") final Uri uri,
+                                      final String tableName,
+                                      final String[] projection, final String selection,
+                                      final String[] selectionArgs, final String sortOrder,
+                                      final String limit) {
+        // Make a new SQLiteQueryBuilder object.
+        SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
+
+        // set the table(s) to be queried upon.
+        builder.setTables(tableName);
+
+        // return the builder.query(....) result, after passing the appropriate values.
+        return builder.query(mDbHelper.getReadableDatabase(),
+                             projection,
+                             selection,
+                             selectionArgs,
+                             null,
+                             null,
+                             sortOrder,
+                             limit);
+    }
+
+    /**
      * Implement this to handle requests to insert a new row. As a courtesy,
      * call notifyChange() after inserting. This method can be called from multiple threads,
      * as described in Processes and Threads.
@@ -249,6 +401,63 @@ public class CloudDatabaseSimProvider extends ContentProvider {
 
         // switch on the results of 'mUriMatcher' matching the Uri passed in,
         switch (mUriMatcher.match(uri)) {
+            case League.Entry.PATH_CREATE_LEAGUE_TOKEN: {
+                League league = cvParser.parseLeague(values);
+
+                League dbLeague = mSimHelper.getLeague(mDbHelper, league.getName());
+
+
+                if (dbLeague != null)
+                    throw new IllegalArgumentException("League with name \'" + dbLeague.getName() + "\' already exists.");
+
+                // Add new user
+                League newLeague = new League(null, league.getName(), league.getAdminID(), mSimHelper.generateUniqueLeagueCode(mDbHelper));
+                ContentValues cvLeague = cvFormatter.getAsContentValues(newLeague);
+                cvLeague.remove("_" + User.Entry.Cols.ID);
+
+                // Insert
+                long rowID = insert(League.Entry.TABLE_NAME, null, cvLeague);
+
+                if (rowID == -1) {
+                    throw new IllegalArgumentException("Failed to create league");
+                }
+                else {
+
+                    // Add new user
+                    LeagueUser leagueUser =
+                            new LeagueUser(null, String.valueOf(rowID), league.getAdminID());
+                    ContentValues cvLeagueUser = cvFormatter.getAsContentValues(leagueUser);
+                    cvLeagueUser.remove("_" + User.Entry.Cols.ID);
+
+                    insert(LeagueUser.Entry.TABLE_NAME, null, cvLeagueUser);
+
+                    return ContentUris.withAppendedId(League.Entry.CONTENT_URI, rowID);
+                }
+            }
+            case League.Entry.PATH_JOIN_LEAGUE_TOKEN: {
+                WaitingLeagueUser waitingLeagueUser = cvParser.parseWaitingLeagueUser(values);
+
+                League dbLeague = mSimHelper.getLeagueByCode(mDbHelper, waitingLeagueUser.getLeagueCode());
+
+
+                if (dbLeague == null)
+                    throw new IllegalArgumentException("League with code \'" + waitingLeagueUser.getLeagueCode() + "\' does not exist.");
+
+                // Add new user
+                LeagueUser newLeagueUser = new LeagueUser(null, dbLeague.getID(), waitingLeagueUser.getUserID());
+                ContentValues cvLeagueUser = cvFormatter.getAsContentValues(newLeagueUser);
+                cvLeagueUser.remove("_" + LeagueUser.Entry.Cols.ID);
+
+                // Insert
+                long rowID = insert(LeagueUser.Entry.TABLE_NAME, null, cvLeagueUser);
+
+                if (rowID == -1) {
+                    throw new IllegalArgumentException("Failed to join league");
+                }
+                else {
+                    return ContentUris.withAppendedId(League.Entry.CONTENT_URI, Long.valueOf(dbLeague.getID()));
+                }
+            }
 
             case SystemData.Entry.PATH_UPDATE_SCORES_TOKEN : {
                 mSimHelper.updateScoresOfPredictionsOfAllMatches(mDbHelper);

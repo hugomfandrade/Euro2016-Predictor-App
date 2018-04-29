@@ -5,11 +5,14 @@ import android.database.Cursor;
 import android.util.Log;
 
 import org.hugoandrade.euro2016.predictor.admin.data.Country;
+import org.hugoandrade.euro2016.predictor.admin.data.League;
+import org.hugoandrade.euro2016.predictor.admin.data.LeagueUser;
 import org.hugoandrade.euro2016.predictor.admin.data.LoginData;
 import org.hugoandrade.euro2016.predictor.admin.data.User;
 import org.hugoandrade.euro2016.predictor.admin.data.Match;
 import org.hugoandrade.euro2016.predictor.admin.data.Prediction;
 import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
+import org.hugoandrade.euro2016.predictor.admin.data.WaitingLeagueUser;
 import org.hugoandrade.euro2016.predictor.admin.utils.ISO8601;
 
 /**
@@ -127,6 +130,37 @@ public class CloudPOJOFormatter {
         return new LoginData(
                 getColumnValue(values, LoginData.Entry.Cols.EMAIL, null),
                 getColumnValue(values, LoginData.Entry.Cols.PASSWORD, null));
+    }
+
+    public League parseLeague(ContentValues values) {
+
+        return new League(
+                getColumnValue(values, "_" + League.Entry.Cols.ID, null),
+                getColumnValue(values, League.Entry.Cols.NAME, null),
+                getColumnValue(values, League.Entry.Cols.ADMIN_ID, null),
+                getColumnValue(values, League.Entry.Cols.CODE, null));
+    }
+
+    public League parseLeague(Cursor c) {
+
+        return new League(
+                getColumnValue(c, "_" + League.Entry.Cols.ID, null),
+                getColumnValue(c, League.Entry.Cols.NAME, null),
+                getColumnValue(c, League.Entry.Cols.ADMIN_ID, null),
+                getColumnValue(c, League.Entry.Cols.CODE, null));
+    }
+
+    public LeagueUser parseLeagueUser(Cursor c) {
+        return new LeagueUser(
+                getColumnValue(c, "_" + LeagueUser.Entry.Cols.ID, null),
+                getColumnValue(c, LeagueUser.Entry.Cols.LEAGUE_ID, null),
+                getColumnValue(c, LeagueUser.Entry.Cols.USER_ID, null));
+    }
+
+    public WaitingLeagueUser parseWaitingLeagueUser(ContentValues values) {
+        return new WaitingLeagueUser(
+            getColumnValue(values, "_" + WaitingLeagueUser.Entry.Cols.USER_ID, null),
+            getColumnValue(values, WaitingLeagueUser.Entry.Cols.LEAGUE_CODE, null));
     }
 
     private int getColumnValue(Cursor cursor, String columnName, int defaultValue) {

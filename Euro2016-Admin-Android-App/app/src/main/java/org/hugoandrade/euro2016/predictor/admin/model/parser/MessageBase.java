@@ -6,17 +6,21 @@ import android.os.Messenger;
 
 import java.util.ArrayList;
 
+import org.hugoandrade.euro2016.predictor.admin.data.League;
 import org.hugoandrade.euro2016.predictor.admin.data.LoginData;
 import org.hugoandrade.euro2016.predictor.admin.data.User;
 import org.hugoandrade.euro2016.predictor.admin.data.Country;
 import org.hugoandrade.euro2016.predictor.admin.data.Match;
 import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
+import org.hugoandrade.euro2016.predictor.admin.data.WaitingLeagueUser;
 
 public class MessageBase {
 
     private static final String LOGIN_DATA          = "LOGIN_DATA";
     private static final String ACCOUNT             = "ACCOUNT";
     private static final String SYSTEM_DATA         = "SYSTEM_DATA";
+    private static final String LEAGUE              = "LEAGUE";
+    private static final String WAITING_LEAGUE_USER = "WAITING_LEAGUE_USER";
     private static final String COUNTRY_DATA        = "COUNTRY_DATA";
     private static final String COUNTRY_LIST_DATA   = "COUNTRY_LIST_DATA";
     private static final String MATCH_DATA          = "MATCH_DATA";
@@ -38,7 +42,9 @@ public class MessageBase {
         UPDATE_MATCH_RESULT,
         UPDATE_COUNTRY,
         GET_SYSTEM_DATA,
-        UPDATE_SYSTEM_DATA
+        UPDATE_SYSTEM_DATA,
+        CREATE_LEAGUE,
+        JOIN_LEAGUE
     }
 
     /**
@@ -146,6 +152,23 @@ public class MessageBase {
      */
     public Messenger getMessenger() {
         return mMessage.replyTo;
+    }
+
+
+    public League getLeague() {
+        return mMessage.getData().getParcelable(LEAGUE);
+    }
+
+    public void setLeague(League league) {
+        mMessage.getData().putParcelable(LEAGUE, league);
+    }
+
+    public WaitingLeagueUser getWaitingLeagueUser() {
+        return mMessage.getData().getParcelable(WAITING_LEAGUE_USER);
+    }
+
+    public void setWaitingLeagueUser(WaitingLeagueUser waitingLeagueUser) {
+        mMessage.getData().putParcelable(WAITING_LEAGUE_USER, waitingLeagueUser);
     }
 
     /**

@@ -13,6 +13,7 @@ import org.hugoandrade.euro2016.predictor.admin.processing.BackEndProcessing;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
@@ -151,7 +152,12 @@ public class MainPresenter
                             }
                         }
 
-                        Collections.sort(countryList, Collections.<Country>reverseOrder());
+                        Collections.sort(countryList, new Comparator<Country>() {
+                            @Override
+                            public int compare(Country lhs, Country rhs) {
+                                return lhs.getPosition() - rhs.getPosition();
+                            }
+                        });
                         break;
                     }
                 }
@@ -288,7 +294,13 @@ public class MainPresenter
             }
         }
         for (Group group : groupsMap.values())
-            Collections.sort(group.getCountryList(), Collections.<Country>reverseOrder());
+
+            Collections.sort(group.getCountryList(), new Comparator<Country>() {
+                        @Override
+                        public int compare(Country lhs, Country rhs) {
+                            return lhs.getPosition() - rhs.getPosition();
+                        }
+                    });
 
         return groupsMap;
     }

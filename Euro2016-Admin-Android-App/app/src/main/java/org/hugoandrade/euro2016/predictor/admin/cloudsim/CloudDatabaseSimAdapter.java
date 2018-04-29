@@ -9,9 +9,11 @@ import com.google.gson.JsonObject;
 
 import org.hugoandrade.euro2016.predictor.admin.DevConstants;
 import org.hugoandrade.euro2016.predictor.admin.data.Country;
+import org.hugoandrade.euro2016.predictor.admin.data.League;
 import org.hugoandrade.euro2016.predictor.admin.data.LoginData;
 import org.hugoandrade.euro2016.predictor.admin.data.Match;
 import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
+import org.hugoandrade.euro2016.predictor.admin.data.WaitingLeagueUser;
 import org.hugoandrade.euro2016.predictor.admin.network.MobileServiceCallback;
 import org.hugoandrade.euro2016.predictor.admin.network.MobileServiceData;
 import org.hugoandrade.euro2016.predictor.admin.model.parser.MobileClientDataJsonFormatter;
@@ -370,6 +372,62 @@ public class CloudDatabaseSimAdapter {
             @Override
             public void onFailure(String errorMessage) {
                 sendErrorMessage(callback, MobileServiceData.UPDATE_SCORES_OF_PREDICTIONS, errorMessage);
+            }
+        });
+        return true;
+    }
+
+    public boolean createLeague(final MobileServiceCallback callback, final League league) {
+        if (!DevConstants.CLOUD_DATABASE_SIM)
+            return false;
+
+        CloudDatabaseSimImpl.ListenableCallback<JsonElement> future =
+                new CloudDatabaseSimImpl(
+                        League.Entry.API_NAME_CREATE_LEAGUE,
+                        formatter.getAsJsonObject(league),
+                        HttpConstants.PostMethod,
+                        mContentResolver).execute();
+        CloudDatabaseSimImpl.addCallback(future, new CloudDatabaseSimImpl.Callback<JsonElement>() {
+            @Override
+            public void onSuccess(JsonElement result) {
+
+                callback.set(MobileServiceData.Builder
+                        .instance(MobileServiceData.CREATE_LEAGUE, MobileServiceData.REQUEST_RESULT_SUCCESS)
+                        .setLeague(parser.parseLeague(result.getAsJsonObject()))
+                        .create());
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                sendErrorMessage(callback, MobileServiceData.CREATE_LEAGUE, errorMessage);
+            }
+        });
+        return true;
+    }
+
+    public boolean joinLeague(final MobileServiceCallback callback, final WaitingLeagueUser waitingLeagueUser) {
+        if (!DevConstants.CLOUD_DATABASE_SIM)
+            return false;
+
+        CloudDatabaseSimImpl.ListenableCallback<JsonElement> future =
+                new CloudDatabaseSimImpl(
+                        League.Entry.API_NAME_JOIN_LEAGUE,
+                        formatter.getAsJsonObject(waitingLeagueUser),
+                        HttpConstants.PostMethod,
+                        mContentResolver).execute();
+        CloudDatabaseSimImpl.addCallback(future, new CloudDatabaseSimImpl.Callback<JsonElement>() {
+            @Override
+            public void onSuccess(JsonElement result) {
+
+                callback.set(MobileServiceData.Builder
+                        .instance(MobileServiceData.JOIN_LEAGUE, MobileServiceData.REQUEST_RESULT_SUCCESS)
+                        .setLeague(parser.parseLeague(result.getAsJsonObject()))
+                        .create());
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                sendErrorMessage(callback, MobileServiceData.JOIN_LEAGUE, errorMessage);
             }
         });
         return true;

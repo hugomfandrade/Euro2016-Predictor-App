@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
 
+import org.hugoandrade.euro2016.predictor.admin.data.League;
 import org.hugoandrade.euro2016.predictor.admin.data.LoginData;
 import org.hugoandrade.euro2016.predictor.admin.data.Country;
 import org.hugoandrade.euro2016.predictor.admin.data.Match;
@@ -109,6 +110,16 @@ public class MobileClientDataJsonParser {
                 getJsonPrimitive(jsonObject, Match.Entry.Cols.STAGE, null),
                 getJsonPrimitive(jsonObject, Match.Entry.Cols.STADIUM, null),
                 ISO8601.toDate(getJsonPrimitive(jsonObject, Match.Entry.Cols.DATE_AND_TIME, null))
+        );
+    }
+
+    public League parseLeague(JsonObject jsonObject) {
+
+        return new League(
+                getJsonPrimitive(jsonObject, League.Entry.Cols.ID, null),
+                getJsonPrimitive(jsonObject, League.Entry.Cols.NAME, null),
+                getJsonPrimitive(jsonObject, League.Entry.Cols.ADMIN_ID, null),
+                getJsonPrimitive(jsonObject, League.Entry.Cols.CODE, null)
         );
     }
 

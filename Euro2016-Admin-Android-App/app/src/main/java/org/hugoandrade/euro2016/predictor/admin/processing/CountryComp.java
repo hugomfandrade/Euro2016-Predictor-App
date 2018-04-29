@@ -175,10 +175,10 @@ public class CountryComp implements Comparable<CountryComp> {
             if (!MatchUtils.isMatchPlayed(match))
                 continue;
 
-
             if (match.getHomeTeamID().equals(mCountry.getID())) {
-                if (countryIDList.contains(match.getAwayTeamID()))
+                if (!countryIDList.contains(match.getAwayTeamID()))
                     continue;
+
                 mMatchesPlayed++;
                 mGoalsFor += match.getHomeTeamGoals();
                 mGoalsAgainst += match.getAwayTeamGoals();
@@ -194,8 +194,9 @@ public class CountryComp implements Comparable<CountryComp> {
                 }
 
             } else if (match.getAwayTeamID().equals(mCountry.getID())) {
-                if (countryIDList.contains(match.getHomeTeamID()))
+                if (!countryIDList.contains(match.getHomeTeamID()))
                     continue;
+
                 mMatchesPlayed++;
                 mGoalsFor += match.getAwayTeamGoals();
                 mGoalsAgainst += match.getHomeTeamGoals();
