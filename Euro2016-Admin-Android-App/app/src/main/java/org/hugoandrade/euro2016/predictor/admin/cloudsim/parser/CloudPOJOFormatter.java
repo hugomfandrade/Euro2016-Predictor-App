@@ -159,8 +159,12 @@ public class CloudPOJOFormatter {
 
     public WaitingLeagueUser parseWaitingLeagueUser(ContentValues values) {
         return new WaitingLeagueUser(
-            getColumnValue(values, "_" + WaitingLeagueUser.Entry.Cols.USER_ID, null),
+            getColumnValue(values, WaitingLeagueUser.Entry.Cols.USER_ID, null),
             getColumnValue(values, WaitingLeagueUser.Entry.Cols.LEAGUE_CODE, null));
+    }
+
+    public String parse(ContentValues values, String columnName) {
+        return getColumnValue(values, columnName, null);
     }
 
     private int getColumnValue(Cursor cursor, String columnName, int defaultValue) {

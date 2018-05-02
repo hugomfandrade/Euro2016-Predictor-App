@@ -1,6 +1,7 @@
 package org.hugoandrade.euro2016.predictor.view.fragment;
 
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -14,9 +15,13 @@ import android.widget.TextView;
 import org.hugoandrade.euro2016.predictor.FragComm;
 import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.R;
+import org.hugoandrade.euro2016.predictor.common.ServiceManager;
+import org.hugoandrade.euro2016.predictor.common.ServiceManagerOps;
 import org.hugoandrade.euro2016.predictor.data.raw.Country;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
+import org.hugoandrade.euro2016.predictor.model.IMobileClientService;
+import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
 import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils;
 import org.hugoandrade.euro2016.predictor.view.CountryDetailsActivity;
 import org.hugoandrade.euro2016.predictor.view.listadapter.PredictionListAdapter;
@@ -26,7 +31,7 @@ import java.util.List;
 
 public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityOps>
 
-        implements FragComm.ProvidedPredictionsFragmentOps {
+        implements ServiceManagerOps {
 
     private List<String> mPredictionFilter;
     private int currentFilter = 0;
@@ -35,12 +40,18 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
     private RecyclerView rvPredictions;
     private PredictionListAdapter mPredictionsAdapter;
 
+    private ServiceManager mServiceManager;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
         mPredictionFilter = buildPredictionFilter();
+
+        if (getParentActivity().getServiceManager() != null) {
+            mServiceManager = getParentActivity().getServiceManager();
+            mServiceManager.subscribeServiceCallback(mServiceCallback);
+        }
 
         GlobalData.getInstance().addOnMatchesChangedListener(mOnMatchesChangedListener);
         GlobalData.getInstance().addOnPredictionsChangedListener(mOnPredictionsChangedListener);
@@ -80,17 +91,14 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
 
             @Override
             public void onPredictionSet(Prediction prediction) {
-                getParentActivity().putPrediction(prediction);
+                putPrediction(prediction);
 
             }
 
             @Override
             public void onCountryClicked(Country country) {
 
-                startActivity(CountryDetailsActivity.makeIntent(getActivity(),
-                        GlobalData.getInstance().getCountry(country),
-                        GlobalData.getInstance().getMatchList(country),
-                        GlobalData.getInstance().getCountryList(country)));
+                startActivity(CountryDetailsActivity.makeIntent(getActivity(), country));
 
             }
         });
@@ -99,13 +107,48 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
         rvPredictions.scrollToPosition(getStartingItemPosition());
         ((SimpleItemAnimator) rvPredictions.getItemAnimator()).setSupportsChangeAnimations(false);
 
-
         setupFilter();
+    }
+
+    private void putPrediction(Prediction prediction) {
+
+        if (mServiceManager == null) {
+            onPredictionUpdated(false, "No Network Connection", prediction);
+        }
+
+        IMobileClientService service = mServiceManager.getService();
+
+        if (service == null) {
+            onPredictionUpdated(false, "Not bound to the service", prediction);
+            return;
+        }
+
+        try {
+            service.putPrediction(prediction);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            onPredictionUpdated(false, "Error sending message", prediction);
+        }
+    }
+
+    private void onPredictionUpdated(boolean operationResult, String message, Prediction prediction) {
+        if (operationResult) {
+            updatePrediction(prediction);
+        } else {
+
+            updateFailedPrediction(prediction);
+
+            getParentActivity().showSnackBar(message);
+        }
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+
+        if (mServiceManager != null) {
+            mServiceManager.unsubscribeServiceCallback(mServiceCallback);
+        }
 
         GlobalData.getInstance().removeOnMatchesChangedListener(mOnMatchesChangedListener);
         GlobalData.getInstance().removeOnPredictionsChangedListener(mOnPredictionsChangedListener);
@@ -210,7 +253,6 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
     /**
      * Prediction updated in cloud. Update the old prediction.
      */
-    @Override
     public void updatePrediction(Prediction prediction) {
         /*boolean isUpdated = false;
         for (int i = 0; i < mPredictionList.size(); i++)
@@ -229,20 +271,34 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
     /**
      * Failed to update prediction. Update the adapter accordingly.
      */
-    @Override
     public void updateFailedPrediction(Prediction prediction) {
         if (mPredictionsAdapter != null)
             mPredictionsAdapter.updateFailedPrediction(prediction);
     }
 
-    /**
-     * Re-set the adapter.
-     */
     @Override
-    public void reportNewServerTime() {
-        if (mPredictionsAdapter != null)
-            mPredictionsAdapter.reportNewServerTime(GlobalData.getInstance().getServerTime());
+    public void notifyServiceIsBound() {
+        if (getParentActivity() != null) {
+            mServiceManager = getParentActivity().getServiceManager();
+            mServiceManager.subscribeServiceCallback(mServiceCallback);
+        }
     }
+
+    private ServiceManager.MobileServiceCallback mServiceCallback = new ServiceManager.MobileServiceCallback() {
+        @Override
+        public void sendResults(MobileClientData data) {
+            int operationType = data.getOperationType();
+            boolean isOperationSuccessful
+                    = data.getOperationResult() == MobileClientData.REQUEST_RESULT_SUCCESS;
+
+            if (operationType == MobileClientData.OperationType.PUT_PREDICTION.ordinal()) {
+                onPredictionUpdated(
+                        isOperationSuccessful,
+                        data.getErrorMessage(),
+                        data.getPrediction());
+            }
+        }
+    };
 
     /**
      * Get scrolling starting position, ie. the next match after
@@ -265,4 +321,5 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
         }
         return selection;
     }
+
 }

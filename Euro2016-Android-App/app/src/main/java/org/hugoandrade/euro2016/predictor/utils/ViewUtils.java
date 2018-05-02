@@ -157,6 +157,28 @@ public final class ViewUtils {
     }
 
     /**
+     * Hides the soft keyboard for the provided view.
+     *
+     * @param view The target view for soft keyboard input.
+     */
+    public static void showSoftKeyboard(View view) {
+        InputMethodManager imm =
+                (InputMethodManager) view.getContext().getSystemService(
+                        Activity.INPUT_METHOD_SERVICE);
+        imm.showSoftInput(view, 0);
+    }
+
+    /**
+     * Hides the soft keyboard for the provided view and clear focus.
+     *
+     * @param view The target view for soft keyboard input.
+     */
+    public static void showSoftKeyboardAndRequestFocus(View view) {
+        view.requestFocus();
+        showSoftKeyboard(view);
+    }
+
+    /**
      * Finds all views with a specific tag.
      *
      * @param root The root view whose descendants are to be searched.

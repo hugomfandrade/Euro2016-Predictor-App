@@ -60,10 +60,7 @@ public class SignUpPresenter extends MobileClientPresenterBase<MVP.RequiredSignU
         }
 
         try {
-            boolean isSigningUp = getMobileClientService().signUp(loginData);
-            if (!isSigningUp) {
-                signUpOperationResult(false, "No Network Connection", null);
-            }
+            getMobileClientService().signUp(loginData);
         } catch (RemoteException e) {
             e.printStackTrace();
             signUpOperationResult(false, "Error sending message", null);

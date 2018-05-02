@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import org.hugoandrade.euro2016.predictor.data.raw.Country;
+import org.hugoandrade.euro2016.predictor.data.raw.League;
 import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
@@ -14,6 +15,7 @@ import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.utils.ISO8601;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Parses the Json data returned from the Mobile Service Client API
@@ -171,6 +173,36 @@ public class MobileClientDataJsonParser {
                 getJsonPrimitive(jsonObject, Match.Entry.Cols.STAGE, null),
                 getJsonPrimitive(jsonObject, Match.Entry.Cols.STADIUM, null),
                 ISO8601.toDate(getJsonPrimitive(jsonObject, Match.Entry.Cols.DATE_AND_TIME, null))
+        );
+    }
+
+    public ArrayList<League> parseLeagueList(JsonElement jsonElement) {
+
+        ArrayList<League> leagueList = new ArrayList<>();
+
+        if (!jsonElement.isJsonArray())
+            return leagueList;
+
+
+        for (JsonElement item : jsonElement.getAsJsonArray()) {
+            try {
+                leagueList.add(parseLeague(item.getAsJsonObject()));
+            } catch (ClassCastException e) {
+                Log.e(TAG, "Exception caught when parsing League" +
+                        " data from azure table: " + e.getMessage());
+            }
+        }
+        return leagueList;
+    }
+
+    public League parseLeague(JsonObject jsonObject) {
+
+        return new League(
+                getJsonPrimitive(jsonObject, League.Entry.Cols.ID, null),
+                getJsonPrimitive(jsonObject, League.Entry.Cols.NAME, null),
+                getJsonPrimitive(jsonObject, League.Entry.Cols.ADMIN_ID, null),
+                getJsonPrimitive(jsonObject, League.Entry.Cols.CODE, null),
+                getJsonPrimitive(jsonObject, League.Entry.Cols.NUMBER_OF_MEMBERS, 0)
         );
     }
 

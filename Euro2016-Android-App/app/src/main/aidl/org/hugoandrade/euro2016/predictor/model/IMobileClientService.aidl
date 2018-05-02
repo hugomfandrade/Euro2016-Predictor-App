@@ -6,6 +6,8 @@ import org.hugoandrade.euro2016.predictor.model.IMobileClientServiceCallback;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
+import org.hugoandrade.euro2016.predictor.data.raw.League;
+import org.hugoandrade.euro2016.predictor.data.raw.WaitingLeagueUser;
 
 interface IMobileClientService {
 
@@ -13,19 +15,29 @@ interface IMobileClientService {
 
     void unregisterCallback(IMobileClientServiceCallback cb);
 
-    boolean getSystemData();
+    void getSystemData();
 
-    boolean login(in LoginData loginData);
+    void login(in LoginData loginData);
 
-    boolean signUp(in LoginData loginData);
+    void signUp(in LoginData loginData);
 
-    boolean getInfo(String userID);
+    void getInfo(String userID);
 
-    boolean putPrediction(in Prediction prediction);
+    void putPrediction(in Prediction prediction);
 
-    boolean getPredictions(in User user);
+    void getPredictions(in User user);
 
-    boolean getLatestPerformanceOfUsers(in List<User> userList, int firstMatchNumber, int lastMatchNumber);
+    void getLatestPerformanceOfUsers(in List<User> userList, int firstMatchNumber, int lastMatchNumber);
 
-    boolean getPredictionsOfUsers(in List<User> userList, int matchNumber);
+    void getPredictionsOfUsers(in List<User> userList, int matchNumber);
+
+    void createLeague(in String userID, in String leagueName);
+
+    void joinLeague(in WaitingLeagueUser waitingLeagueUser);
+
+    void leaveLeague(in String userID, in String leagueID);
+
+    void deleteLeague(in String userID, in String leagueID);
+
+    void fetchMoreUsers(in String leagueID, int skip, int top);
 }

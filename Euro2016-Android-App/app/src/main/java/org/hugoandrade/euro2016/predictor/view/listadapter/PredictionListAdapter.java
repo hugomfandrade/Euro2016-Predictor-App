@@ -214,12 +214,6 @@ public class PredictionListAdapter extends RecyclerView.Adapter<PredictionListAd
             }
     }
 
-    public void reportNewServerTime(Calendar serverTime) {
-        for (int l = 0; l < mInputPredictionList.size() ; l++)
-            if (mInputPredictionList.get(l).mMatch.getDateAndTime().before(serverTime.getTime()))
-                notifyItemChanged(l);
-    }
-
     class ViewHolder extends RecyclerView.ViewHolder {
 
         TextView tvMatchNumber;

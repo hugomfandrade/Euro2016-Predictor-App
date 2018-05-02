@@ -1,50 +1,32 @@
 package org.hugoandrade.euro2016.predictor.presenter;
 
 import android.content.Context;
-import android.util.Log;
+import android.os.RemoteException;
 
 import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.MVP;
+import org.hugoandrade.euro2016.predictor.common.ServiceManager;
+import org.hugoandrade.euro2016.predictor.data.LeagueWrapper;
 import org.hugoandrade.euro2016.predictor.data.raw.Country;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
-import org.hugoandrade.euro2016.predictor.model.MainModel;
+import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
 import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils.SStage;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-public class MainPresenter extends PresenterBase<MVP.RequiredMainViewOps,
-                                                     MVP.RequiredMainPresenterOps,
-                                                     MVP.ProvidedMainModelOps,
-                                                     MainModel>
-        implements MVP.ProvidedMainPresenterOps,
-                   MVP.RequiredMainPresenterOps {
+public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainViewOps>
 
-    /**
-     * Hook method called when a new instance of MainPresenter is
-     * created. One time initialization code goes here, e.g., storing
-     * a WeakReference to the View layer and initializing the Model
-     * layer.
-     *
-     * @param view
-     *            A reference to the View layer.
-     */
-    @Override
-    public void onCreate(MVP.RequiredMainViewOps view) {
-        // Invoke the special onCreate() method in PresenterBase,
-        // passing in the MainModel class to instantiate/manage and
-        // "this" to provide MainModel with this MVP.RequiredMainModelOps
-        // instance.
-        super.onCreate(view, MainModel.class, this);
-    }
+        implements MVP.ProvidedMainPresenterOps {
+
+    private ServiceManager mServiceManager;
 
     @Override
     public void onResume() {
@@ -86,18 +68,24 @@ public class MainPresenter extends PresenterBase<MVP.RequiredMainViewOps,
      */
     @Override
     public void notifyServiceIsBound() {
+        mServiceManager = new ServiceManager(getModel().getService());
+        getView().notifyServiceIsBound();
         getView().disableUI();
 
-        getModel().getInfo(GlobalData.getInstance().user.getID());
+        getInfo(GlobalData.getInstance().user.getID());
     }
 
-    @Override
+    public void onInfoFetched(boolean isOk, String message) {
+        onInfoFetched(isOk, message, null, null, null, null, null);
+    }
+
     public void onInfoFetched(boolean isOk,
                               String message,
                               List<Country> countryList,
                               List<Match> matchList,
                               List<Prediction> predictionList,
-                              List<User> userList) {
+                              List<User> userList,
+                              List<LeagueWrapper> leagueWrapperList) {
 
         if (isOk) {
 
@@ -105,7 +93,10 @@ public class MainPresenter extends PresenterBase<MVP.RequiredMainViewOps,
             Collections.sort(userList, new Comparator<User>() {
                 @Override
                 public int compare(User lhs, User rhs) {
-                    return rhs.getScore() - lhs.getScore();
+                    int diff = rhs.getScore() - lhs.getScore();
+                    return diff != 0 ? diff :
+                            (GlobalData.getInstance().user.getID().equals(rhs.getID())? 1 :
+                                    (GlobalData.getInstance().user.getID().equals(lhs.getID())? -1 : diff));
                 }
             });
 
@@ -152,8 +143,10 @@ public class MainPresenter extends PresenterBase<MVP.RequiredMainViewOps,
 
             int from = (to < 4) ? 0 : to - 4;
 
+            GlobalData.getInstance().setLeagues(leagueWrapperList);
 
-            getModel().getLatestPerformanceOfUsers(userList, from, to);
+
+            getLatestPerformanceOfUsers(userList, from, to);
 
         } else {
             getView().reportMessage(message);
@@ -162,34 +155,10 @@ public class MainPresenter extends PresenterBase<MVP.RequiredMainViewOps,
         getView().enableUI();
     }
 
-    @Override
-    public void onPredictionUpdated(boolean operationResult, String message, Prediction prediction) {
-        if (operationResult) {
-            getView().updatePrediction(prediction);
-        } else {
-
-            getView().updateFailedPrediction(prediction);
-
-            getView().reportMessage(message);
-        }
-
-    }
-
-    @Override
-    public void onPredictionsFetched(boolean operationResult, String message, User user, List<Prediction> predictionList) {
-
-        if (operationResult) {
-
-            getView().moveToUsersPredictionActivity(user, GlobalData.getInstance().getMatchList(), predictionList);
-        } else {
-
-            getView().reportMessage(message);
-        }
-        getView().enableUI();
-    }
-
-    @Override
-    public void onLatestPerformanceFetched(boolean operationResult, String message, List<User> userList, List<Prediction> predictionList) {
+    public void onLatestPerformanceFetched(boolean operationResult,
+                                           String message,
+                                           List<User> userList,
+                                           List<Prediction> predictionList) {
 
         if (operationResult) {
 
@@ -200,8 +169,8 @@ public class MainPresenter extends PresenterBase<MVP.RequiredMainViewOps,
 
             int from = (to < 4) ? 0 : to - 4;
 
-            for (int i = from ; i <= to ; i++) {
-                GlobalData.getInstance().setPredictionsOfUsers(i, userList, predictionList);
+            for (int matchNumber = from ; matchNumber <= to ; matchNumber++) {
+                GlobalData.getInstance().setPredictionsOfUsers(matchNumber, userList, predictionList);
             }
 
             GlobalData.getInstance().setLatestPerformanceOfUsers(predictionList);
@@ -213,43 +182,9 @@ public class MainPresenter extends PresenterBase<MVP.RequiredMainViewOps,
         }
     }
 
-    /**
-     * Refresh all data by fetching the cloud database: SystemData, all Matches,
-     * all Countries, all Predictions of the app user and all Users' scores and
-     * username. Initiate by fetching SystemData when the user requests to
-     * refresh data.
-     */
     @Override
-    public void refreshAllData() {
-
-        getView().disableUI();
-
-        // Fetch system data
-        getModel().getInfo(GlobalData.getInstance().user.getID());
-    }
-
-    /**
-     * Initiate the asynchronous update of the provided Predictions when the
-     * user presses "Set Prediction" button in the SetPredictionsFragment.
-     */
-    @Override
-    public void putPrediction(Prediction prediction){
-        getModel().putPrediction(prediction);
-    }
-
-    /**
-     * Disable the View layer, initiate the asynchronous Predictions lookup
-     * of the selected user and, once all Predictions are fetched, start new
-     * activity displaying all Predictions of Matches prior to server time.
-     */
-    @Override
-    public void getPredictionsOfSelectedUser(User user) {
-
-        // Disable User input
-        getView().disableUI();
-
-        // Fetch all his/her predictions that had been closed.
-        getModel().getPredictions(user);
+    public ServiceManager getServiceManager() {
+        return mServiceManager;
     }
 
 
@@ -282,6 +217,60 @@ public class MainPresenter extends PresenterBase<MVP.RequiredMainViewOps,
             });
 
         return matchesMap;
+    }
+
+    public void getInfo(String userID) {
+        if (getMobileClientService() == null) {
+            onInfoFetched(false, "Not bound to the service");
+            return;
+        }
+
+        try {
+            getMobileClientService().getInfo(userID);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            onInfoFetched(false, "Error sending message");
+        }
+    }
+
+    public void getLatestPerformanceOfUsers(List<User> userList, int firstMatchNumber, int lastMatchNumber) {
+        if (getMobileClientService() == null) {
+            onLatestPerformanceFetched(false, "Not bound to the service", null, null);
+            return;
+        }
+
+        try {
+            getMobileClientService().getLatestPerformanceOfUsers(userList, firstMatchNumber, lastMatchNumber);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            onLatestPerformanceFetched(false, "Error sending message", null, null);
+        }
+    }
+
+    @Override
+    public void sendResults(MobileClientData data) {
+        mServiceManager.sendResults(data);
+        int operationType = data.getOperationType();
+        boolean isOperationSuccessful
+                = data.getOperationResult() == MobileClientData.REQUEST_RESULT_SUCCESS;
+
+        if (operationType == MobileClientData.OperationType.GET_INFO.ordinal()) {
+            onInfoFetched(
+                    isOperationSuccessful,
+                    data.getErrorMessage(),
+                    data.getCountryList(),
+                    data.getMatchList(),
+                    data.getPredictionList(),
+                    data.getUserList(),
+                    data.getLeagueWrapperList());
+        }
+        else if (operationType == MobileClientData.OperationType.GET_LATEST_PERFORMANCE.ordinal()) {
+            onLatestPerformanceFetched(
+                    isOperationSuccessful,
+                    data.getErrorMessage(),
+                    data.getUserList(),
+                    data.getPredictionList());
+        }
     }
 
     /**

@@ -1,6 +1,7 @@
 package org.hugoandrade.euro2016.predictor.admin.cloudsim;
 
 import android.accounts.Account;
+import android.app.Activity;
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -11,6 +12,8 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
+
+import com.google.common.collect.Sets;
 
 import org.hugoandrade.euro2016.predictor.admin.cloudsim.parser.CloudContentValuesFormatter;
 import org.hugoandrade.euro2016.predictor.admin.cloudsim.parser.CloudPOJOFormatter;
@@ -27,6 +30,7 @@ import org.hugoandrade.euro2016.predictor.admin.utils.ISO8601;
 import org.hugoandrade.euro2016.predictor.admin.utils.InitConfigUtils;
 
 import java.util.Calendar;
+import java.util.List;
 
 public class CloudDatabaseSimProvider extends ContentProvider {
 
@@ -72,6 +76,8 @@ public class CloudDatabaseSimProvider extends ContentProvider {
         matcher.addURI(AUTHORITY, League.Entry.PATH_FOR_ID, League.Entry.PATH_FOR_ID_TOKEN);
         matcher.addURI(AUTHORITY, League.Entry.PATH_JOIN_LEAGUE, League.Entry.PATH_JOIN_LEAGUE_TOKEN);
         matcher.addURI(AUTHORITY, League.Entry.PATH_CREATE_LEAGUE, League.Entry.PATH_CREATE_LEAGUE_TOKEN);
+        matcher.addURI(AUTHORITY, League.Entry.PATH_DELETE_LEAGUE, League.Entry.PATH_DELETE_LEAGUE_TOKEN);
+        matcher.addURI(AUTHORITY, League.Entry.PATH_LEAVE_LEAGUE, League.Entry.PATH_LEAVE_LEAGUE_TOKEN);
         matcher.addURI(AUTHORITY, LeagueUser.Entry.PATH, LeagueUser.Entry.PATH_TOKEN);
         matcher.addURI(AUTHORITY, LeagueUser.Entry.PATH_FOR_ID, LeagueUser.Entry.PATH_FOR_ID_TOKEN);
 
@@ -96,7 +102,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
      * a Cursor object.
      */
     @Override
-    synchronized public Cursor query(@NonNull final Uri uri, final String[] projection,
+    synchronized public Cursor query(@NonNull final Uri uri, String[] projection,
                                      final String selection, final String[] selectionArgs,
                                      final String sortOrder) {
 
@@ -163,6 +169,13 @@ public class CloudDatabaseSimProvider extends ContentProvider {
 
                 tableName = User.Entry.TABLE_NAME;
 
+                tableName = "Account " +
+                        " LEFT JOIN "
+                        + "(SELECT _id, (SELECT COUNT()+1 FROM ("
+                        + "SELECT DISTINCT Score FROM Account AS t WHERE Score >= Account.Score)"
+                        + ") AS Rank FROM Account) AS t"
+                        + " ON Account._id = t._id";
+
                 break;
             }
 
@@ -174,6 +187,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
                     modifiedSelection += " AND " + idSelection;
 
                 tableName = User.Entry.TABLE_NAME;
+
 
                 break;
             }
@@ -202,33 +216,38 @@ public class CloudDatabaseSimProvider extends ContentProvider {
 
             case League.Entry.PATH_TOKEN: {
 
-                /*return mDbHelper.getReadableDatabase().rawQuery(
-                        "SELECT l.* " +
-                        "FROM League l, LeagueUser le " +
-                        "WHERE " + "l._id = le.LeagueID " +
-                        "AND le.UserID = " + selectionArgs[0],
-                        null
-                );/**/
-                /*Log.e(TAG, "League.Entry.PATH_TOKEN");
-                Log.e(TAG, modifiedSelection);
-                for (String s : selectionArgs)
-                    Log.e(TAG, s);/**/
-
                 if (sortOrder == null || sortOrder.isEmpty())
                     updatedSortOrder = "_" + League.Entry.Cols.ID + " ASC";
 
-                //tableName = League.Entry.TABLE_NAME;
-                tableName = "League INNER JOIN LeagueUser ON League._id = LeagueUser.LeagueID";
+                tableName = "League" +
+                        " INNER JOIN (SELECT LeagueID, COUNT(*) AS NumberOfMembers FROM LeagueUser GROUP BY LeagueID) AS t" +
+                        " ON League._id = t.LeagueID" +
+                        " INNER JOIN LeagueUser" +
+                        " ON League._id = LeagueUser.LeagueID";
 
                 break;/**/
             }
 
             case League.Entry.PATH_FOR_ID_TOKEN: {
-                Log.e(TAG, "League.Entry.PATH_FOR_ID_TOKEN");
 
-                String[] leagueIDs = mSimHelper.getLeagues(
+                String idSelection = "_" + LeagueUser.Entry.Cols.ID + " = " + uri.getLastPathSegment();
+                if (selection == null)
+                    modifiedSelection = idSelection;
+                else
+                    modifiedSelection += " AND " + idSelection;
+
+                tableName = "League" +
+                        " INNER JOIN (SELECT LeagueID, COUNT(*) AS NumberOfMembers FROM LeagueUser GROUP BY LeagueID) AS t" +
+                        " ON League._id = t.LeagueID" +
+                        " INNER JOIN (SELECT LeagueID FROM LeagueUser) AS u" +
+                        " ON League._id = u.LeagueID";
+
+                if (sortOrder == null || sortOrder.isEmpty())
+                    updatedSortOrder = "_" + League.Entry.Cols.ID + " ASC";
+
+                /*String[] leagueIDs = mSimHelper.getLeagues(
                         mDbHelper.getReadableDatabase(),
-                        "_" + LeagueUser.Entry.Cols.USER_ID + " = " + uri.getLastPathSegment());
+                        LeagueUser.Entry.Cols.USER_ID + " = " + uri.getLastPathSegment());
 
                 if (leagueIDs.length == 0) {
                     if (modifiedSelection == null)
@@ -249,7 +268,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
                 SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
                 builder.setTables(League.Entry.TABLE_NAME);
 
-                tableName = League.Entry.TABLE_NAME;
+                tableName = League.Entry.TABLE_NAME;/**/
 
                 break;
             }
@@ -268,15 +287,83 @@ public class CloudDatabaseSimProvider extends ContentProvider {
                 if (sortOrder == null || sortOrder.isEmpty())
                     updatedSortOrder = "_" + League.Entry.Cols.ID + " ASC";
 
-                tableName = "Account INNER JOIN LeagueUser ON LeagueUser.UserID = Account._id";
+                /* NOT WORKING
+
+                tableName = "Account" +
+                        " INNER JOIN LeagueUser " +
+                        " ON LeagueUser.UserID = Account._id" +
+                        " INNER JOIN " +
+                        " (SELECT _id, DENSE_RANK() OVER (ORDER BY Account.Score DESC) AS Rank FROM Account) AS t" +
+                        " ON Account._id = t._id";/**/
+
+                /*/if (projection == null) {
+                    projection = new String[] {
+                            "_" + User.Entry.Cols.ID,
+                            User.Entry.Cols.EMAIL,
+                            User.Entry.Cols.SCORE,
+                            LeagueUser.Entry.Cols.LEAGUE_ID,
+                            "COUNT(DISTINCT a.Score) AS Rank"
+                    };
+                //}/**/
+
+                tableName = "(Account" +
+                        " INNER JOIN LeagueUser " +
+                        " ON LeagueUser.UserID = Account._id" +
+                        " INNER JOIN Account AS a " +
+                        " ON Account.Score <= a.Score)" + " GROUP BY a._id";/**/
+
+                SQLiteQueryBuilder subQuery = new SQLiteQueryBuilder();
+                subQuery.setTables("Account" +
+                        " INNER JOIN LeagueUser " +
+                        " ON LeagueUser.UserID = Account._id");
+
+                String s = subQuery.buildUnionSubQuery(
+                        "_id",
+                        new String[]{"COUNT(DISTINCT a.Score) AS Rank", "_id"},
+                        Sets.newHashSet("_id"), 1, null,
+                        modifiedSelection,
+                        null, null);
+
+                String compileSelection = modifiedSelection;
+                int i = 0;
+                while (compileSelection.contains("?")) {
+                    compileSelection = compileSelection.replace("?", "'" + selectionArgs[i] + "'");
+                    i++;
+                }
+
+                Log.e(TAG, "s::s:: " + compileSelection);
+                String selectQuery = "("
+                        + " SELECT COUNT(*) "
+                        + " FROM Account AS i"
+                        + " WHERE i.Score >= o.Score"
+                        + " ) AS Rank";
+                Log.e(TAG, "s::s:: " + selectQuery);
+
+                // ORIGINAL WORKING
+
+                tableName = "Account" +
+                        " INNER JOIN LeagueUser " +
+                        " ON LeagueUser.UserID = Account._id" +
+                        " INNER JOIN " +
+                        " (SELECT _id, (SELECT COUNT()+1 FROM (" +
+                        " SELECT DISTINCT Score FROM " +
+                        "  (SELECT * FROM Account LEFT JOIN LeagueUser ON LeagueUser.UserID = Account._id WHERE " + compileSelection + ")" +
+                        " WHERE Score > Account.Score)" +
+                        //" SELECT DISTINCT Score FROM Account AS t WHERE Score > Account.Score)" +
+                        " ) AS Rank FROM Account) AS t" +
+                        " ON Account._id = t._id"; /**/
                 //tableName = LeagueUser.Entry.TABLE_NAME;
 
+                /*"(SELECT _id, (SELECT COUNT()+1 FROM (" +
+                        "SELECT DISTINCT Score FROM Account AS t WHERE Score < Account.Score)" +
+                        ") AS Rank"+ "FROM Account) AS t";/**/
                 break;/**/
             }
 
             case LeagueUser.Entry.PATH_FOR_ID_TOKEN: {
 
                 String idSelection = "_" + LeagueUser.Entry.Cols.ID + " = " + uri.getLastPathSegment();
+
                 if (selection == null)
                     modifiedSelection = idSelection;
                 else
@@ -295,15 +382,13 @@ public class CloudDatabaseSimProvider extends ContentProvider {
         String limit = uri.getQueryParameter(CloudDatabaseSimVariables.QUERY_PARAMETER_LIMIT);
         String offset = uri.getQueryParameter(CloudDatabaseSimVariables.QUERY_PARAMETER_OFFSET);
         String l = null;
-        if (limit != null) {
-            l = limit;
-            //updatedSortOrder = updatedSortOrder + " LIMIT " + limit;
-
-            if (offset != null) {
-                l = l + "," + offset;
-                //updatedSortOrder = updatedSortOrder + " OFFSET " + offset;
-            }
+        if (limit != null && offset != null) {
+            l = offset + "," + limit;
         }
+        else if (limit != null) {
+            l = limit;
+        }
+        Log.e(TAG, "limit::" + l);
         /*if (offset != null) {
             l = offset;
             updatedSortOrder = updatedSortOrder + " OFFSET " + offset;
@@ -401,14 +486,84 @@ public class CloudDatabaseSimProvider extends ContentProvider {
 
         // switch on the results of 'mUriMatcher' matching the Uri passed in,
         switch (mUriMatcher.match(uri)) {
+            case League.Entry.PATH_DELETE_LEAGUE_TOKEN: {
+                String leagueID = cvParser.parse(values, "_" + League.Entry.Cols.ID);
+                String userID = cvParser.parse(values, League.Entry.Cols.USER_ID);
+
+                Log.e(TAG, "delete league cv::" + leagueID + " , " + userID);
+
+                League dbLeague = mSimHelper.getLeagueByID(mDbHelper, leagueID);
+
+
+                if (dbLeague == null)
+                    throw new IllegalArgumentException("League does not exist.");
+
+                if (!userID.equals(dbLeague.getAdminID()))
+                    throw new IllegalArgumentException("Cannot delete League: not admin.");
+
+
+                String idLeagueWhere = "_" + League.Entry.Cols.ID + " = " + leagueID;
+
+                // Delete
+                long numberOfLeagueDeleted = delete(League.Entry.TABLE_NAME, idLeagueWhere, null);
+                Log.e(TAG, "number of leagues deleted::" + numberOfLeagueDeleted);
+
+                if (numberOfLeagueDeleted == 0) {
+                    throw new IllegalArgumentException("Failed to delete league");
+                }
+                else {
+
+                    String idLeagueUserWhere = LeagueUser.Entry.Cols.LEAGUE_ID + " = " + leagueID;
+
+                    // Delete
+                    long numberOfLeagueUserDeleted = delete(LeagueUser.Entry.TABLE_NAME, idLeagueUserWhere, null);
+
+                    Log.e(TAG, "number of league users deleted::" + numberOfLeagueUserDeleted);
+
+                    return null;
+                }
+            }
+            case League.Entry.PATH_LEAVE_LEAGUE_TOKEN: {
+                String leagueID = cvParser.parse(values, "_" + League.Entry.Cols.ID);
+                String userID = cvParser.parse(values, League.Entry.Cols.USER_ID);
+
+                League dbLeague = mSimHelper.getLeagueByID(mDbHelper, leagueID);
+
+
+                if (dbLeague == null)
+                    throw new IllegalArgumentException("League does not exist.");
+
+                if (userID.equals(dbLeague.getAdminID()))
+                    throw new IllegalArgumentException("Cannot leave this League: you are admin.");
+
+
+                String idLeagueUserWhere = LeagueUser.Entry.Cols.USER_ID + " = " + userID
+                        + " AND "
+                        + LeagueUser.Entry.Cols.LEAGUE_ID + " = " + leagueID;
+
+                // Delete
+                long numberOfLeagueUsersDeleted = delete(LeagueUser.Entry.TABLE_NAME, idLeagueUserWhere, null);
+                Log.e(TAG, "number of league users deleted::" + numberOfLeagueUsersDeleted);
+
+                if (numberOfLeagueUsersDeleted == 0) {
+                    throw new IllegalArgumentException("Failed to delete league user");
+                }
+                else {
+                    return null;
+                }
+            }
             case League.Entry.PATH_CREATE_LEAGUE_TOKEN: {
                 League league = cvParser.parseLeague(values);
 
                 League dbLeague = mSimHelper.getLeague(mDbHelper, league.getName());
 
-
                 if (dbLeague != null)
                     throw new IllegalArgumentException("League with name \'" + dbLeague.getName() + "\' already exists.");
+
+                List<League> dbLeagueList = mSimHelper.getLeaguesOfUser(mDbHelper, league.getAdminID());
+
+                if (dbLeagueList.size() >= 10)
+                    throw new IllegalArgumentException("You are a member in 10 different leagues.");
 
                 // Add new user
                 League newLeague = new League(null, league.getName(), league.getAdminID(), mSimHelper.generateUniqueLeagueCode(mDbHelper));
@@ -439,14 +594,25 @@ public class CloudDatabaseSimProvider extends ContentProvider {
 
                 League dbLeague = mSimHelper.getLeagueByCode(mDbHelper, waitingLeagueUser.getLeagueCode());
 
-
                 if (dbLeague == null)
                     throw new IllegalArgumentException("League with code \'" + waitingLeagueUser.getLeagueCode() + "\' does not exist.");
+
+                LeagueUser dbLeagueUser = mSimHelper.getLeagueUser(mDbHelper, dbLeague.getID(), waitingLeagueUser.getUserID());
+
+                if (dbLeagueUser != null)
+                    throw new IllegalArgumentException("User is already member of this League");
+
+                List<League> dbLeagueList = mSimHelper.getLeaguesOfUser(mDbHelper, waitingLeagueUser.getUserID());
+
+                if (dbLeagueList.size() >= 10)
+                    throw new IllegalArgumentException("You are a member in 10 different leagues.");
 
                 // Add new user
                 LeagueUser newLeagueUser = new LeagueUser(null, dbLeague.getID(), waitingLeagueUser.getUserID());
                 ContentValues cvLeagueUser = cvFormatter.getAsContentValues(newLeagueUser);
                 cvLeagueUser.remove("_" + LeagueUser.Entry.Cols.ID);
+
+                android.util.Log.e(TAG, "joinLeague::" + cvLeagueUser.toString());
 
                 // Insert
                 long rowID = insert(LeagueUser.Entry.TABLE_NAME, null, cvLeagueUser);

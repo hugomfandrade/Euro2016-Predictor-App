@@ -17,7 +17,9 @@ import org.hugoandrade.euro2016.predictor.admin.data.User;
 import org.hugoandrade.euro2016.predictor.admin.utils.MatchUtils;
 import org.hugoandrade.euro2016.predictor.admin.utils.PredictionUtils;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 class CloudDatabaseSimHelper {
 
@@ -127,6 +129,38 @@ class CloudDatabaseSimHelper {
         return systemData.getSystemDate();
     }
 
+    public List<League> getLeaguesOfUser(DatabaseHelper dbHelper, String userID) {
+        List<League> leagueList = new ArrayList<>();
+
+        String tableName = "League" +
+                " INNER JOIN (SELECT LeagueID, COUNT(*) AS NumberOfMembers FROM LeagueUser GROUP BY LeagueID) AS t" +
+                " ON League._id = t.LeagueID" +
+                " INNER JOIN LeagueUser" +
+                " ON League._id = LeagueUser.LeagueID";
+
+        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+        qb.setTables(tableName);
+
+        Cursor c = qb.query(dbHelper.getReadableDatabase(),
+                null,
+                LeagueUser.Entry.Cols.USER_ID + " = \"" + userID + "\"",
+                null,
+                null,
+                null,
+                "_" + LeagueUser.Entry.Cols.ID);
+
+        if (c.getCount() > 0 && c.moveToFirst()) {
+            while (c.moveToNext()) {
+                leagueList.add(cvParser.parseLeague(c));
+            }
+            c.close();
+            return leagueList;
+        }
+
+        c.close();
+        return leagueList;
+    }
+
     League getLeague(DatabaseHelper dbHelper, String name) {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         qb.setTables(League.Entry.TABLE_NAME);
@@ -134,6 +168,52 @@ class CloudDatabaseSimHelper {
         Cursor c = qb.query(dbHelper.getReadableDatabase(),
                 null,
                 League.Entry.Cols.NAME + " = \"" + name + "\"",
+                null,
+                null,
+                null,
+                "_" + League.Entry.Cols.ID);
+
+        if (c.getCount() > 0 && c.moveToFirst()) {
+            League league = cvParser.parseLeague(c);
+            c.close();
+            return league;
+        }
+
+        c.close();
+        return null;
+    }
+
+    LeagueUser getLeagueUser(DatabaseHelper dbHelper, String leagueID, String userID) {
+        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+        qb.setTables(LeagueUser.Entry.TABLE_NAME);
+
+        Cursor c = qb.query(dbHelper.getReadableDatabase(),
+                null,
+                LeagueUser.Entry.Cols.LEAGUE_ID + " = \"" + leagueID + "\""
+                        + " AND "
+                        + LeagueUser.Entry.Cols.USER_ID + " = \"" + userID + "\"",
+                null,
+                null,
+                null,
+                "_" + League.Entry.Cols.ID);
+
+        if (c.getCount() > 0 && c.moveToFirst()) {
+            LeagueUser leagueUser = cvParser.parseLeagueUser(c);
+            c.close();
+            return leagueUser;
+        }
+
+        c.close();
+        return null;
+    }
+
+    League getLeagueByID(DatabaseHelper dbHelper, String id) {
+        SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
+        qb.setTables(League.Entry.TABLE_NAME);
+
+        Cursor c = qb.query(dbHelper.getReadableDatabase(),
+                null,
+                "_" + League.Entry.Cols.ID + " = \"" + id + "\"",
                 null,
                 null,
                 null,
@@ -366,7 +446,7 @@ class CloudDatabaseSimHelper {
     }
 
     private static String generateCode(int length) {
-        String _sym = "'abcdefghijklmnopqrstuvwxyz1234567890";
+        String _sym = "abcdefghijklmnopqrstuvwxyz1234567890";
         StringBuilder str = new StringBuilder();
 
         for(int i = 0; i < length; i++) {

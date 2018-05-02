@@ -15,6 +15,7 @@ import com.google.gson.JsonObject;
 
 import org.hugoandrade.euro2016.predictor.cloudsim.parser.CloudContentValuesFormatter;
 import org.hugoandrade.euro2016.predictor.cloudsim.parser.CloudJsonObjectFormatter;
+import org.hugoandrade.euro2016.predictor.data.raw.League;
 import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
 import org.hugoandrade.euro2016.predictor.data.raw.SystemData;
 import org.hugoandrade.euro2016.predictor.network.HttpConstants;
@@ -38,6 +39,8 @@ class CloudDatabaseSimImpl {
     private List<FilteringOperation> filteringOperationList;
     private String[] selectFields;
     private Pair<String, SortOrder> sortField;
+    private int skip = -1;
+    private int top = -1;
 
     CloudDatabaseSimImpl(String table, ContentProviderClient contentProviderClient) {
         this.provider = contentProviderClient;
@@ -59,6 +62,10 @@ class CloudDatabaseSimImpl {
 
         if (isApi) {
             task.api(apiType, apiJsonObject);
+        }
+        else {
+            task.skip(skip);
+            task.top(top);
         }
         task.execute(filteringOperationList, selectFields, sortField);
         return task;
@@ -144,6 +151,16 @@ class CloudDatabaseSimImpl {
         }
     }
 
+    public CloudDatabaseSimImpl skip(int skip) {
+        this.skip = skip;
+        return this;
+    }
+
+    public CloudDatabaseSimImpl top(int top) {
+        this.top = top;
+        return this;
+    }
+
     public CloudDatabaseSimImpl orderBy(String field, SortOrder sortOrder) {
         sortField = new Pair<>(field, sortOrder);
         return this;
@@ -181,6 +198,8 @@ class CloudDatabaseSimImpl {
         private int taskType;
         private Callback<V> mFuture;
         private Pair<String, SortOrder> sortField;
+        private int skip = -1;
+        private int top = -1;
 
         ListenableCallback(ContentProviderClient contentProviderClient, String tableName) {
             this(contentProviderClient, tableName, null, TASK_GET);
@@ -208,6 +227,7 @@ class CloudDatabaseSimImpl {
 
         @Override
         protected Void doInBackground(Void... params) {
+
             Uri uri = CloudDatabaseSimAdapter.BASE_URI.buildUpon()
                     .appendPath(tableName)
                     .build();
@@ -235,6 +255,14 @@ class CloudDatabaseSimImpl {
             return null;
         }
 
+        public void skip(int skip) {
+            this.skip = skip;
+        }
+
+        public void top(int top) {
+            this.top = top;
+        }
+
         void execute(List<FilteringOperation> filteringOperationList, String[] selectFields, Pair<String, SortOrder> sortField) {
             this.filteringOperationList = filteringOperationList;
             this.selectFields = selectFields;
@@ -255,7 +283,7 @@ class CloudDatabaseSimImpl {
             try {
                 if (mFuture != null) {
                     if (jsonArray.size() == 0)
-                        mFuture.onSuccess(null);
+                        mFuture.onSuccess((V) new JsonObject());
                     else
                         mFuture.onSuccess((V) adjustIfItIsSystemData(jsonArray.get(0)));
                 }
@@ -266,6 +294,14 @@ class CloudDatabaseSimImpl {
 
         private void postApiOperation(Uri baseUri) throws RemoteException {
             Uri uri = provider.insert(baseUri, jsonObject == null ? null: cvFormatter.getAsContentValues(jsonObject));
+
+            if (tableName.contains(League.Entry.API_NAME_DELETE_LEAGUE) ||
+                    tableName.contains(League.Entry.API_NAME_LEAVE_LEAGUE)) {
+                if (mFuture != null)
+                    mFuture.onSuccess((V) new JsonObject());
+
+                return;
+            }
 
             if (uri == null)
                 throw new IllegalArgumentException("Operation failed");
@@ -341,7 +377,7 @@ class CloudDatabaseSimImpl {
             if (c == 0)
                 throw new IllegalArgumentException("No item deleted");
             else if (c == 1)
-                mFuture.onSuccess(null);
+                mFuture.onSuccess((V) new JsonObject());
             else
                 throw new IllegalArgumentException("Multiple items deleted. Please, retrieve all items again.");
         }
@@ -371,6 +407,17 @@ class CloudDatabaseSimImpl {
 
         private void getOperation(Uri baseUri) throws RemoteException {
 
+            Uri.Builder builder = baseUri.buildUpon();
+
+            if (top != -1) {
+                builder.appendQueryParameter(CloudDatabaseSimVariables.QUERY_PARAMETER_LIMIT, String.valueOf(top));
+            }
+            if (skip != -1) {
+                builder.appendQueryParameter(CloudDatabaseSimVariables.QUERY_PARAMETER_OFFSET, String.valueOf(skip));
+            }
+
+            Uri uri = builder.build();
+
             String selection = null;
             String[] selectionArgs = null;
             if (filteringOperationList != null){
@@ -390,7 +437,7 @@ class CloudDatabaseSimImpl {
                 sortField = this.sortField.first + " " + (this.sortField.second == SortOrder.Ascending ? "ASC" : "DESC");
             }
 
-            Cursor c = provider.query(baseUri, selectFields, selection, selectionArgs, sortField);
+            Cursor c = provider.query(uri, selectFields, selection, selectionArgs, sortField);
 
             if (c == null) {
                 throw new IllegalArgumentException("Cursor not found");

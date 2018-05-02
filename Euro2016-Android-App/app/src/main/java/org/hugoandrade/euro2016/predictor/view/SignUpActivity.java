@@ -21,8 +21,8 @@ import org.hugoandrade.euro2016.predictor.presenter.SignUpPresenter;
 import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
 
 public class SignUpActivity extends ActivityBase<MVP.RequiredSignUpViewOps,
-                                                    MVP.ProvidedSignUpPresenterOps,
-                                                    SignUpPresenter>
+                                                 MVP.ProvidedSignUpPresenterOps,
+                                                 SignUpPresenter>
         implements MVP.RequiredSignUpViewOps {
 
     private static final String INTENT_EXTRA_SIGN_UP = "intent_extra_sign_up";

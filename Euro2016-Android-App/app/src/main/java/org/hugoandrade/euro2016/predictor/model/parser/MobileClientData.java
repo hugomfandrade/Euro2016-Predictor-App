@@ -3,12 +3,15 @@ package org.hugoandrade.euro2016.predictor.model.parser;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import org.hugoandrade.euro2016.predictor.data.LeagueWrapper;
 import org.hugoandrade.euro2016.predictor.data.raw.Country;
+import org.hugoandrade.euro2016.predictor.data.raw.League;
 import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.SystemData;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
+import org.hugoandrade.euro2016.predictor.data.raw.WaitingLeagueUser;
 
 import java.util.Calendar;
 import java.util.List;
@@ -31,13 +34,20 @@ public class MobileClientData implements Parcelable {
     private List<Prediction> mPredictionList;
     private int mPredictionMatchNo;
     private String mPredictionUserID;
+    private League mLeague;
+    private LeagueWrapper mLeagueWrapper;
+    private List<League> mLeagueList;
+    private List<LeagueWrapper> mLeagueWrapperList;
+    private WaitingLeagueUser mWaitingLeagueUser;
     private String mErrorMessage;
     private boolean mNetworkState;
     private int mInteger;
+    private String mString;
 
     // Data Extras Key
     public static final int REQUEST_RESULT_FAILURE = 1;
     public static final int REQUEST_RESULT_SUCCESS = 2;
+
 
     public enum OperationType {
         @SuppressWarnings("unused") OPERATION_UNKNOWN,
@@ -50,6 +60,11 @@ public class MobileClientData implements Parcelable {
         GET_LATEST_PERFORMANCE,
         GET_PREDICTIONS_OF_USERS,
         PUT_PREDICTION,
+        CREATE_LEAGUE,
+        JOIN_LEAGUE,
+        DELETE_LEAGUE,
+        LEAVE_LEAGUE,
+        FETCH_MORE_USERS,
     }
 
     /**
@@ -64,44 +79,66 @@ public class MobileClientData implements Parcelable {
     protected MobileClientData(Parcel in) {
         mOperationType = in.readInt();
         mOperationResult = in.readInt();
+
         mSystemData = in.readParcelable(SystemData.class.getClassLoader());
         mLoginData = in.readParcelable(LoginData.class.getClassLoader());
+
         mCountry = in.readParcelable(Country.class.getClassLoader());
         mCountryList = in.createTypedArrayList(Country.CREATOR);
         mMatch = in.readParcelable(Match.class.getClassLoader());
         mMatchList = in.createTypedArrayList(Match.CREATOR);
         mUser = in.readParcelable(User.class.getClassLoader());
         mUserList = in.createTypedArrayList(User.CREATOR);
+
         mPrediction = in.readParcelable(Prediction.class.getClassLoader());
         mPredictionList = in.createTypedArrayList(Prediction.CREATOR);
         mPredictionMatchNo = in.readInt();
         mPredictionUserID = in.readString();
+
+        mLeague = in.readParcelable(League.class.getClassLoader());
+        mLeagueList = in.createTypedArrayList(League.CREATOR);
+        mLeagueWrapper = in.readParcelable(LeagueWrapper.class.getClassLoader());
+        mLeagueWrapperList = in.createTypedArrayList(LeagueWrapper.CREATOR);
+
+        mWaitingLeagueUser = in.readParcelable(WaitingLeagueUser.class.getClassLoader());
         mErrorMessage = in.readString();
         mNetworkState = in.readByte() != 0;
         mServerTime = (Calendar) in.readSerializable();
         mInteger = in.readInt();
+        mString = in.readString();
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(mOperationType);
         dest.writeInt(mOperationResult);
+
         dest.writeParcelable(mSystemData, flags);
         dest.writeParcelable(mLoginData, flags);
+
         dest.writeParcelable(mCountry, flags);
         dest.writeTypedList(mCountryList);
         dest.writeParcelable(mMatch, flags);
         dest.writeTypedList(mMatchList);
         dest.writeParcelable(mUser, flags);
         dest.writeTypedList(mUserList);
+
         dest.writeParcelable(mPrediction, flags);
         dest.writeTypedList(mPredictionList);
         dest.writeInt(mPredictionMatchNo);
         dest.writeString(mPredictionUserID);
+
+        dest.writeParcelable(mLeague, flags);
+        dest.writeTypedList(mLeagueList);
+        dest.writeParcelable(mLeagueWrapper, flags);
+        dest.writeTypedList(mLeagueWrapperList);
+        
+        dest.writeParcelable(mWaitingLeagueUser, flags);
         dest.writeString(mErrorMessage);
         dest.writeByte((byte) (mNetworkState ? 1 : 0));
         dest.writeSerializable(mServerTime);
         dest.writeInt(mInteger);
+        dest.writeString(mString);
     }
 
     @Override
@@ -161,6 +198,46 @@ public class MobileClientData implements Parcelable {
 
     public Country getCountry() {
         return mCountry;
+    }
+
+    public League getLeague() {
+        return mLeague;
+    }
+
+    public void setLeague(League league) {
+        mLeague = league;
+    }
+
+    public LeagueWrapper getLeagueWrapper() {
+        return mLeagueWrapper;
+    }
+
+    public void setLeagueWrapper(LeagueWrapper leagueWrapper) {
+        mLeagueWrapper = leagueWrapper;
+    }
+
+    public List<League> getLeagueList() {
+        return mLeagueList;
+    }
+
+    public void setLeagueList(List<League> leagueList) {
+        mLeagueList = leagueList;
+    }
+
+    public List<LeagueWrapper> getLeagueWrapperList() {
+        return mLeagueWrapperList;
+    }
+
+    public void setLeagueWrapperList(List<LeagueWrapper> leagueWrapperList) {
+        mLeagueWrapperList = leagueWrapperList;
+    }
+
+    public WaitingLeagueUser getWaitingLeagueUser() {
+        return mWaitingLeagueUser;
+    }
+
+    public void setWaitingLeagueUser(WaitingLeagueUser waitingLeagueUser) {
+        mWaitingLeagueUser = waitingLeagueUser;
     }
 
     public void setCountryList(List<Country> countryList) {
@@ -259,6 +336,13 @@ public class MobileClientData implements Parcelable {
         return mLoginData;
     }
 
+    public void setString(String aString) {
+        mString = aString;
+    }
+
+    public String getString() {
+        return mString;
+    }
 
     public void setNetworkState(boolean state) {
         mNetworkState = state;

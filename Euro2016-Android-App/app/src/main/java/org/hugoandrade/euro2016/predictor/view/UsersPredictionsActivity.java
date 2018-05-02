@@ -29,12 +29,10 @@ public class UsersPredictionsActivity extends AppCompatActivity {
     private final String TAG = getClass().getSimpleName();
 
     private static final String INTENT_EXTRA_USER = "intent_extra_user";
-    private static final String INTENT_EXTRA_MATCH_LIST = "intent_extra_match_list";
     private static final String INTENT_EXTRA_PREDICTION_LIST = "intent_extra_prediction_list";
 
-    private List<Match> mMatchList;
-    private List<Prediction> mPredictionList;
     private User mUser;
+    private List<Prediction> mPredictionList;
 
     private List<String> mPredictionFilter;
     private int currentFilter = 0;
@@ -45,12 +43,10 @@ public class UsersPredictionsActivity extends AppCompatActivity {
 
     public static Intent makeIntent(Context context,
                                     User selectedUser,
-                                    List<Match> matchList,
                                     List<Prediction> predictionList) {
 
         return new Intent(context, UsersPredictionsActivity.class)
                 .putExtra(INTENT_EXTRA_USER, selectedUser)
-                .putParcelableArrayListExtra(INTENT_EXTRA_MATCH_LIST, new ArrayList<>(matchList))
                 .putParcelableArrayListExtra(INTENT_EXTRA_PREDICTION_LIST, new ArrayList<>(predictionList));
     }
 
@@ -62,7 +58,6 @@ public class UsersPredictionsActivity extends AppCompatActivity {
 
         if (getIntent() != null && getIntent().getExtras() != null) {
             mUser = getIntent().getExtras().getParcelable(INTENT_EXTRA_USER);
-            mMatchList = getIntent().getExtras().getParcelableArrayList(INTENT_EXTRA_MATCH_LIST);
             mPredictionList = getIntent().getExtras().getParcelableArrayList(INTENT_EXTRA_PREDICTION_LIST);
         }
         else {
@@ -112,9 +107,9 @@ public class UsersPredictionsActivity extends AppCompatActivity {
         });
 
         rvPredictions = findViewById(R.id.rv_predictions);
-        mPredictionsAdapter = new PredictionListAdapter(mMatchList,
-                                                                   mPredictionList,
-                                                                   PredictionListAdapter.VIEW_TYPE_DISPLAY_ONLY);
+        mPredictionsAdapter = new PredictionListAdapter(GlobalData.getInstance().getMatchList(),
+                                                        mPredictionList,
+                                                        PredictionListAdapter.VIEW_TYPE_DISPLAY_ONLY);
         rvPredictions.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         rvPredictions.setAdapter(mPredictionsAdapter);
         rvPredictions.scrollToPosition(getStartingItemPosition());
@@ -136,6 +131,7 @@ public class UsersPredictionsActivity extends AppCompatActivity {
     }
 
     private void setupFilter() {
+        List<Match> mMatchList = GlobalData.getInstance().getMatchList();
         tvFilterText.setText(mPredictionFilter.get(currentFilter));
         List<Match> matchList = new ArrayList<>();
         int startingPosition = 0;
@@ -195,6 +191,7 @@ public class UsersPredictionsActivity extends AppCompatActivity {
     }
 
     public int getStartingItemPosition() {
+        List<Match> mMatchList = GlobalData.getInstance().getMatchList();
         if (mMatchList != null) {
             for (int i = 0; i < mMatchList.size(); i++) {
                 if (mMatchList.get(i).getDateAndTime().after(GlobalData.getInstance().getServerTime().getTime())) {

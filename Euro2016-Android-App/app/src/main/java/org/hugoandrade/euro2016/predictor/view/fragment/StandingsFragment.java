@@ -3,11 +3,13 @@ package org.hugoandrade.euro2016.predictor.view.fragment;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.widget.NestedScrollView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.TextView;
 
 import org.hugoandrade.euro2016.predictor.FragComm;
@@ -16,6 +18,7 @@ import org.hugoandrade.euro2016.predictor.R;
 import org.hugoandrade.euro2016.predictor.data.raw.Country;
 import org.hugoandrade.euro2016.predictor.data.raw.Group;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
+import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
 import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils.SGroup;
 import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils.SStage;
 import org.hugoandrade.euro2016.predictor.view.listadapter.GroupListAdapter;
@@ -27,11 +30,13 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
-public class StandingsFragment extends FragmentBase<FragComm.RequiredActivityOps> {
+public class StandingsFragment extends FragmentBase<FragComm.RequiredActivityBaseOps> {
 
     // Views
     private HashMap<SGroup, GroupViewStruct> mGroupViewStructMap = buildGroupViewStructMap();
     private HashMap<SStage, KnockOutViewStruct> mKnockOutViewStructMap = buildKnockOutViewStructMap();
+
+    private NestedScrollView nestedScrollView;
 
     private HashMap<SGroup, GroupViewStruct> buildGroupViewStructMap() {
         HashMap<SGroup, GroupViewStruct> viewStructMap = new HashMap<>();
@@ -66,6 +71,8 @@ public class StandingsFragment extends FragmentBase<FragComm.RequiredActivityOps
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 
+        nestedScrollView = view.findViewById(R.id.nsv_standings);
+
         setupGroupLayout(view.findViewById(R.id.layout_group_a),
                 mGroupViewStructMap.get(SGroup.A));
         setupGroupLayout(view.findViewById(R.id.layout_group_b),
@@ -88,8 +95,81 @@ public class StandingsFragment extends FragmentBase<FragComm.RequiredActivityOps
         setupKnockOutLayout(view.findViewById(R.id.layout_final),
                 mKnockOutViewStructMap.get(SStage.finals));
 
-        updateGroupView();
         updateKnockOutView();
+        updateGroupView();
+
+        setupInitialScrollPosition();
+    }
+
+    private void setupInitialScrollPosition() {
+
+        if (nestedScrollView == null)
+            return;
+
+        if (true)
+            return;
+
+        nestedScrollView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+
+                nestedScrollView.post(setupInitialScrollPositionRunnable());
+                //nestedScrollView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            }
+        });
+    }
+
+    private Runnable setupInitialScrollPositionRunnable() {
+
+        return new Runnable() {
+            @Override
+            public void run() {
+
+                int currentMatchNumber = MatchUtils.getMatchNumberOfFirstNotPlayedMatched(
+                        GlobalData.getInstance().getMatchList(),
+                        GlobalData.getInstance().getServerTime().getTime());
+
+                if (currentMatchNumber == 0) {
+                    nestedScrollView.smoothScrollTo(0, 0);
+                }
+                else if (currentMatchNumber == 52) {
+                    nestedScrollView.smoothScrollTo(0, 0);
+                }
+                else {
+                    Match match = GlobalData.getInstance().getMatch(currentMatchNumber);
+                    SStage stage = null;
+
+                    android.util.Log.e(TAG, "match number::" + currentMatchNumber);
+                    android.util.Log.e(TAG, "match ::" + match);
+
+                    if (match == null)
+                        return;
+
+                    if (SStage.roundOf16.name.equals(match.getStage())) {
+                        stage = SStage.roundOf16;
+                    }
+                    else if (SStage.quarterFinals.name.equals(match.getStage())) {
+                        stage = SStage.quarterFinals;
+                    }
+                    else if (SStage.semiFinals.name.equals(match.getStage())) {
+                        stage = SStage.semiFinals;
+                    }
+                    else if (SStage.finals.name.equals(match.getStage())) {
+                        stage = SStage.finals;
+                    }
+
+                    if (stage != null && mKnockOutViewStructMap.containsKey(stage)) {
+                        int scrollTo = mKnockOutViewStructMap.get(stage).tvTitle.getTop();
+                        android.util.Log.e(TAG, "scrollTo::" + scrollTo);
+                        nestedScrollView.smoothScrollTo(0, //nestedScrollView.getTop() -
+                                scrollTo);
+                    }
+                    else {
+                        nestedScrollView.smoothScrollTo(0, 0);
+                    }
+                }
+            }
+        };
     }
 
     @Override
@@ -105,7 +185,9 @@ public class StandingsFragment extends FragmentBase<FragComm.RequiredActivityOps
 
         @Override
         public void onMatchesChanged() {
-            updateGroupView();
+            updateKnockOutView();
+
+            setupInitialScrollPosition();
         }
     };
 
@@ -114,11 +196,13 @@ public class StandingsFragment extends FragmentBase<FragComm.RequiredActivityOps
 
         @Override
         public void onCountriesChanged() {
-            updateKnockOutView();
+            updateGroupView();
+
+            setupInitialScrollPosition();
         }
     };
 
-    private void updateKnockOutView() {
+    private void updateGroupView() {
         HashMap<SGroup, Group> groupsMap = setupGroups(GlobalData.getInstance().getCountryList());
 
         updateGroupViewStruct(mGroupViewStructMap.get(SGroup.A), groupsMap.get(SGroup.A));
@@ -129,7 +213,7 @@ public class StandingsFragment extends FragmentBase<FragComm.RequiredActivityOps
         updateGroupViewStruct(mGroupViewStructMap.get(SGroup.F), groupsMap.get(SGroup.F));
     }
 
-    private void updateGroupView() {
+    private void updateKnockOutView() {
 
         HashMap<SStage, List<Match>> matchMap = setupMatches(GlobalData.getInstance().getMatchList());
 
@@ -155,6 +239,7 @@ public class StandingsFragment extends FragmentBase<FragComm.RequiredActivityOps
         // Setup title
         TextView tvKnockOutTitle = view.findViewById(R.id.tv_knockout_name);
         tvKnockOutTitle.setText(getString(knockOutViewStruct.getTitleResource()));
+        knockOutViewStruct.tvTitle = tvKnockOutTitle;
 
         // Setup recycler view
         RecyclerView recyclerView = view.findViewById(R.id.rv_knockout);
@@ -267,6 +352,7 @@ public class StandingsFragment extends FragmentBase<FragComm.RequiredActivityOps
         private final int mTitleResID;
         private final KnockoutListAdapter mKnockoutAdapter;
         private List<Match> mMatchList;
+        private TextView tvTitle;
 
         KnockOutViewStruct(int titleResID) {
             mTitleResID = titleResID;

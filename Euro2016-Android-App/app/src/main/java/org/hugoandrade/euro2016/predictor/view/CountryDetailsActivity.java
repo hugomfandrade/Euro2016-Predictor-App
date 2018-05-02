@@ -2,7 +2,6 @@ package org.hugoandrade.euro2016.predictor.view;
 
 import android.content.Context;
 import android.content.Intent;
-import android.media.Image;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -13,18 +12,16 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.R;
 import org.hugoandrade.euro2016.predictor.data.raw.Country;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
 import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils;
-import org.hugoandrade.euro2016.predictor.view.fragment.StandingsFragment;
 import org.hugoandrade.euro2016.predictor.view.listadapter.GroupListAdapter;
 import org.hugoandrade.euro2016.predictor.view.listadapter.KnockoutListAdapter;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 public class CountryDetailsActivity extends AppCompatActivity {
 
@@ -32,22 +29,15 @@ public class CountryDetailsActivity extends AppCompatActivity {
     private final String TAG = CountryDetailsActivity.class.getSimpleName();
 
     private static final String INTENT_EXTRA_COUNTRY = "intent_extra_country";
-    private static final String INTENT_EXTRA_MATCH_LIST = "intent_extra_match_list";
-    private static final String INTENT_EXTRA_COUNTRY_LIST = "intent_extra_country_list";
 
     private List<Match> mMatchList;
     private List<Country> mGroupCountryList;
     private Country mCountry;
 
-    public static Intent makeIntent(Context context,
-                                    Country country,
-                                    List<Match> matchList,
-                                    List<Country> groupCountryList) {
+    public static Intent makeIntent(Context context, Country country) {
 
         return new Intent(context, CountryDetailsActivity.class)
-                .putExtra(INTENT_EXTRA_COUNTRY, country)
-                .putParcelableArrayListExtra(INTENT_EXTRA_MATCH_LIST, new ArrayList<>(matchList))
-                .putParcelableArrayListExtra(INTENT_EXTRA_COUNTRY_LIST, new ArrayList<>(groupCountryList));
+                .putExtra(INTENT_EXTRA_COUNTRY, country);
     }
 
     @Override
@@ -57,9 +47,11 @@ public class CountryDetailsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_country_details);
 
         if (getIntent() != null && getIntent().getExtras() != null) {
-            mCountry = getIntent().getParcelableExtra(INTENT_EXTRA_COUNTRY);
-            mMatchList = getIntent().getParcelableArrayListExtra(INTENT_EXTRA_MATCH_LIST);
-            mGroupCountryList = getIntent().getParcelableArrayListExtra(INTENT_EXTRA_COUNTRY_LIST);
+
+            Country country = getIntent().getParcelableExtra(INTENT_EXTRA_COUNTRY);
+            mCountry = GlobalData.getInstance().getCountry(country);
+            mMatchList = GlobalData.getInstance().getMatchList(country);
+            mGroupCountryList = GlobalData.getInstance().getCountryList(country);
         }
         else {
             finish();

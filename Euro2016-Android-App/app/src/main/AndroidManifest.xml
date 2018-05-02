@@ -26,6 +26,10 @@
             android:configChanges="orientation|screenSize"
             android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
+            android:name=".view.LeagueDetailsActivity"
+            android:configChanges="orientation|screenSize"
+            android:windowSoftInputMode="stateAlwaysHidden" />
+        <activity
             android:name=".view.SignUpActivity"
             android:configChanges="orientation|screenSize"
             android:windowSoftInputMode="stateAlwaysVisible"/>

@@ -13,6 +13,7 @@ import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
+import org.hugoandrade.euro2016.predictor.data.raw.WaitingLeagueUser;
 import org.hugoandrade.euro2016.predictor.model.IMobileClientService;
 import org.hugoandrade.euro2016.predictor.model.IMobileClientServiceCallback;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
@@ -88,7 +89,7 @@ public class MobileService extends LifecycleLoggingService {
         }
 
         @Override
-        public boolean getSystemData() {
+        public void getSystemData() {
 
             MobileServiceCallback i = MobileServiceAdapter.getInstance().getSystemData();
             MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
@@ -109,11 +110,10 @@ public class MobileService extends LifecycleLoggingService {
                     sendMobileDataMessage(m);
                 }
             });
-            return true;
         }
 
         @Override
-        public boolean login(final LoginData loginData) {
+        public void login(final LoginData loginData) {
 
             MobileServiceCallback i = MobileServiceAdapter.getInstance().login(loginData);
             MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
@@ -146,11 +146,10 @@ public class MobileService extends LifecycleLoggingService {
                     sendMobileDataMessage(m);
                 }
             });
-            return true;
         }
 
         @Override
-        public boolean signUp(final LoginData loginData) {
+        public void signUp(final LoginData loginData) {
 
             MobileServiceCallback i = MobileServiceAdapter.getInstance().signUp(loginData);
             MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
@@ -176,17 +175,16 @@ public class MobileService extends LifecycleLoggingService {
                     sendMobileDataMessage(m);
                 }
             });
-            return true;
         }
 
         @Override
-        public boolean getInfo(String userID) {
+        public void getInfo(String userID) {
 
             final MobileClientData m = MobileClientData.makeMessage(
                     MobileClientData.OperationType.GET_INFO.ordinal(),
                     MobileClientData.REQUEST_RESULT_SUCCESS);
 
-            final MultipleCloudStatus n = new MultipleCloudStatus(4);
+            final MultipleCloudStatus n = new MultipleCloudStatus(5);
 
             MobileServiceCallback iCountries = MobileServiceAdapter.getInstance().getCountries();
             MobileServiceCallback.addCallback(iCountries, new MobileServiceCallback.OnResult() {
@@ -294,11 +292,35 @@ public class MobileService extends LifecycleLoggingService {
                     }
                 }
             });
-            return true;
+
+            MobileServiceCallback iLeagues = MobileServiceAdapter.getInstance().getLeagues(userID);
+            MobileServiceCallback.addCallback(iLeagues, new MobileServiceCallback.OnResult() {
+                @Override
+                public void onResult(MobileServiceData data) {
+                    synchronized (syncObj) {
+
+                        if (n.isAborted()) return; // An error occurred
+                        n.operationCompleted();
+
+                        if (data.wasSuccessful()) {
+
+                            m.setLeagueWrapperList(data.getLeagueWrapperList());
+
+                            if (n.isFinished())
+                                sendMobileDataMessage(m);
+
+                        } else {
+                            n.abort();
+                            Log.e(TAG, "sendErrorMessage: (" + 5 + ") " + data.getMessage());
+                            sendErrorMessage(MobileClientData.OperationType.GET_INFO.ordinal(), data.getMessage());
+                        }
+                    }
+                }
+            });
         }
 
         @Override
-        public boolean putPrediction(final Prediction prediction) {
+        public void putPrediction(final Prediction prediction) {
 
             MobileServiceCallback i = MobileServiceAdapter.getInstance().insertPrediction(prediction);
             MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
@@ -319,11 +341,10 @@ public class MobileService extends LifecycleLoggingService {
                     sendMobileDataMessage(m);
                 }
             });
-            return true;
         }
 
         @Override
-        public boolean getPredictions(final User user) {
+        public void getPredictions(final User user) {
             MobileServiceCallback i = MobileServiceAdapter.getInstance().getPredictions(user.getID());
             MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
                 @Override
@@ -343,11 +364,10 @@ public class MobileService extends LifecycleLoggingService {
                     sendMobileDataMessage(m);
                 }
             });
-            return true;
         }
 
         @Override
-        public boolean getLatestPerformanceOfUsers(final List<User> userList, int firstMatchNumber, int lastMatchNumber) {
+        public void getLatestPerformanceOfUsers(final List<User> userList, int firstMatchNumber, int lastMatchNumber) {
 
             String[] userIDs = new String[userList.size()];
             for (int i = 0 ; i < userList.size() ; i++) {
@@ -364,15 +384,15 @@ public class MobileService extends LifecycleLoggingService {
                             MobileClientData.REQUEST_RESULT_SUCCESS);
                     m.setUsers(userList);
                     m.setPredictionList(data.getPredictionList());
+                    m.setErrorMessage(data.getMessage());
 
                     sendMobileDataMessage(m);
                 }
             });
-            return true;
         }
 
         @Override
-        public boolean getPredictionsOfUsers(final List<User> userList, final int matchNumber) {
+        public void getPredictionsOfUsers(final List<User> userList, final int matchNumber) {
 
             String[] userIDs = new String[userList.size()];
             for (int i = 0 ; i < userList.size() ; i++) {
@@ -390,11 +410,130 @@ public class MobileService extends LifecycleLoggingService {
                     m.setInteger(matchNumber);
                     m.setUsers(userList);
                     m.setPredictionList(data.getPredictionList());
+                    m.setErrorMessage(data.getMessage());
 
                     sendMobileDataMessage(m);
                 }
             });
-            return true;
+        }
+
+        @Override
+        public void createLeague(String userID, String leagueName) {
+
+            MobileServiceCallback i = MobileServiceAdapter.getInstance().createLeague(userID, leagueName);
+            MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
+
+                @Override
+                public void onResult(MobileServiceData data) {
+
+                    int requestResult = data.wasSuccessful() ?
+                            MobileClientData.REQUEST_RESULT_SUCCESS:
+                            MobileClientData.REQUEST_RESULT_FAILURE;
+
+                    MobileClientData m = MobileClientData.makeMessage(
+                            MobileClientData.OperationType.CREATE_LEAGUE.ordinal(),
+                            requestResult);
+                    m.setLeague(data.getLeague());
+                    m.setErrorMessage(data.getMessage());
+
+                    sendMobileDataMessage(m);
+                }
+            });
+        }
+
+        @Override
+        public void joinLeague(final WaitingLeagueUser waitingLeagueUser) {
+
+            MobileServiceCallback i = MobileServiceAdapter.getInstance().joinLeague(waitingLeagueUser);
+            MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
+
+                @Override
+                public void onResult(MobileServiceData data) {
+
+                    int requestResult = data.wasSuccessful() ?
+                            MobileClientData.REQUEST_RESULT_SUCCESS:
+                            MobileClientData.REQUEST_RESULT_FAILURE;
+
+                    MobileClientData m = MobileClientData.makeMessage(
+                            MobileClientData.OperationType.JOIN_LEAGUE.ordinal(),
+                            requestResult);
+                    m.setLeagueWrapper(data.getLeagueWrapper());
+                    m.setErrorMessage(data.getMessage());
+
+                    sendMobileDataMessage(m);
+                }
+            });
+        }
+
+        @Override
+        public void leaveLeague(String userID, String leagueID) {
+
+            MobileServiceCallback i = MobileServiceAdapter.getInstance().leaveLeague(userID, leagueID);
+            MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
+
+                @Override
+                public void onResult(MobileServiceData data) {
+
+                    int requestResult = data.wasSuccessful() ?
+                            MobileClientData.REQUEST_RESULT_SUCCESS:
+                            MobileClientData.REQUEST_RESULT_FAILURE;
+
+                    MobileClientData m = MobileClientData.makeMessage(
+                            MobileClientData.OperationType.LEAVE_LEAGUE.ordinal(),
+                            requestResult);
+                    m.setErrorMessage(data.getMessage());
+
+                    sendMobileDataMessage(m);
+                }
+            });
+        }
+
+        @Override
+        public void deleteLeague(String userID, String leagueID)  {
+
+            MobileServiceCallback i = MobileServiceAdapter.getInstance().deleteLeague(userID, leagueID);
+            MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
+
+                @Override
+                public void onResult(MobileServiceData data) {
+
+                    int requestResult = data.wasSuccessful() ?
+                            MobileClientData.REQUEST_RESULT_SUCCESS:
+                            MobileClientData.REQUEST_RESULT_FAILURE;
+
+                    MobileClientData m = MobileClientData.makeMessage(
+                            MobileClientData.OperationType.DELETE_LEAGUE.ordinal(),
+                            requestResult);
+                    m.setErrorMessage(data.getMessage());
+
+                    sendMobileDataMessage(m);
+                }
+            });
+        }
+
+        @Override
+        public void fetchMoreUsers(String leagueID, int skip, int top) {
+
+            MobileServiceCallback i = MobileServiceAdapter.getInstance().fetchMoreUsers(leagueID, skip, top);
+            MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
+
+                @Override
+                public void onResult(MobileServiceData data) {
+
+                    int requestResult = data.wasSuccessful() ?
+                            MobileClientData.REQUEST_RESULT_SUCCESS:
+                            MobileClientData.REQUEST_RESULT_FAILURE;
+
+                    MobileClientData m = MobileClientData.makeMessage(
+                            MobileClientData.OperationType.FETCH_MORE_USERS.ordinal(),
+                            requestResult);
+                    m.setUsers(data.getUserList());
+                    m.setString(data.getString());
+                    m.setErrorMessage(data.getMessage());
+
+                    sendMobileDataMessage(m);
+                }
+            });
         }
     };
 

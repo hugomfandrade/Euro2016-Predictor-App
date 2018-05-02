@@ -73,10 +73,7 @@ public class LoginPresenter extends MobileClientPresenterBase<MVP.RequiredLoginV
         }
 
         try {
-            boolean isLoggingIn = getMobileClientService().login(loginData);
-            if (!isLoggingIn) {
-                loginOperationResult(false, "No Network Connection", null);
-            }
+            getMobileClientService().login(loginData);
         } catch (RemoteException e) {
             e.printStackTrace();
             loginOperationResult(false, "Error sending message", null);
@@ -91,10 +88,7 @@ public class LoginPresenter extends MobileClientPresenterBase<MVP.RequiredLoginV
         }
 
         try {
-            boolean isGettingSystemData = getMobileClientService().getSystemData();
-            if (!isGettingSystemData) {
-                getSystemDataOperationResult(false, "No Network Connection", null);
-            }
+            getMobileClientService().getSystemData();
         } catch (RemoteException e) {
             e.printStackTrace();
             getSystemDataOperationResult(false, "Error sending message", null);

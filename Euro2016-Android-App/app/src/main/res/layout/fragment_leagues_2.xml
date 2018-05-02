@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:background="#26629e">
+
+            <TextView
+                android:id="@+id/tv_create_league"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:layout_margin="8dp"
+                android:background="#aaffffff"
+                android:lines="1"
+                android:ellipsize="end"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textAllCaps="true"
+                android:textColor="#26629e"
+                android:fontFamily="sans-serif-condensed"
+                android:gravity="center"
+                android:text="Create League"/>
+
+            <TextView
+                android:id="@+id/tv_join_league"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:layout_margin="8dp"
+                android:background="#aaffffff"
+                android:lines="1"
+                android:ellipsize="end"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textAllCaps="true"
+                android:textColor="#26629e"
+                android:fontFamily="sans-serif-condensed"
+                android:gravity="center"
+                android:text="Join League"/>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_latest_match"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_margin="16dp"
+            android:background="#aaffffff"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textAllCaps="true"
+            android:textColor="#26629e"
+            android:fontFamily="sans-serif-condensed"
+            android:gravity="center"
+            android:text="Latest Match"/>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rv_all_users"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal"
+            android:descendantFocusability="afterDescendants"/>
+
+    </LinearLayout>
+
+</android.support.v4.widget.NestedScrollView>

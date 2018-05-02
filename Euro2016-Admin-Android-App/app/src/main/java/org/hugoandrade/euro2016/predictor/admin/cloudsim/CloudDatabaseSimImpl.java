@@ -13,6 +13,7 @@ import com.google.gson.JsonObject;
 
 import org.hugoandrade.euro2016.predictor.admin.cloudsim.parser.CloudContentValuesFormatter;
 import org.hugoandrade.euro2016.predictor.admin.cloudsim.parser.CloudJsonObjectFormatter;
+import org.hugoandrade.euro2016.predictor.admin.data.League;
 import org.hugoandrade.euro2016.predictor.admin.data.LoginData;
 import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
 import org.hugoandrade.euro2016.predictor.admin.network.HttpConstants;
@@ -216,7 +217,9 @@ class CloudDatabaseSimImpl {
             Uri uri = provider.insert(baseUri, jsonObject == null ? null: cvFormatter.getAsContentValues(jsonObject));
 
 
-            if (tableName.contains(SystemData.Entry.API_NAME_UPDATE_SCORES)) {
+            if (tableName.contains(SystemData.Entry.API_NAME_UPDATE_SCORES) ||
+                    tableName.contains(League.Entry.API_NAME_DELETE_LEAGUE) ||
+                    tableName.contains(League.Entry.API_NAME_LEAVE_LEAGUE)) {
                 if (mFuture != null)
                     mFuture.onSuccess(null);
 

@@ -166,7 +166,7 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
                 !isNetworkAvailable(callback, MobileServiceData.GET_MATCHES))
             return callback;
 
-        ListenableFuture<JsonElement> futureCountries =  MobileServiceJsonTableHelper
+        ListenableFuture<JsonElement> futureCountries = MobileServiceJsonTableHelper
                 .instance(Match.Entry.TABLE_NAME, mClient)
                 .execute();
         Futures.addCallback(futureCountries, new FutureCallback<JsonElement>() {

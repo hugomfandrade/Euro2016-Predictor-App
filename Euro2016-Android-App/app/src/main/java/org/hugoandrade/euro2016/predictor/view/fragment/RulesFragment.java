@@ -14,7 +14,7 @@ import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.R;
 import org.hugoandrade.euro2016.predictor.data.raw.SystemData;
 
-public class RulesFragment extends FragmentBase<FragComm.RequiredActivityOps> {
+public class RulesFragment extends FragmentBase<FragComm.RequiredActivityBaseOps> {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,

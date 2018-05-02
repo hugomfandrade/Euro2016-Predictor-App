@@ -1,4 +1,4 @@
-package org.hugoandrade.euro2016.predictor.view.fragment;
+package org.hugoandrade.euro2016.predictor.view.old;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -12,11 +12,12 @@ import org.hugoandrade.euro2016.predictor.FragComm;
 import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.R;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
+import org.hugoandrade.euro2016.predictor.view.fragment.FragmentBase;
 import org.hugoandrade.euro2016.predictor.view.listadapter.MatchListAdapter;
 
 import java.util.List;
 
-public class MatchesFragment extends FragmentBase<FragComm.RequiredActivityOps>  {
+public class MatchesFragment extends FragmentBase<FragComm.RequiredActivityOps> {
 
     // Views
     private RecyclerView rvMatches;

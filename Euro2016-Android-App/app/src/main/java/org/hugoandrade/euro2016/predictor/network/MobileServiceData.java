@@ -3,7 +3,9 @@ package org.hugoandrade.euro2016.predictor.network;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import org.hugoandrade.euro2016.predictor.data.LeagueWrapper;
 import org.hugoandrade.euro2016.predictor.data.raw.Country;
+import org.hugoandrade.euro2016.predictor.data.raw.League;
 import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
@@ -15,21 +17,28 @@ import java.util.List;
 public class MobileServiceData implements Parcelable {
 
     public static final int LOGIN = 1;
-    public static final int SIGN_UP = 1;
+    public static final int SIGN_UP = 2;
     public static final int UPDATE_SCORES_OF_PREDICTIONS = 3;
     public static final int GET_SYSTEM_DATA = 4;
     public static final int GET_MATCHES = 5;
     public static final int GET_COUNTRIES = 6;
-    public static final int GET_PREDICTIONS = 15;
-    public static final int GET_USERS = 7;
-    public static final int UPDATE_SYSTEM_DATA = 8;
-    public static final int UPDATE_COUNTRY = 9;
-    public static final int UPDATE_MATCH = 10;
-    public static final int DELETE_COUNTRY = 11;
-    public static final int DELETE_MATCH = 12;
-    public static final int INSERT_COUNTRY = 13;
-    public static final int INSERT_MATCH = 14;
-    public static final int INSERT_PREDICTION = 14;
+    public static final int GET_PREDICTIONS = 7;
+    public static final int GET_USERS = 8;
+    public static final int UPDATE_SYSTEM_DATA = 9;
+    public static final int UPDATE_COUNTRY = 10;
+    public static final int UPDATE_MATCH = 11;
+    public static final int DELETE_COUNTRY = 12;
+    public static final int DELETE_MATCH = 13;
+    public static final int INSERT_COUNTRY = 14;
+    public static final int INSERT_MATCH = 15;
+    public static final int INSERT_PREDICTION = 16;
+    public static final int CREATE_LEAGUE = 17;
+    public static final int JOIN_LEAGUE = 18;
+    public static final int GET_LEAGUES = 19;
+    public static final int GET_LEAGUE_TOP = 20;
+    public static final int DELETE_LEAGUE = 21;
+    public static final int LEAVE_LEAGUE = 22;
+    public static final int FETCH_MORE_USERS = 23;
 
     public static final int REQUEST_RESULT_FAILURE = 0;
     public static final int REQUEST_RESULT_SUCCESS = 1;
@@ -46,6 +55,11 @@ public class MobileServiceData implements Parcelable {
     private Prediction mPrediction;
     private List<Prediction> mPredictionList;
     private LoginData mLoginData;
+    private League mLeague;
+    private LeagueWrapper mLeagueWrapper;
+    private List<League> mLeagueList;
+    private List<LeagueWrapper> mLeagueWrapperList;
+    private String mString;
     private String mMessage;
 
     public MobileServiceData(int operationType, int operationResult) {
@@ -117,6 +131,14 @@ public class MobileServiceData implements Parcelable {
         mUserList = userList;
     }
 
+    public String getString() {
+        return mString;
+    }
+
+    private void setString(String aString) {
+        mString = aString;
+    }
+
     public Prediction getPrediction() {
         return mPrediction;
     }
@@ -139,6 +161,38 @@ public class MobileServiceData implements Parcelable {
 
     private void setLoginData(LoginData loginData) {
         mLoginData = loginData;
+    }
+
+    public League getLeague() {
+        return mLeague;
+    }
+
+    private void setLeague(League league) {
+        mLeague = league;
+    }
+
+    public List<League> getLeagueList() {
+        return mLeagueList;
+    }
+
+    private void setLeagueList(List<League> leagueList) {
+        mLeagueList = leagueList;
+    }
+
+    public List<LeagueWrapper> getLeagueWrapperList() {
+        return mLeagueWrapperList;
+    }
+
+    private void setLeagueWrapperList(List<LeagueWrapper> leagueWrapperList) {
+        mLeagueWrapperList = leagueWrapperList;
+    }
+
+    public LeagueWrapper getLeagueWrapper() {
+        return mLeagueWrapper;
+    }
+
+    private void setLeagueWrapper(LeagueWrapper leagueWrapper) {
+        mLeagueWrapper = leagueWrapper;
     }
 
     public String getMessage() {
@@ -199,6 +253,11 @@ public class MobileServiceData implements Parcelable {
             return this;
         }
 
+        public Builder setString(String aString) {
+            m.setString(aString);
+            return this;
+        }
+
         public Builder setPrediction(Prediction prediction) {
             m.setPrediction(prediction);
             return this;
@@ -211,6 +270,26 @@ public class MobileServiceData implements Parcelable {
 
         public Builder setLoginData(LoginData loginData) {
             m.setLoginData(loginData);
+            return this;
+        }
+
+        public Builder setLeague(League league) {
+            m.setLeague(league);
+            return this;
+        }
+
+        public Builder setLeagueList(List<League> leagueList) {
+            m.setLeagueList(leagueList);
+            return this;
+        }
+
+        public Builder setLeagueWrapper(LeagueWrapper league) {
+            m.setLeagueWrapper(league);
+            return this;
+        }
+
+        public Builder setLeagueWrapperList(List<LeagueWrapper> leagueList) {
+            m.setLeagueWrapperList(leagueList);
             return this;
         }
 
@@ -237,7 +316,12 @@ public class MobileServiceData implements Parcelable {
         mPrediction = in.readParcelable(Prediction.class.getClassLoader());
         mPredictionList = in.createTypedArrayList(Prediction.CREATOR);
         mLoginData = in.readParcelable(LoginData.class.getClassLoader());
+        mLeague = in.readParcelable(League.class.getClassLoader());
+        mLeagueWrapper = in.readParcelable(LeagueWrapper.class.getClassLoader());
+        mLeagueList = in.createTypedArrayList(League.CREATOR);
+        mLeagueWrapperList = in.createTypedArrayList(LeagueWrapper.CREATOR);
         mMessage = in.readString();
+        mString = in.readString();
     }
 
     @Override
@@ -254,7 +338,12 @@ public class MobileServiceData implements Parcelable {
         dest.writeParcelable(mPrediction, flags);
         dest.writeTypedList(mPredictionList);
         dest.writeParcelable(mLoginData, flags);
+        dest.writeParcelable(mLeague, flags);
+        dest.writeParcelable(mLeagueWrapper, flags);
+        dest.writeTypedList(mLeagueList);
+        dest.writeTypedList(mLeagueWrapperList);
         dest.writeString(mMessage);
+        dest.writeString(mString);
     }
 
     @Override

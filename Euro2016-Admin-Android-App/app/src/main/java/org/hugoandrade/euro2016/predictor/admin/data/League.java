@@ -18,12 +18,17 @@ public class League implements Parcelable {
         public static final String TABLE_NAME = "League";
         public static final String API_NAME_CREATE_LEAGUE = "CreateLeague";
         public static final String API_NAME_JOIN_LEAGUE = "JoinLeague";
+        public static final String API_NAME_LEAVE_LEAGUE = "LeaveLeague";
+        public static final String API_NAME_DELETE_LEAGUE = "DeleteLeague";
 
         public static class Cols {
             public static final String ID = "id";
             public static final String NAME = "Name";
             public static final String ADMIN_ID = "AdminID";
             public static final String CODE = "Code";
+            public static final String NUMBER_OF_MEMBERS = "NumberOfMembers";
+
+            public static final String USER_ID = "UserID";
         }
 
         // SQLite table mName
@@ -45,6 +50,13 @@ public class League implements Parcelable {
         // PATH & TOKEN for single row of table
         public static final String PATH_JOIN_LEAGUE = API_NAME_JOIN_LEAGUE;
         public static final int PATH_JOIN_LEAGUE_TOKEN = 260;
+
+        public static final String PATH_LEAVE_LEAGUE = API_NAME_LEAVE_LEAGUE;
+        public static final int PATH_LEAVE_LEAGUE_TOKEN = 270;
+
+        // PATH & TOKEN for single row of table
+        public static final String PATH_DELETE_LEAGUE = API_NAME_DELETE_LEAGUE;
+        public static final int PATH_DELETE_LEAGUE_TOKEN = 280;
     }
 
     public League(String id, String name, String adminID, String code) {

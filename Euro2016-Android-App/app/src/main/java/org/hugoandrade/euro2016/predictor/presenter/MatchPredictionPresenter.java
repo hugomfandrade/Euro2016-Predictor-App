@@ -65,10 +65,7 @@ public class MatchPredictionPresenter extends MobileClientPresenterBase<MVP.Requ
         }
 
         try {
-            boolean isGetting = getMobileClientService().getPredictionsOfUsers(uList, matchNumber);
-            if (!isGetting) {
-                onGettingPredictionsOperationResult(false, "No Network Connection");
-            }
+            getMobileClientService().getPredictionsOfUsers(uList, matchNumber);
         } catch (RemoteException e) {
             e.printStackTrace();
             onGettingPredictionsOperationResult(false, "Error sending message");

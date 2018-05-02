@@ -2,8 +2,10 @@ package org.hugoandrade.euro2016.predictor.model.parser;
 
 import com.google.gson.JsonObject;
 
+import org.hugoandrade.euro2016.predictor.data.raw.League;
 import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
+import org.hugoandrade.euro2016.predictor.data.raw.WaitingLeagueUser;
 
 /**
  * Parses the objects to Json data.
@@ -32,40 +34,63 @@ public class MobileClientDataJsonFormatter {
                 .create();
     }
 
-    private static class JsonObjectBuilder {
+    public JsonObject getAsJsonObject(League league, String... exceptProperties) {
+
+        return JsonObjectBuilder.instance()
+                .addProperty(League.Entry.Cols.NAME, league.getName())
+                .addProperty(League.Entry.Cols.ADMIN_ID, league.getAdminID())
+                .addProperty(League.Entry.Cols.CODE, league.getCode())
+                .removeProperties(exceptProperties)
+                .create();
+    }
+
+    public JsonObject getAsJsonObject(WaitingLeagueUser waitingLeagueUser, String... exceptProperties) {
+
+        return JsonObjectBuilder.instance()
+                .addProperty(WaitingLeagueUser.Entry.Cols.USER_ID, waitingLeagueUser.getUserID())
+                .addProperty(WaitingLeagueUser.Entry.Cols.LEAGUE_CODE, waitingLeagueUser.getLeagueCode())
+                .removeProperties(exceptProperties)
+                .create();
+    }
+
+    public JsonObjectBuilder build() {
+        return JsonObjectBuilder.instance();
+    }
+
+    public static class JsonObjectBuilder {
 
         private final JsonObject mJsonObject;
 
-        private static JsonObjectBuilder instance() {
+        public static JsonObjectBuilder instance() {
             return new JsonObjectBuilder();
         }
 
-        private JsonObjectBuilder() {
+        public JsonObjectBuilder() {
             mJsonObject = new JsonObject();
         }
 
-        JsonObjectBuilder addProperty(String property, String value) {
+        public JsonObjectBuilder addProperty(String property, String value) {
             mJsonObject.addProperty(property, value);
             return this;
         }
 
-        JsonObjectBuilder addProperty(String property, Number value) {
+        public JsonObjectBuilder addProperty(String property, Number value) {
             mJsonObject.addProperty(property, value);
             return this;
         }
 
-        JsonObjectBuilder addProperty(String property, Boolean value) {
+        public JsonObjectBuilder addProperty(String property, Boolean value) {
             mJsonObject.addProperty(property, value);
             return this;
         }
 
-        JsonObjectBuilder removeProperties(String... properties) {
+        public JsonObjectBuilder removeProperties(String... properties) {
             for (String property : properties)
                 mJsonObject.remove(property);
             return this;
         }
 
-        JsonObject create() {
+        public JsonObject create() {
             return mJsonObject;
         }
     }

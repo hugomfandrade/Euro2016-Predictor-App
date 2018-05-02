@@ -42,7 +42,6 @@
             android:textAppearance="?android:attr/textAppearanceSmall" />
 
         <TextView
-            android:layout_marginBottom="10dp"
             android:id="@+id/tv_rule_incorrect_prediction"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -50,6 +49,7 @@
             android:textAppearance="?android:attr/textAppearanceSmall" />
 
         <TextView
+            android:layout_marginTop="10dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:lineSpacingMultiplier="1.2"

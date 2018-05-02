@@ -10,13 +10,16 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import org.hugoandrade.euro2016.predictor.DevConstants;
+import org.hugoandrade.euro2016.predictor.data.LeagueWrapper;
 import org.hugoandrade.euro2016.predictor.data.raw.Country;
+import org.hugoandrade.euro2016.predictor.data.raw.League;
+import org.hugoandrade.euro2016.predictor.data.raw.LeagueUser;
 import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.SystemData;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
-import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
+import org.hugoandrade.euro2016.predictor.data.raw.WaitingLeagueUser;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientDataJsonFormatter;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientDataJsonParser;
 import org.hugoandrade.euro2016.predictor.network.HttpConstants;
@@ -409,6 +412,265 @@ public class CloudDatabaseSimAdapter {
                         .setPrediction(prediction)
                         .setMessage(errorMessage)
                         .create());
+            }
+        });
+        return true;
+    }
+
+    public boolean fetchMoreUsers(final MobileServiceCallback callback, final String leagueID, int skip, int top) {
+        if (!DevConstants.CLOUD_DATABASE_SIM)
+            return false;
+
+        CloudDatabaseSimImpl.ListenableCallback<JsonElement> f
+                = new CloudDatabaseSimImpl(LeagueUser.Entry.TABLE_NAME, mContentProviderClient)
+                .top(top)
+                .skip(skip)
+                .orderBy(User.Entry.Cols.SCORE, CloudDatabaseSimImpl.SortOrder.Descending)
+                .where().field(LeagueUser.Entry.Cols.LEAGUE_ID).eq(leagueID)
+                .execute();
+        CloudDatabaseSimImpl.addCallback(f, new CloudDatabaseSimImpl.Callback<JsonElement>() {
+            @Override
+            public void onSuccess(JsonElement jsonElement) {
+                Log.e(TAG, "leagueTop::" + jsonElement.toString());
+
+                callback.set(MobileServiceData.Builder
+                        .instance(MobileServiceData.FETCH_MORE_USERS, MobileServiceData.REQUEST_RESULT_SUCCESS)
+                        .setUserList(parser.parseUserList(jsonElement))
+                        .setString(leagueID)
+                        .create());
+
+            }
+
+            @Override
+            public void onFailure(@NonNull String throwable) {
+                Log.e(TAG, "leagueTop::(e)::" + throwable);
+                callback.set(MobileServiceData.Builder
+                        .instance(MobileServiceData.FETCH_MORE_USERS, MobileServiceData.REQUEST_RESULT_FAILURE)
+                        .setUserList(new ArrayList<User>())
+                        .setString(leagueID)
+                        .setMessage(throwable)
+                        .create());
+            }
+        });
+
+        return true;
+    }
+
+    public boolean getLeagues(final MobileServiceCallback callback, String userID) {
+        if (!DevConstants.CLOUD_DATABASE_SIM)
+            return false;
+
+        CloudDatabaseSimImpl.ListenableCallback<JsonElement> f
+                = new CloudDatabaseSimImpl(League.Entry.TABLE_NAME, mContentProviderClient)
+                .where().field(LeagueUser.Entry.Cols.USER_ID).eq(userID)
+                .execute();
+        CloudDatabaseSimImpl.addCallback(f, new CloudDatabaseSimImpl.Callback<JsonElement>() {
+
+            private List<LeagueWrapper> leagueWrapperList = new ArrayList<>();
+            private List<League> leagueList = new ArrayList<>();
+
+            @Override
+            public void onSuccess(JsonElement jsonElement) {
+
+                Log.e(TAG, "getLeagues::" + jsonElement.toString());
+
+                leagueList = parser.parseLeagueList(jsonElement);
+
+                tryOnFinished();
+
+                for (League league : leagueList) {
+
+                    MobileServiceCallback c = new MobileServiceCallback();
+
+                    final LeagueWrapper leagueWrapper = new LeagueWrapper(league);
+
+                    if (!fetchMoreUsers(c, league.getID(), 0, 5)) {
+                        leagueWrapperList.add(leagueWrapper);
+
+                        tryOnFinished();
+
+                    } else {
+
+                        MobileServiceCallback.addCallback(c, new MobileServiceCallback.OnResult() {
+                            @Override
+                            public void onResult(MobileServiceData data) {
+                                leagueWrapper.setUserList(data.getUserList());
+                                leagueWrapperList.add(leagueWrapper);
+
+                                tryOnFinished();
+                            }
+                        });
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull String throwable) {
+                sendErrorMessage(callback, MobileServiceData.GET_LEAGUES, throwable);
+            }
+
+            private void tryOnFinished() {
+                if (leagueWrapperList.size() == leagueList.size()) {
+                    for (LeagueWrapper leagueWrapper : leagueWrapperList) {
+                        Log.e(TAG, "league::" + leagueWrapper.toString());
+                    }
+                    callback.set(MobileServiceData.Builder
+                            .instance(MobileServiceData.GET_LEAGUES, MobileServiceData.REQUEST_RESULT_SUCCESS)
+                            .setLeagueWrapperList(leagueWrapperList)
+                            .create());
+                }
+            }
+        });
+
+        return true;
+    }
+
+    public boolean createLeague(final MobileServiceCallback callback, final League league) {
+        if (!DevConstants.CLOUD_DATABASE_SIM)
+            return false;
+
+        CloudDatabaseSimImpl.ListenableCallback<JsonElement> future =
+                new CloudDatabaseSimImpl(
+                        League.Entry.API_NAME_CREATE_LEAGUE,
+                        formatter.getAsJsonObject(league, League.Entry.Cols.ID, League.Entry.Cols.CODE),
+                        HttpConstants.PostMethod,
+                        mContentProviderClient).execute();
+        CloudDatabaseSimImpl.addCallback(future, new CloudDatabaseSimImpl.Callback<JsonElement>() {
+            @Override
+            public void onSuccess(JsonElement result) {
+                Log.e(TAG, "createLeague::s::" + result.toString());
+
+                callback.set(MobileServiceData.Builder
+                        .instance(MobileServiceData.CREATE_LEAGUE, MobileServiceData.REQUEST_RESULT_SUCCESS)
+                        .setLeague(parser.parseLeague(result.getAsJsonObject()))
+                        .create());
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                Log.e(TAG, "createLeague::e::" + errorMessage);
+                sendErrorMessage(callback, MobileServiceData.CREATE_LEAGUE, errorMessage);
+            }
+        });
+        return true;
+    }
+
+    public boolean joinLeague(final MobileServiceCallback callback, final WaitingLeagueUser waitingLeagueUser) {
+        if (!DevConstants.CLOUD_DATABASE_SIM)
+            return false;
+
+        CloudDatabaseSimImpl.ListenableCallback<JsonElement> future =
+                new CloudDatabaseSimImpl(
+                        League.Entry.API_NAME_JOIN_LEAGUE,
+                        formatter.getAsJsonObject(waitingLeagueUser),
+                        HttpConstants.PostMethod,
+                        mContentProviderClient).execute();
+        CloudDatabaseSimImpl.addCallback(future, new CloudDatabaseSimImpl.Callback<JsonElement>() {
+
+            private LeagueWrapper leagueWrapper;
+
+            @Override
+            public void onSuccess(JsonElement result) {
+                android.util.Log.e(TAG, "joinLeague(s)::" + result.toString());
+
+                League league = parser.parseLeague(result.getAsJsonObject());
+
+                MobileServiceCallback c = new MobileServiceCallback();
+
+                leagueWrapper = new LeagueWrapper(league);
+
+                if (!fetchMoreUsers(c, league.getID(), 0, 5)) {
+
+                    tryOnFinished();
+
+                } else {
+
+                    MobileServiceCallback.addCallback(c, new MobileServiceCallback.OnResult() {
+                        @Override
+                        public void onResult(MobileServiceData data) {
+                            leagueWrapper.setUserList(data.getUserList());
+
+                            tryOnFinished();
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                android.util.Log.e(TAG, "joinLeague(r)::" + errorMessage);
+                sendErrorMessage(callback, MobileServiceData.JOIN_LEAGUE, errorMessage);
+            }
+
+            private void tryOnFinished() {
+                Log.e(TAG, "joinLeague(finally)::" + leagueWrapper.toString());
+
+                callback.set(MobileServiceData.Builder
+                        .instance(MobileServiceData.JOIN_LEAGUE, MobileServiceData.REQUEST_RESULT_SUCCESS)
+                        .setLeagueWrapper(leagueWrapper)
+                        .create());
+            }
+        });
+        return true;
+    }
+
+    public boolean deleteLeague(final MobileServiceCallback callback, String userID, String leagueID) {
+        if (!DevConstants.CLOUD_DATABASE_SIM)
+            return false;
+
+        CloudDatabaseSimImpl.ListenableCallback<JsonElement> future =
+                new CloudDatabaseSimImpl(
+                        League.Entry.API_NAME_DELETE_LEAGUE,
+                        formatter.build()
+                                .addProperty(League.Entry.Cols.USER_ID, userID)
+                                .addProperty(League.Entry.Cols.ID, leagueID)
+                                .create(),
+                        HttpConstants.PostMethod,
+                        mContentProviderClient).execute();
+        CloudDatabaseSimImpl.addCallback(future, new CloudDatabaseSimImpl.Callback<JsonElement>() {
+            @Override
+            public void onSuccess(JsonElement result) {
+
+                callback.set(MobileServiceData.Builder
+                        .instance(MobileServiceData.DELETE_LEAGUE, MobileServiceData.REQUEST_RESULT_SUCCESS)
+                        .create());
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                sendErrorMessage(callback, MobileServiceData.DELETE_LEAGUE, errorMessage);
+            }
+        });
+        return true;
+    }
+
+    public boolean leaveLeague(final MobileServiceCallback callback, String userID, String leagueID) {
+        if (!DevConstants.CLOUD_DATABASE_SIM)
+            return false;
+
+        CloudDatabaseSimImpl.ListenableCallback<JsonElement> future =
+                new CloudDatabaseSimImpl(
+                        League.Entry.API_NAME_LEAVE_LEAGUE,
+                        formatter.build()
+                                .addProperty(League.Entry.Cols.USER_ID, userID)
+                                .addProperty(League.Entry.Cols.ID, leagueID)
+                                .create(),
+                        HttpConstants.PostMethod,
+                        mContentProviderClient).execute();
+        CloudDatabaseSimImpl.addCallback(future, new CloudDatabaseSimImpl.Callback<JsonElement>() {
+            @Override
+            public void onSuccess(JsonElement result) {
+                Log.e(TAG, "leaveLeague::s::" + result.toString());
+
+                callback.set(MobileServiceData.Builder
+                        .instance(MobileServiceData.LEAVE_LEAGUE, MobileServiceData.REQUEST_RESULT_SUCCESS)
+                        .create());
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                Log.e(TAG, "leaveLeague::e::" + errorMessage);
+                sendErrorMessage(callback, MobileServiceData.LEAVE_LEAGUE, errorMessage);
             }
         });
         return true;

@@ -14,6 +14,8 @@ import android.view.View;
 import org.hugoandrade.euro2016.predictor.FragComm;
 import org.hugoandrade.euro2016.predictor.MVP;
 import org.hugoandrade.euro2016.predictor.R;
+import org.hugoandrade.euro2016.predictor.common.ServiceManager;
+import org.hugoandrade.euro2016.predictor.common.ServiceManagerOps;
 import org.hugoandrade.euro2016.predictor.customview.IconTabLayout;
 import org.hugoandrade.euro2016.predictor.customview.NonSwipeableViewPager;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
@@ -23,9 +25,8 @@ import org.hugoandrade.euro2016.predictor.presenter.MainPresenter;
 import org.hugoandrade.euro2016.predictor.view.fragment.PredictionsFragment;
 import org.hugoandrade.euro2016.predictor.view.fragment.RulesFragment;
 import org.hugoandrade.euro2016.predictor.view.fragment.StandingsFragment;
-import org.hugoandrade.euro2016.predictor.view.fragment.UsersFragment;
+import org.hugoandrade.euro2016.predictor.view.fragment.LeaguesFragment;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends ActivityBase<MVP.RequiredMainViewOps,
@@ -45,7 +46,7 @@ public class MainActivity extends ActivityBase<MVP.RequiredMainViewOps,
     public Fragment[] mFragmentArray = {
             new PredictionsFragment(),
             new StandingsFragment(),
-            new UsersFragment(),
+            new LeaguesFragment(),
             new RulesFragment()
     };
     /**
@@ -149,47 +150,6 @@ public class MainActivity extends ActivityBase<MVP.RequiredMainViewOps,
         showSnackBar(message);
     }
 
-    @Override
-    public void updatePrediction(Prediction prediction) {
-        for (FragComm.ProvidedPredictionsFragmentOps IAllPredictionsFrag :
-                getAllFragmentsByInterfaceType(FragComm.ProvidedPredictionsFragmentOps.class))
-            IAllPredictionsFrag.updatePrediction(prediction);
-    }
-
-    @Override
-    public void updateFailedPrediction(Prediction prediction) {
-        for (FragComm.ProvidedPredictionsFragmentOps IAllPredictionsFrag :
-                getAllFragmentsByInterfaceType(FragComm.ProvidedPredictionsFragmentOps.class))
-            IAllPredictionsFrag.updateFailedPrediction(prediction);
-    }
-
-    /**
-     * Get all Fragments associated with the ViewPager of MainActivity
-     * that implement a given Interface.
-     */
-    @SuppressWarnings("unchecked")
-    public <T> ArrayList<T> getAllFragmentsByInterfaceType(Class<T> interfaceType) {
-        ArrayList<T> IFragmentList = new ArrayList<>();
-        for (Fragment f : mFragmentArray) {
-            if (interfaceType.isAssignableFrom(f.getClass()))
-                IFragmentList.add((T) f);
-        }
-
-        return IFragmentList;
-    }
-
-    /**
-     * Start UsersPredictionActivity after successfully fetching the list
-     * of Predictions of the User selected in the UsersScoresFragment.
-     */
-    @Override
-    public void moveToUsersPredictionActivity(User selectedUser,
-                                              List<Match> matchesList,
-                                              List<Prediction> predictionList) {
-        startActivity(UsersPredictionsActivity.makeIntent(
-                this, selectedUser, matchesList, predictionList));
-    }
-
     /**
      * The child fragment sends the message to the Parent activity, MainActivity,
      * to be displayed as a SnackBar.
@@ -200,23 +160,18 @@ public class MainActivity extends ActivityBase<MVP.RequiredMainViewOps,
                 Snackbar.LENGTH_SHORT).show();
     }
 
-    /**
-     * Initiate the asynchronous update of the provided Predictions when the
-     * user presses "Set Prediction" button in the SetPredictionsFragment.
-     */
     @Override
-    public void putPrediction(Prediction prediction) {
-        getPresenter().putPrediction(prediction);
+    public ServiceManager getServiceManager() {
+        return getPresenter().getServiceManager();
     }
 
-    /**
-     * Disable the View layer, initiate the asynchronous Predictions lookup
-     * of the selected user and, once all Predictions are fetched, start new
-     * activity displaying all Predictions of Matches prior to server time.
-     */
     @Override
-    public void onUserSelected(User user) {
-        getPresenter().getPredictionsOfSelectedUser(user);
+    public void notifyServiceIsBound() {
+        for (Fragment f : mFragmentArray) {
+            if (f instanceof ServiceManagerOps) {
+                ((ServiceManagerOps) f).notifyServiceIsBound();
+            }
+        }
     }
 
     /**
