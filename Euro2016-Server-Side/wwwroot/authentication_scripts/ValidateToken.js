@@ -8,8 +8,7 @@ module.exports = function (req, res, next) {
     var authDatas = req.azureMobile.tables('AuthData');
 	var query = queries.create('AuthData')
 					   .where({ UserID : userID,
-                                Token : token
-                                });
+                                Token : token});
     authDatas.read(query).then(function(results) {
 		if (results.length == 0) {
             // console.log("auth data not found");

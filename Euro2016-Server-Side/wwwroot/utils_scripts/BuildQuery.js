@@ -1,25 +1,26 @@
 
-module.exports = function (requestQuery, fromQuery, extraWhere) {
-	console.log("REQUESTQUERY");
-	console.log(requestQuery);
+
+function _BuildQuery(requestQuery, fromQuery, extraWhere) {
+	//console.log("REQUESTQUERY");
+	//console.log(requestQuery);
 	
-	var query = 'SELECT ' + getProperty(requestQuery.$select, '*')
+	var query = 'SELECT ' + _getProperty(requestQuery.$select, '*')
 			+ ' FROM (' + fromQuery + ') m'
-			+ ' ' + getFullWhere(requestQuery.$filter, extraWhere)
-			+ ' ORDER BY ' + getProperty(requestQuery.$orderby, 'id')
-			+ ' ' + getOffset(requestQuery);
+			+ ' ' + _getFullWhere(requestQuery.$filter, extraWhere)
+			+ ' ORDER BY ' + _getProperty(requestQuery.$orderby, 'id')
+			+ ' ' + _getOffset(requestQuery);
 	
 	return query;
 }
 
-function getFullWhere(whereProperty, extraWhere) {
-	var requestWhere  = getWhere(whereProperty);
-	var filteredWhere = buildWhereClause(extraWhere);
+function _getFullWhere(whereProperty, extraWhere) {
+	var requestWhere  = _getWhere(whereProperty);
+	var filteredWhere = _buildWhereClause(extraWhere);
 	
-	console.log("FULLWHERE (0)");
-	console.log(whereProperty);
-	console.log("FULLWHERE (1)");
-	console.log(requestWhere);
+	//console.log("FULLWHERE (0)");
+	//console.log(whereProperty);
+	//console.log("FULLWHERE (1)");
+	//console.log(requestWhere);
 	
 	if (requestWhere === null && filteredWhere === null)
 	{
@@ -42,7 +43,7 @@ function getFullWhere(whereProperty, extraWhere) {
 	return query;
 }
 
-function buildWhereClause(extraWhere) {
+function _buildWhereClause(extraWhere) {
 	
 	if (extraWhere === undefined || extraWhere === null || 
 		extraWhere.column === undefined || extraWhere.column === null ||
@@ -60,17 +61,17 @@ function buildWhereClause(extraWhere) {
     return whereClause;
 }
 
-function getWhere(whereProperty) {
+function _getWhere(whereProperty) {
 	if (typeof whereProperty !== undefined && whereProperty )
 	{
-		return '(' + removeGes(removeLes(removeEqs(whereProperty))) + ')';
+		return '(' + _removeGes(_removeLes(_removeEqs(whereProperty))) + ')';
 	}
 	return null;
 }
 
-function removeEqs(originalWhereClause) {
-	console.log("RemoveEQS init");
-	console.log(originalWhereClause);
+function _removeEqs(originalWhereClause) {
+	//console.log("RemoveEQS init");
+	//console.log(originalWhereClause);
 	
 	var filteredWhereClause = '';
 	var whereClause = originalWhereClause;
@@ -117,14 +118,14 @@ function removeEqs(originalWhereClause) {
 			filteredWhereClause = filteredWhereClause + whereClause;
 		}
 	}
-	console.log("RemoveEQS");
-	console.log(filteredWhereClause);
+	//console.log("RemoveEQS");
+	//console.log(filteredWhereClause);
 	return filteredWhereClause;
 }
 
-function removeGes(originalWhereClause) {
-	console.log("RemoveGES");
-	console.log(originalWhereClause);
+function _removeGes(originalWhereClause) {
+	//console.log("RemoveGES");
+	//console.log(originalWhereClause);
 	
 	var filteredWhereClause = '';
 	var whereClause = originalWhereClause;
@@ -171,14 +172,14 @@ function removeGes(originalWhereClause) {
 			filteredWhereClause = filteredWhereClause + whereClause;
 		}
 	}
-	console.log("RemoveGES");
-	console.log(filteredWhereClause);
+	//console.log("RemoveGES");
+	//console.log(filteredWhereClause);
 	return filteredWhereClause;
 }
 
-function removeLes(originalWhereClause) {
-	console.log("RemoveLES");
-	console.log(originalWhereClause);
+function _removeLes(originalWhereClause) {
+	//console.log("RemoveLES");
+	//console.log(originalWhereClause);
 	var filteredWhereClause = '';
 	var whereClause = originalWhereClause;
 	var i = whereClause.indexOf(" le (");
@@ -224,13 +225,13 @@ function removeLes(originalWhereClause) {
 			filteredWhereClause = filteredWhereClause + whereClause;
 		}
 	}
-	console.log("RemoveLEs");
-	console.log(filteredWhereClause);
+	//console.log("RemoveLEs");
+	//console.log(filteredWhereClause);
 	return filteredWhereClause;
 }
 
-function getOffset(requestQuery) {
-	var offset = ' OFFSET ' + getProperty(requestQuery.$skip, 0) + ' ROWS';
+function _getOffset(requestQuery) {
+	var offset = ' OFFSET ' + _getProperty(requestQuery.$skip, 0) + ' ROWS';
 	
 	if (typeof requestQuery.$top !== undefined && requestQuery.$top )
 	{
@@ -239,10 +240,22 @@ function getOffset(requestQuery) {
 	return offset;
 }
 
-function getProperty(property, defaultValue) {
+function _getProperty(property, defaultValue) {
 	if (typeof property !== undefined && property )
 	{
 		return property;
 	}
 	return defaultValue;
+}
+
+module.exports =  {
+    getProperty : _getProperty,
+    getOffset : _getOffset,
+    removeLes : _removeLes,
+    removeGes : _removeGes,
+    removeEqs : _removeEqs,
+    getWhere : _getWhere,
+    buildWhereClause : _buildWhereClause,
+    getFullWhere : _getFullWhere,
+    BuildQuery : _BuildQuery
 }

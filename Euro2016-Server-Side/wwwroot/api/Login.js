@@ -68,10 +68,8 @@ function saveToken(azureMobile, userID, expiry, token, callback) {
 				ExpiryDate: expiry,
 				Token: token
 			}).then(function(results) {
-				console.log("insert authdata success");
 				callback(true);
 		    }).catch(function(error) {
-				console.log("insert authdata failed: " + error);
 				callback(false);
 			});
 			return;
@@ -82,10 +80,8 @@ function saveToken(azureMobile, userID, expiry, token, callback) {
 		authData.Token = token;
 		
 		authDatas.update(authData).then(function(results) {
-			console.log("update authdata success");
 			callback(true);
 	    }).catch(function(error) {
-			console.log("update authdata failed: " + error);
 			callback(false);
 		});
 	});

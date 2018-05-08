@@ -55,14 +55,14 @@ table.insert(function (context) {
 
 table.read.use(ValidateToken, table.operation);
 table.read(function (context) {
-    console.log(context.req.originalUrl);
+    //console.log(context.req.originalUrl);
     var accountID = context.user.id;
     
     return GetSystemData(context.req.azureMobile).then(function(systemData) {
         
         var query = buildReadQuery(accountID, context.req.query, systemData.SystemDate);
         
-        console.log(query);
+        //console.log(query);
         
         return context.data.execute({sql: query});
     });
@@ -80,7 +80,7 @@ function buildReadQuery(accountID, query, systemDate) {
         +  ' (p.UserID != @UserID AND m.DateAndTime < @SystemDate))'
       
 	
-	var query = BuildQuery(query, fromQuery, null);
+	var query = BuildQuery.BuildQuery(query, fromQuery, null);
     
     var query = 'DECLARE @UserID nvarchar(max) = \'' + accountID + '\''
         + ' DECLARE @SystemDate DATETIMEOFFSET;'
