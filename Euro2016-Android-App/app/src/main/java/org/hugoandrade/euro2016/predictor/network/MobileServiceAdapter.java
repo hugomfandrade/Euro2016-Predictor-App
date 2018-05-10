@@ -17,6 +17,7 @@ import com.microsoft.windowsazure.mobileservices.table.query.QueryOrder;
 
 import org.hugoandrade.euro2016.predictor.DevConstants;
 import org.hugoandrade.euro2016.predictor.cloudsim.CloudDatabaseSimAdapter;
+import org.hugoandrade.euro2016.predictor.data.LeagueWrapper;
 import org.hugoandrade.euro2016.predictor.data.raw.Country;
 import org.hugoandrade.euro2016.predictor.data.raw.League;
 import org.hugoandrade.euro2016.predictor.data.raw.LeagueUser;
@@ -25,15 +26,16 @@ import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.SystemData;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
-import org.hugoandrade.euro2016.predictor.data.raw.WaitingLeagueUser;
 import org.hugoandrade.euro2016.predictor.model.helper.MobileServiceJsonTableHelper;
-import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientDataJsonFormatter;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientDataJsonParser;
+import org.hugoandrade.euro2016.predictor.utils.LeagueUtils;
 import org.hugoandrade.euro2016.predictor.utils.NetworkBroadcastReceiverUtils;
 import org.hugoandrade.euro2016.predictor.utils.NetworkUtils;
 
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetworkBroadcastReceiver {
 
@@ -209,9 +211,9 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
         Futures.addCallback(futureCountries, new FutureCallback<JsonElement>() {
             @Override
             public void onSuccess(JsonElement jsonElement) {
-                for (Match m : parser.parseMatchList(jsonElement)) {
+                /*for (Match m : parser.parseMatchList(jsonElement)) {
                     Log.e(TAG, "Get Matches: " + Integer.toString(m.getMatchNumber()));
-                }
+                }/**/
                 callback.set(MobileServiceData.Builder
                         .instance(MobileServiceData.GET_MATCHES, MobileServiceData.REQUEST_RESULT_SUCCESS)
                         .setMatchList(parser.parseMatchList(jsonElement))
@@ -250,38 +252,6 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
             @Override
             public void onFailure(@NonNull Throwable throwable) {
                 sendErrorMessage(callback, MobileServiceData.GET_COUNTRIES, throwable.getMessage());
-            }
-        });
-
-        return callback;
-    }
-
-    public MobileServiceCallback getUsers() {
-
-        final MobileServiceCallback callback = new MobileServiceCallback();
-
-        if (CloudDatabaseSimAdapter.getInstance().getUsers(callback) ||
-                !isNetworkAvailable(callback, MobileServiceData.GET_USERS))
-            return callback;
-
-        ListenableFuture<JsonElement> future =
-                //new MobileServiceJsonTable(User.Entry.TABLE_NAME, mClient)
-                //.orderBy(User.Entry.Cols.SCORE, QueryOrder.Descending)
-                MobileServiceJsonTableHelper.instance(User.Entry.TABLE_NAME, mClient)
-                        .orderBy(User.Entry.Cols.SCORE, QueryOrder.Descending)
-                        .execute();
-        Futures.addCallback(future, new FutureCallback<JsonElement>() {
-            @Override
-            public void onSuccess(JsonElement jsonElement) {
-                callback.set(MobileServiceData.Builder
-                        .instance(MobileServiceData.GET_USERS, MobileServiceData.REQUEST_RESULT_SUCCESS)
-                        .setUserList(parser.parseUserList(jsonElement))
-                        .create());
-            }
-
-            @Override
-            public void onFailure(@NonNull Throwable throwable) {
-                sendErrorMessage(callback, MobileServiceData.GET_USERS, throwable.getMessage());
             }
         });
 
@@ -442,7 +412,7 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
         return callback;
     }
 
-    public MobileServiceCallback getLeagues(String userID) {
+    public MobileServiceCallback getLeagues(final String userID) {
 
         final MobileServiceCallback callback = new MobileServiceCallback();
 
@@ -451,24 +421,88 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
             return callback;
 
         ListenableFuture<JsonElement> i = MobileServiceJsonTableHelper
-                .instance(LeagueUser.Entry.TABLE_NAME, mClient)
+                .instance(League.Entry.TABLE_NAME, mClient)
                 .where().field(LeagueUser.Entry.Cols.USER_ID).eq(userID)
                 .execute();
         Futures.addCallback(i, new FutureCallback<JsonElement>() {
+
+            private List<LeagueWrapper> leagueWrapperList = new ArrayList<>();
+            private List<League> leagueList = new ArrayList<>();
+
             @Override
             public void onSuccess(JsonElement jsonElement) {
                 Log.e(TAG, "getLeague::" + jsonElement.toString());
 
-                callback.set(MobileServiceData.Builder
-                        .instance(MobileServiceData.GET_LEAGUES, MobileServiceData.REQUEST_RESULT_SUCCESS)
-                        .setLeagueList(parser.parseLeagueList(jsonElement))
-                        .create());
+                leagueList = parser.parseLeagueList(jsonElement);
+
+                // Get Top 5 of each League
+                tryOnFinished();
+
+                final MultipleCloudStatus n = new MultipleCloudStatus(leagueList.size() * 2);
+                final Object syncObj = new Object();
+
+                for (League league : leagueList) {
+
+                    final LeagueWrapper leagueWrapper = new LeagueWrapper(league);
+
+                    MobileServiceCallback c = fetchMoreUsers(league.getID(), 0, 5);
+                    MobileServiceCallback.addCallback(c, new MobileServiceCallback.OnResult() {
+                        @Override
+                        public void onResult(MobileServiceData data) {
+                            synchronized (syncObj) {
+                                Log.e(TAG, "iCountries finished");
+
+                                if (n.isAborted()) return; // An error occurred
+                                n.operationCompleted();
+
+                                leagueWrapper.setLeagueUserList(data.getLeagueUserList());
+                                leagueWrapperList.add(leagueWrapper);
+
+                                if (n.isFinished())
+                                    tryOnFinished();
+                            }
+                        }
+                    });
+
+                    MobileServiceCallback i = fetchRankOfUser(leagueWrapper.getLeague().getID(), userID);
+                    MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
+                        @Override
+                        public void onResult(MobileServiceData data) {
+                            synchronized (syncObj) {
+
+                                if (n.isAborted()) return; // An error occurred
+                                n.operationCompleted();
+
+                                List<LeagueUser> leagueUserList = data.getLeagueUserList();
+                                if (leagueUserList.size() == 1)
+                                    leagueWrapper.setMainUser(leagueUserList.get(0));
+
+                                if (n.isFinished())
+                                    tryOnFinished();
+                            }
+                        }
+                    });
+
+                }
             }
 
             @Override
             public void onFailure(@NonNull Throwable throwable) {
                 Log.e(TAG, "getLeague::" + throwable.getMessage());
                 sendErrorMessage(callback, MobileServiceData.GET_LEAGUES, throwable.getMessage());
+            }
+
+            private void tryOnFinished() {
+
+                if (leagueWrapperList.size() == leagueList.size()) {
+                    for (LeagueWrapper leagueWrapper : leagueWrapperList) {
+                        Log.e(TAG, "league::" + leagueWrapper.toString());
+                    }
+                    callback.set(MobileServiceData.Builder
+                            .instance(MobileServiceData.GET_LEAGUES, MobileServiceData.REQUEST_RESULT_SUCCESS)
+                            .setLeagueWrapperList(leagueWrapperList)
+                            .create());
+                }
             }
         });
 
@@ -494,6 +528,7 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
         Futures.addCallback(future, new FutureCallback<JsonElement>() {
             @Override
             public void onSuccess(JsonElement jsonObject) {
+                Log.e(TAG, "createLeague::s::" + jsonObject.toString());
                 callback.set(MobileServiceData.Builder
                         .instance(MobileServiceData.CREATE_LEAGUE, MobileServiceData.REQUEST_RESULT_SUCCESS)
                         .setLeague(parser.parseLeague(jsonObject.getAsJsonObject()))
@@ -502,38 +537,63 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
 
             @Override
             public void onFailure(@NonNull Throwable t) {
+                Log.e(TAG, "createLeague::e::" + t.getMessage());
                 sendErrorMessage(callback, MobileServiceData.CREATE_LEAGUE, t.getMessage());
             }
         });
         return callback;
     }
 
-    public MobileServiceCallback joinLeague(final WaitingLeagueUser waitingLeagueUser) {
+    public MobileServiceCallback joinLeague(String userID, String leagueCode) {
 
         final MobileServiceCallback callback = new MobileServiceCallback();
 
-        if (CloudDatabaseSimAdapter.getInstance().joinLeague(callback, waitingLeagueUser) ||
+        if (CloudDatabaseSimAdapter.getInstance().joinLeague(callback, userID, leagueCode) ||
                 !isNetworkAvailable(callback, MobileServiceData.JOIN_LEAGUE))
             return callback;
 
         ListenableFuture<JsonElement> future =
                 mClient.invokeApi(League.Entry.API_NAME_JOIN_LEAGUE,
-                        formatter.getAsJsonObject(waitingLeagueUser),
+                        formatter.build()
+                                .addProperty(League.Entry.Cols.USER_ID, userID)
+                                .addProperty(League.Entry.Cols.CODE, leagueCode)
+                                .create(),
                         HttpConstants.PostMethod,
                         null);
 
         Futures.addCallback(future, new FutureCallback<JsonElement>() {
+
+            private LeagueWrapper leagueWrapper;
+
             @Override
             public void onSuccess(JsonElement jsonObject) {
-                callback.set(MobileServiceData.Builder
-                        .instance(MobileServiceData.JOIN_LEAGUE, MobileServiceData.REQUEST_RESULT_SUCCESS)
-                        .setLeague(parser.parseLeague(jsonObject.getAsJsonObject()))
-                        .create());
+                League league = parser.parseLeague(jsonObject.getAsJsonObject());
+
+                leagueWrapper = new LeagueWrapper(league);
+
+                MobileServiceCallback c = fetchMoreUsers(league.getID(), 0, 5);
+                MobileServiceCallback.addCallback(c, new MobileServiceCallback.OnResult() {
+                    @Override
+                    public void onResult(MobileServiceData data) {
+                        leagueWrapper.setLeagueUserList(data.getLeagueUserList());
+
+                        tryOnFinished();
+                    }
+                });
             }
 
             @Override
             public void onFailure(@NonNull Throwable t) {
                 sendErrorMessage(callback, MobileServiceData.JOIN_LEAGUE, t.getMessage());
+            }
+
+            private void tryOnFinished() {
+                Log.e(TAG, "joinLeague(finally)::" + leagueWrapper.toString());
+
+                callback.set(MobileServiceData.Builder
+                        .instance(MobileServiceData.JOIN_LEAGUE, MobileServiceData.REQUEST_RESULT_SUCCESS)
+                        .setLeagueWrapper(leagueWrapper)
+                        .create());
             }
         });
         return callback;
@@ -605,30 +665,88 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
         return callback;
     }
 
-    public MobileServiceCallback fetchMoreUsers(String leagueID, int skip, int top) {
+    public MobileServiceCallback fetchMoreUsers(final String leagueID, int skip, int top) {
         final MobileServiceCallback callback = new MobileServiceCallback();
 
         if (CloudDatabaseSimAdapter.getInstance().fetchMoreUsers(callback, leagueID, skip, top) ||
                 !isNetworkAvailable(callback, MobileServiceData.FETCH_MORE_USERS))
             return callback;
 
-        ListenableFuture<JsonElement> i = MobileServiceJsonTableHelper
-                .instance(LeagueUser.Entry.TABLE_NAME, mClient)
-                //.where().field(LeagueUser.Entry.Cols.USER_ID).eq(userID)
+        MobileServiceJsonTableHelper t = MobileServiceJsonTableHelper
+                .instance(User.Entry.TABLE_NAME, mClient);
+
+        if (!LeagueWrapper.OVERALL_ID.equals(leagueID))
+            t.parameters(LeagueUser.Entry.Cols.LEAGUE_ID, leagueID);
+
+        ListenableFuture<JsonElement> i = t
+                .top(top)
+                .skip(skip)
+                .orderBy(User.Entry.Cols.SCORE, QueryOrder.Descending)
                 .execute();
         Futures.addCallback(i, new FutureCallback<JsonElement>() {
             @Override
             public void onSuccess(JsonElement jsonElement) {
 
+                Log.e(TAG, "fetchMoreUsers::" + jsonElement.toString());
                 callback.set(MobileServiceData.Builder
                         .instance(MobileServiceData.FETCH_MORE_USERS, MobileServiceData.REQUEST_RESULT_SUCCESS)
-                        .setUserList(parser.parseUserList(jsonElement))
+                        .setLeagueUserList(parser.parseLeagueUserList(jsonElement))
+                        .setString(leagueID)
                         .create());
             }
 
             @Override
             public void onFailure(@NonNull Throwable throwable) {
-                sendErrorMessage(callback, MobileServiceData.FETCH_MORE_USERS, throwable.getMessage());
+                Log.e(TAG, "fetchMoreUsers::error::" + throwable.toString());
+                callback.set(MobileServiceData.Builder
+                        .instance(MobileServiceData.FETCH_MORE_USERS, MobileServiceData.REQUEST_RESULT_FAILURE)
+                        .setLeagueUserList(new ArrayList<LeagueUser>())
+                        .setString(leagueID)
+                        .setMessage(throwable.getMessage())
+                        .create());
+            }
+        });
+
+        return callback;
+    }
+
+    public MobileServiceCallback fetchRankOfUser(final String leagueID, String userID) {
+        final MobileServiceCallback callback = new MobileServiceCallback();
+
+        if (CloudDatabaseSimAdapter.getInstance().fetchRankOfUser(callback, leagueID, userID) ||
+                !isNetworkAvailable(callback, MobileServiceData.FETCH_RANK_OF_USER))
+            return callback;
+
+        MobileServiceJsonTableHelper t = MobileServiceJsonTableHelper
+                .instance(User.Entry.TABLE_NAME, mClient);
+
+        if (!LeagueWrapper.OVERALL_ID.equals(leagueID))
+            t.parameters(LeagueUser.Entry.Cols.LEAGUE_ID, leagueID);
+
+        ListenableFuture<JsonElement> i = t
+                //.orderBy(User.Entry.Cols.SCORE, QueryOrder.Descending)
+                .where().field(User.Entry.Cols.ID).eq(userID)
+                .execute();
+        Futures.addCallback(i, new FutureCallback<JsonElement>() {
+            @Override
+            public void onSuccess(JsonElement jsonElement) {
+                Log.e(TAG, "fetchRankOfUser::" + jsonElement.toString());
+                callback.set(MobileServiceData.Builder
+                        .instance(MobileServiceData.FETCH_RANK_OF_USER, MobileServiceData.REQUEST_RESULT_SUCCESS)
+                        .setLeagueUserList(parser.parseLeagueUserList(jsonElement))
+                        .setString(leagueID)
+                        .create());
+            }
+
+            @Override
+            public void onFailure(@NonNull Throwable throwable) {
+                Log.e(TAG, "fetchRankOfUser::error::" + throwable.toString());
+                callback.set(MobileServiceData.Builder
+                        .instance(MobileServiceData.FETCH_RANK_OF_USER, MobileServiceData.REQUEST_RESULT_FAILURE)
+                        .setLeagueUserList(new ArrayList<LeagueUser>())
+                        .setString(leagueID)
+                        .setMessage(throwable.getMessage())
+                        .create());
             }
         });
 

@@ -11,22 +11,20 @@ import android.widget.TextView;
 
 import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.R;
+import org.hugoandrade.euro2016.predictor.data.LeagueWrapper;
+import org.hugoandrade.euro2016.predictor.data.raw.LeagueUser;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class LeagueStandingFullListAdapter extends RecyclerView.Adapter<LeagueStandingFullListAdapter.ViewHolder> {
 
-    private List<User> mUserList;
-    private List<Integer> mPositionList;
-    private boolean containsSelf = false;
-    private boolean mMoreButtonEnabled;
+    private LeagueWrapper mLeagueWrapper;
+    private boolean containsSelf;
 
     private OnLeagueStandingClicked mListener;
 
-    public LeagueStandingFullListAdapter() {
-        mUserList = new ArrayList<>();
+    public LeagueStandingFullListAdapter(LeagueWrapper leagueWrapper) {
+        mLeagueWrapper = leagueWrapper;
+        containsSelf = doesItContainSelf();
     }
 
     @NonNull
@@ -39,32 +37,34 @@ public class LeagueStandingFullListAdapter extends RecyclerView.Adapter<LeagueSt
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
 
-        User user;
-        if (position < mUserList.size()) {
-            user = mUserList.get(position);
+        LeagueUser user;
+        if (position < mLeagueWrapper.getLeagueUserList().size()) {
+            user = mLeagueWrapper.getLeagueUserList().get(position);
         }
         else {
-            user = GlobalData.getInstance().user;
+            user = mLeagueWrapper.getMainUser();
+            if (user == null) user = new LeagueUser(GlobalData.getInstance().user, position + 1);
         }
 
-        holder.tvPosition.setText(String.valueOf(mPositionList.get(holder.getAdapterPosition())));
-        holder.tvUser.setText(user.getEmail());
-        holder.tvPoints.setText(String.valueOf(user.getScore()));
+        holder.tvPosition.setText(String.valueOf(user.getRank()));
+        holder.tvUser.setText(user.getUser().getEmail());
+        holder.tvPoints.setText(String.valueOf(user.getUser().getScore()));
 
-        if (GlobalData.getInstance().user.getID().equals(user.getID())) {
+        if (GlobalData.getInstance().user.getID().equals(user.getUser().getID())) {
             holder.container.setBackgroundColor(Color.parseColor("#6626629e"));
         }
         else {
             holder.container.setBackgroundColor(Color.TRANSPARENT);
         }
 
-        if (!mMoreButtonEnabled) {
+        if (mLeagueWrapper.getLeague().getNumberOfMembers() == mLeagueWrapper.getLeagueUserList().size()) {
             holder.ivMore.setVisibility(View.GONE);
         }
         else {
             holder.ivMore.setVisibility(position == (getItemCount() - 1) ? View.VISIBLE : View.GONE);
         }
     }
+
 
     @Override
     public int getItemViewType(int position) {
@@ -74,7 +74,7 @@ public class LeagueStandingFullListAdapter extends RecyclerView.Adapter<LeagueSt
     @Override
     public int getItemCount() {
 
-        return mUserList.size() + (containsSelf ? 0 : 1);
+        return mLeagueWrapper.getLeagueUserList().size() + (containsSelf ? 0 : 1);
     }
 
     public void setOnLeagueStandingClicked(OnLeagueStandingClicked listener) {
@@ -83,39 +83,23 @@ public class LeagueStandingFullListAdapter extends RecyclerView.Adapter<LeagueSt
 
     private boolean doesItContainSelf() {
 
-        for (User user : mUserList) {
-            if (GlobalData.getInstance().user.getID().equals(user.getID())) {
+        for (LeagueUser user : mLeagueWrapper.getLeagueUserList()) {
+            android.util.Log.e(getClass().getSimpleName(), "doesItContainSelf::" + user.getUser().getEmail());
+
+            if (GlobalData.getInstance().user.getID().equals(user.getUser().getID())) {
                 return true;
             }
         }
         return false;
     }
 
-    public void set(List<User> userList) {
-        mUserList = userList;
-        mPositionList = new ArrayList<>();
-        for (int i = 0 ; i < mUserList.size() ; i++) {
-            if (i == 0) {
-                mPositionList.add(i + 1);
-            }
-            else {
-                if (mUserList.get(i).getScore() == mUserList.get(i - 1).getScore()) {
-                    mPositionList.add(mPositionList.get(i - 1));
-                }
-                else {
-                    mPositionList.add(i + 1);
-                }
-            }
-        }
+    public void set(LeagueWrapper leagueWrapper) {
+        mLeagueWrapper = leagueWrapper;
         containsSelf = doesItContainSelf();
-
-        if (!containsSelf) {
-            mPositionList.add(mPositionList.size() + 1);
-        }
     }
 
-    public void disableMoreButton() {
-        mMoreButtonEnabled = false;
+    public void updateMoreButton() {
+        containsSelf = doesItContainSelf();
     }
 
     public interface OnLeagueStandingClicked {
@@ -141,8 +125,8 @@ public class LeagueStandingFullListAdapter extends RecyclerView.Adapter<LeagueSt
                 @Override
                 public void onClick(View v) {
                     User user;
-                    if (getAdapterPosition() < mUserList.size()) {
-                        user = mUserList.get(getAdapterPosition());
+                    if (getAdapterPosition() < mLeagueWrapper.getLeagueUserList().size()) {
+                        user = mLeagueWrapper.getLeagueUserList().get(getAdapterPosition()).getUser();
                     }
                     else {
                         user = GlobalData.getInstance().user;

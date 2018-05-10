@@ -33,15 +33,6 @@ public class CloudContentValuesFormatter {
                 .create();
     }
 
-    public ContentValues getAsContentValues(User user) {
-        return ContentValuesBuilder.instance()
-                .put("_" + User.Entry.Cols.ID, user.getID())
-                .put(User.Entry.Cols.EMAIL, user.getEmail())
-                .put(User.Entry.Cols.PASSWORD, user.getPassword())
-                .put(User.Entry.Cols.SCORE, user.getScore() == -1 ? null : user.getScore())
-                .create();
-    }
-
     public ContentValues getAsContentValues(JsonObject jsonObject) {
         ContentValuesBuilder builder = ContentValuesBuilder.instance();
         for (Map.Entry<String, JsonElement> entry: jsonObject.entrySet()) {

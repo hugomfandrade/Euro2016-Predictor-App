@@ -10,10 +10,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.R;
 import org.hugoandrade.euro2016.predictor.data.LeagueWrapper;
-import org.hugoandrade.euro2016.predictor.data.raw.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,10 +38,13 @@ public class LeagueListAdapter extends RecyclerView.Adapter<LeagueListAdapter.Vi
         Context context = holder.itemView.getContext();
         LeagueWrapper leagueWrapper = mLeagueList.get(position);
 
-        holder.leagueStandingListAdapter.set(leagueWrapper.getUserList());
+        boolean isOverall = leagueWrapper.getLeague().getID().equals(LeagueWrapper.OVERALL_ID);
+
+        holder.leagueStandingListAdapter.set(leagueWrapper.getLeagueUserList());
+        holder.leagueStandingListAdapter.setMainUser(leagueWrapper.getMainUser());
         holder.rvLeagueStandings.setAdapter(holder.leagueStandingListAdapter);
 
-        holder.tvLeagueName.setText(leagueWrapper.getLeague().getName());
+        holder.tvLeagueName.setText(isOverall? context.getString(R.string.app_name) : leagueWrapper.getLeague().getName());
         holder.tvLeagueMembers.setText(TextUtils.concat("(",
                 String.valueOf(leagueWrapper.getLeague().getNumberOfMembers()),
                 " ",

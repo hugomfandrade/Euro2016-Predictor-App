@@ -18,10 +18,12 @@ import org.hugoandrade.euro2016.predictor.data.raw.Country;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
 import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils;
+import org.hugoandrade.euro2016.predictor.utils.TranslationUtils;
 import org.hugoandrade.euro2016.predictor.view.listadapter.GroupListAdapter;
 import org.hugoandrade.euro2016.predictor.view.listadapter.KnockoutListAdapter;
 
 import java.util.List;
+import java.util.Locale;
 
 public class CountryDetailsActivity extends AppCompatActivity {
 
@@ -85,7 +87,7 @@ public class CountryDetailsActivity extends AppCompatActivity {
         ivFlag.setImageResource(Country.getImageID(mCountry));
 
         TextView tvCountryName = findViewById(R.id.tv_country_name);
-        tvCountryName.setText(mCountry.getName());
+        tvCountryName.setText(TranslationUtils.translateCountryName(this, mCountry.getName()));
 
         TextView tvCountryStatus = findViewById(R.id.tv_country_status);
         String status = getStatus();
@@ -106,8 +108,19 @@ public class CountryDetailsActivity extends AppCompatActivity {
 
 
         // Setup recycler view
+        KnockoutListAdapter knockoutListAdapter = new KnockoutListAdapter(mMatchList);
+        knockoutListAdapter.setOnKnockoutListAdapterListener(new KnockoutListAdapter.OnKnockoutListAdapterListener() {
+            @Override
+            public void onCountryClicked(Country country) {
+                if (!mCountry.getID().equals(country.getID())) {
+                    finish();
+                    startActivity(CountryDetailsActivity.makeIntent(CountryDetailsActivity.this, country));
+                }
+
+            }
+        });
         RecyclerView rvMatches = findViewById(R.id.rv_matches);
-        rvMatches.setAdapter(new KnockoutListAdapter(mMatchList));
+        rvMatches.setAdapter(knockoutListAdapter);
         rvMatches.setNestedScrollingEnabled(false);
         rvMatches.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
     }
@@ -135,27 +148,27 @@ public class CountryDetailsActivity extends AppCompatActivity {
             if (mCountry.hasAdvancedGroupStage()) {
                 // if round of 16
                 if (eliminatedIn(StaticVariableUtils.SStage.roundOf16)) {
-                    return "Eliminated in Round of 16";
+                    return getString(R.string.eliminated_round_of_16);
                 }
                 // if quarter final
                 if (eliminatedIn(StaticVariableUtils.SStage.quarterFinals)) {
-                    return "Eliminated in Quarter Finals";
+                    return getString(R.string.eliminated_quarter_finals);
                 }
                 // if semi final
                 if (eliminatedIn(StaticVariableUtils.SStage.semiFinals)) {
-                    return "Eliminated in Semi Finals";
+                    return getString(R.string.eliminated_semi_finals);
                 }
                 // if final
                 if (eliminatedIn(StaticVariableUtils.SStage.finals)) {
-                    return "Lost the Final";
+                    return getString(R.string.lost_final);
                 }
                 if (wonItAll()) {
-                    return "Euro 2016 Winners";
+                    return getString(R.string.winners);
                 }
             }
             else {
                 int placeFinish = mCountry.getPosition();
-                return String.valueOf(placeFinish) + getSuffix(placeFinish) + " " + getString(R.string.in_group) + " " + mCountry.getGroup();
+                return String.valueOf(placeFinish) + TranslationUtils.getSuffix(placeFinish) + " " + getString(R.string.in_group) + " " + mCountry.getGroup();
             }
         }
         return null;
@@ -209,21 +222,5 @@ public class CountryDetailsActivity extends AppCompatActivity {
                 return false;
         }
         return true;
-    }
-
-    private String getSuffix(int placeFinish) {
-        /*if (Locale.getDefault().getLanguage().equals("pt")) {
-            return "º";
-        }
-        else {/**/
-            if (placeFinish == 1)
-                return "st";
-            else if (placeFinish == 2)
-                return "nd";
-            else if (placeFinish == 3)
-                return "rd";
-            else
-                return "th";
-        //}
     }
 }

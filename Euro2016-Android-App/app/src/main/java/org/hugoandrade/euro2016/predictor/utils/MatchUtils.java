@@ -1,5 +1,11 @@
 package org.hugoandrade.euro2016.predictor.utils;
 
+import android.content.Context;
+import android.text.TextUtils;
+import android.util.SparseArray;
+
+import org.hugoandrade.euro2016.predictor.GlobalData;
+import org.hugoandrade.euro2016.predictor.R;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
 
 import java.util.ArrayList;
@@ -134,6 +140,227 @@ public final class MatchUtils {
             }
         }
         return mList;
+    }
+
+    public static boolean isMatchupSetUp(Match match) {
+        return match != null && isCountry(match.getHomeTeamName()) && isCountry(match.getAwayTeamName());
+
+    }
+
+    public static boolean hasAtLeastOneOfTheMatchupSetUp(Match match) {
+        return match != null && (isCountry(match.getHomeTeamName()) || isCountry(match.getAwayTeamName()));
+
+    }
+
+    public static boolean isCountry(String name) {
+        if (name == null) return false;
+        switch (name) {
+            case "France":
+            case "Romania":
+            case "Albania":
+            case "Switzerland":
+            case "England":
+            case "Russia":
+            case "Wales":
+            case "Slovakia":
+            case "Germany":
+            case "Ukraine":
+            case "Poland":
+            case "Northern Ireland":
+            case "Spain":
+            case "Czech Republic":
+            case "Turkey":
+            case "Croatia":
+            case "Belgium":
+            case "Italy":
+            case "Ireland":
+            case "Sweden":
+            case "Portugal":
+            case "Iceland":
+            case "Austria":
+            case "Hungary":
+                return true;
+        }
+        return false;
+    }
+
+    public static boolean isValidToGetPreviousMatches(SparseArray<Match> matchSet, Match match) {
+
+        switch (match.getStage()) {
+            case "Group Stage":
+            case "Round of 16":
+                return false;
+            case "Quarter Final":
+            case "Semi Final":
+            case "Final":
+
+                if (!MatchUtils.havePreviousMatchesBeenSetUp(matchSet, match)) {
+                    return false;
+                }
+                break;
+            default:
+                return false;
+
+        }
+
+        return true;
+    }
+
+    public static String tryGetTemporaryAwayTeam(Context context, SparseArray<Match> matchSet, Match match) {
+
+        if (!isValidToGetPreviousMatches(matchSet, match)) {
+            return TranslationUtils.translateCountryName(context, match.getAwayTeamName());
+        }
+
+        return getTemporaryAwayTeam(context, matchSet, match);
+    }
+
+    public static String tryGetTemporaryHomeTeam(Context context, SparseArray<Match> matchSet, Match match) {
+
+        if (!isValidToGetPreviousMatches(matchSet, match)) {
+            return TranslationUtils.translateCountryName(context, match.getHomeTeamName());
+        }
+
+        return getTemporaryHomeTeam(context, matchSet, match);
+    }
+
+    public static String getTemporaryHomeTeam(Context context, SparseArray<Match> matchSet, Match match) {
+
+        String firstName;
+        String secondName;
+        switch (match.getMatchNumber()) {
+            case 51:
+                firstName = matchSet.get(50).getHomeTeamName();
+                secondName = matchSet.get(50).getAwayTeamName();
+                break;
+            case 50:
+                firstName = matchSet.get(47).getHomeTeamName();
+                secondName = matchSet.get(47).getAwayTeamName();
+                break;
+            case 49:
+                firstName = matchSet.get(45).getHomeTeamName();
+                secondName = matchSet.get(45).getAwayTeamName();
+                break;
+            case 48:
+                firstName = matchSet.get(40).getHomeTeamName();
+                secondName = matchSet.get(40).getAwayTeamName();
+                break;
+            case 47:
+                firstName = matchSet.get(41).getHomeTeamName();
+                secondName = matchSet.get(41).getAwayTeamName();
+                break;
+            case 46:
+                firstName = matchSet.get(38).getHomeTeamName();
+                secondName = matchSet.get(38).getAwayTeamName();
+                break;
+            case 45:
+                firstName = matchSet.get(37).getHomeTeamName();
+                secondName = matchSet.get(37).getAwayTeamName();
+                break;
+                default:
+                    return TranslationUtils.translateCountryName(context, match.getHomeTeamName());
+
+        }
+
+        return TextUtils.concat(
+                TranslationUtils.translateCountryName(context, firstName),
+                "\n",
+                context.getString(R.string.or),
+                "\n",
+                TranslationUtils.translateCountryName(context, secondName)
+        ).toString();
+    }
+
+    public static String getTemporaryAwayTeam(Context context, SparseArray<Match> matchSet, Match match) {
+
+        String firstName;
+        String secondName;
+        switch (match.getMatchNumber()) {
+            case 51:
+                firstName = matchSet.get(49).getHomeTeamName();
+                secondName = matchSet.get(49).getAwayTeamName();
+                break;
+            case 50:
+                firstName = matchSet.get(48).getHomeTeamName();
+                secondName = matchSet.get(48).getAwayTeamName();
+                break;
+            case 49:
+                firstName = matchSet.get(46).getHomeTeamName();
+                secondName = matchSet.get(46).getAwayTeamName();
+                break;
+            case 48:
+                firstName = matchSet.get(44).getHomeTeamName();
+                secondName = matchSet.get(44).getAwayTeamName();
+                break;
+            case 47:
+                firstName = matchSet.get(43).getHomeTeamName();
+                secondName = matchSet.get(43).getAwayTeamName();
+                break;
+            case 46:
+                firstName = matchSet.get(42).getHomeTeamName();
+                secondName = matchSet.get(42).getAwayTeamName();
+                break;
+            case 45:
+                firstName = matchSet.get(39).getHomeTeamName();
+                secondName = matchSet.get(39).getAwayTeamName();
+                break;
+                default:
+                    return TranslationUtils.translateCountryName(context, match.getAwayTeamName());
+
+        }
+
+        return TextUtils.concat(
+                TranslationUtils.translateCountryName(context, firstName),
+                "\n",
+                context.getString(R.string.or),
+                "\n",
+                TranslationUtils.translateCountryName(context, secondName)
+        ).toString();
+    }
+
+    public static boolean havePreviousMatchesBeenSetUp(SparseArray<Match> matchSet, Match match) {
+
+        switch (match.getMatchNumber()) {
+            case 51:
+                return hasAtLeastOneOfTheMatchupSetUp(matchSet.get(50)) || hasAtLeastOneOfTheMatchupSetUp(matchSet.get(49));
+            case 50:
+                return hasAtLeastOneOfTheMatchupSetUp(matchSet.get(47)) || hasAtLeastOneOfTheMatchupSetUp(matchSet.get(48));
+            case 49:
+                return hasAtLeastOneOfTheMatchupSetUp(matchSet.get(45)) || hasAtLeastOneOfTheMatchupSetUp(matchSet.get(46));
+            case 48:
+                return hasAtLeastOneOfTheMatchupSetUp(matchSet.get(40)) || hasAtLeastOneOfTheMatchupSetUp(matchSet.get(44));
+            case 47:
+                return hasAtLeastOneOfTheMatchupSetUp(matchSet.get(41)) || hasAtLeastOneOfTheMatchupSetUp(matchSet.get(43));
+            case 46:
+                return hasAtLeastOneOfTheMatchupSetUp(matchSet.get(38)) || hasAtLeastOneOfTheMatchupSetUp(matchSet.get(42));
+            case 45:
+                return hasAtLeastOneOfTheMatchupSetUp(matchSet.get(37)) || hasAtLeastOneOfTheMatchupSetUp(matchSet.get(39));
+
+        }
+        return false;
+    }
+
+    public static String getScoreOfHomeTeam(Match match) {
+        if (match == null || match.getHomeTeamGoals() == -1) return "";
+
+        return (match.getHomeTeamNotes() == null ? "" : match.getHomeTeamNotes())
+                    + String.valueOf(match.getHomeTeamGoals());
+    }
+
+    public static String getScoreOfAwayTeam(Match match) {
+        if (match == null || match.getAwayTeamGoals() == -1) return "";
+
+        return String.valueOf(match.getAwayTeamGoals()) +
+                (match.getAwayTeamNotes() == null ? "" : match.getAwayTeamNotes());
+    }
+
+    public static String getShortMatchUp(Context context, Match match) {
+        if (match == null) return "";
+
+        return TextUtils.concat(
+                TranslationUtils.translateCountryName(context, match.getHomeTeamName()),
+                " - ",
+                TranslationUtils.translateCountryName(context, match.getAwayTeamName())).toString();
     }
 }
 

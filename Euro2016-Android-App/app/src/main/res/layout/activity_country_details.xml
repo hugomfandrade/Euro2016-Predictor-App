@@ -80,7 +80,7 @@
                 android:layout_marginTop="50dp"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:textColor="#ffffff"
-                android:text="Group Stage"
+                android:text="@string/group_stage"
                 />
 
             <include
@@ -96,7 +96,7 @@
                 android:layout_marginTop="50dp"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:textColor="#ffffff"
-                android:text="Matches"
+                android:text="@string/matches"
                 />
 
             <android.support.v7.widget.RecyclerView

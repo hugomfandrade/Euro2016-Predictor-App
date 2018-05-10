@@ -11,6 +11,8 @@ import android.widget.TextView;
 
 import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.R;
+import org.hugoandrade.euro2016.predictor.data.raw.League;
+import org.hugoandrade.euro2016.predictor.data.raw.LeagueUser;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
 
 import java.util.ArrayList;
@@ -18,10 +20,10 @@ import java.util.List;
 
 public class LeagueStandingListAdapter extends RecyclerView.Adapter<LeagueStandingListAdapter.ViewHolder> {
 
-    private static final int MAX_NUMBER_OF_ROWS = 4;
+    private static final int MAX_NUMBER_OF_ROWS = 5;
 
-    private List<User> mUserList;
-    private List<Integer> mPositionList;
+    private List<LeagueUser> mUserList;
+    private LeagueUser mMainUser;
 
     public LeagueStandingListAdapter() {
         mUserList = new ArrayList<>();
@@ -36,18 +38,34 @@ public class LeagueStandingListAdapter extends RecyclerView.Adapter<LeagueStandi
 
     @Override
     public void onBindViewHolder(@NonNull final LeagueStandingListAdapter.ViewHolder holder, int position) {
-        User user = mUserList.get(position);
+        LeagueUser user = mUserList.get(position);
 
-        holder.tvPosition.setText(String.valueOf(mPositionList.get(holder.getAdapterPosition())));
-        holder.tvUser.setText(user.getEmail());
-        holder.tvPoints.setText(String.valueOf(user.getScore()));
+        if ((position + 1) == MAX_NUMBER_OF_ROWS && !doesItContainSelf()) {
+            user = mMainUser;
+            if (user == null) user = new LeagueUser(GlobalData.getInstance().user, position + 1);
+        }
 
-        if (GlobalData.getInstance().user.getID().equals(user.getID())) {
+        holder.tvPosition.setText(String.valueOf(user.getRank()));
+        holder.tvUser.setText(user.getUser().getEmail());
+        holder.tvPoints.setText(String.valueOf(user.getUser().getScore()));
+
+        if (GlobalData.getInstance().user.getID().equals(user.getUser().getID())) {
             holder.itemView.setBackgroundColor(Color.parseColor("#6626629e"));
         }
         else {
             holder.itemView.setBackgroundColor(Color.TRANSPARENT);
         }
+    }
+
+    private boolean doesItContainSelf() {
+
+        for (int i = 0 ; i < mUserList.size() && i < MAX_NUMBER_OF_ROWS ; i++) {
+            LeagueUser user = mUserList.get(i);
+            if (GlobalData.getInstance().user.getID().equals(user.getUser().getID())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -60,23 +78,12 @@ public class LeagueStandingListAdapter extends RecyclerView.Adapter<LeagueStandi
         return mUserList.size() < MAX_NUMBER_OF_ROWS ? mUserList.size() : MAX_NUMBER_OF_ROWS;
     }
 
-    public void set(List<User> userList) {
+    public void set(List<LeagueUser> userList) {
         mUserList = userList;
-        mPositionList = new ArrayList<>();
-        for (int i = 0 ; i < mUserList.size() ; i++) {
-            if (i == 0) {
-                mPositionList.add(i + 1);
-            }
-            else {
-                if (mUserList.get(i).getScore() == mUserList.get(i - 1).getScore()) {
-                    mPositionList.add(mPositionList.get(i - 1));
-                }
-                else {
-                    mPositionList.add(i + 1);
-                }
-            }
-        }
-        notifyDataSetChanged();
+    }
+
+    public void setMainUser(LeagueUser mainUser) {
+        mMainUser = mainUser;
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {

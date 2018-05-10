@@ -9,29 +9,26 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 
-import org.hugoandrade.euro2016.predictor.FragComm;
+import org.hugoandrade.euro2016.predictor.view.fragment.FragComm;
 import org.hugoandrade.euro2016.predictor.MVP;
 import org.hugoandrade.euro2016.predictor.R;
 import org.hugoandrade.euro2016.predictor.common.ServiceManager;
 import org.hugoandrade.euro2016.predictor.common.ServiceManagerOps;
 import org.hugoandrade.euro2016.predictor.customview.IconTabLayout;
 import org.hugoandrade.euro2016.predictor.customview.NonSwipeableViewPager;
-import org.hugoandrade.euro2016.predictor.data.raw.Match;
-import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
-import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.presenter.MainPresenter;
+import org.hugoandrade.euro2016.predictor.view.fragment.LeaguesFragment;
 import org.hugoandrade.euro2016.predictor.view.fragment.PredictionsFragment;
 import org.hugoandrade.euro2016.predictor.view.fragment.RulesFragment;
 import org.hugoandrade.euro2016.predictor.view.fragment.StandingsFragment;
-import org.hugoandrade.euro2016.predictor.view.fragment.LeaguesFragment;
 
-import java.util.List;
-
-public class MainActivity extends ActivityBase<MVP.RequiredMainViewOps,
-                                                  MVP.ProvidedMainPresenterOps,
-                                                  MainPresenter>
+public class MainActivity extends MainActivityBase<MVP.RequiredMainViewOps,
+                                                   MVP.ProvidedMainPresenterOps,
+                                                   MainPresenter>
         implements MVP.RequiredMainViewOps,
                    FragComm.RequiredActivityOps {
 
@@ -52,8 +49,8 @@ public class MainActivity extends ActivityBase<MVP.RequiredMainViewOps,
     /**
      * The titles of each Fragment.
      */
-    public CharSequence[] mFragmentTitleArray = {
-            "Predictions", "Standings", "Scores", "Rules"};
+    public int[] mFragmentTitleResArray = {
+            R.string.predictions, R.string.standings, R.string.leagues, R.string.rules };
     /**
      * The titles of each Fragment.
      */
@@ -103,7 +100,7 @@ public class MainActivity extends ActivityBase<MVP.RequiredMainViewOps,
         setSupportActionBar((Toolbar) findViewById(R.id.anim_toolbar));
 
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Euro 2016 Predictor");
+            getSupportActionBar().setTitle(R.string.app_name);
         }
 
         // initialize TabLayout.
@@ -174,12 +171,11 @@ public class MainActivity extends ActivityBase<MVP.RequiredMainViewOps,
         }
     }
 
-    /**
-     * @class SectionsPagerAdapter
-     *
-     * @brief The Adapter that initializes, manages and displays the Fragments into the
-     * ViewPager's layout.
-     */
+    @Override
+    protected void logout() {
+        showSnackBar("Logout not implemented yet");
+    }
+
     private class SectionsPagerAdapter extends FragmentPagerAdapter implements IconTabLayout.IconTabLayoutListener {
 
         /**
@@ -217,7 +213,8 @@ public class MainActivity extends ActivityBase<MVP.RequiredMainViewOps,
          */
         @Override
         public CharSequence getPageTitle(int position) {
-            return mFragmentTitleArray[position];
+            //return mFragmentTitleArray[position];
+            return getString(mFragmentTitleResArray[position]);
         }
     }
 }

@@ -76,7 +76,7 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
     }
 
     public void onInfoFetched(boolean isOk, String message) {
-        onInfoFetched(isOk, message, null, null, null, null, null);
+        onInfoFetched(isOk, message, null, null, null, null);
     }
 
     public void onInfoFetched(boolean isOk,
@@ -84,25 +84,9 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
                               List<Country> countryList,
                               List<Match> matchList,
                               List<Prediction> predictionList,
-                              List<User> userList,
                               List<LeagueWrapper> leagueWrapperList) {
 
         if (isOk) {
-
-            // Sort by score
-            Collections.sort(userList, new Comparator<User>() {
-                @Override
-                public int compare(User lhs, User rhs) {
-                    int diff = rhs.getScore() - lhs.getScore();
-                    return diff != 0 ? diff :
-                            (GlobalData.getInstance().user.getID().equals(rhs.getID())? 1 :
-                                    (GlobalData.getInstance().user.getID().equals(lhs.getID())? -1 : diff));
-                }
-            });
-
-            GlobalData.getInstance().setUserList(userList);
-
-            /* ******************************** */
 
             // Set countries to each match
             for (Country c : countryList) {
@@ -136,6 +120,22 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
             // Send the list of predictions to the UI
             GlobalData.getInstance().setPredictionList(predictionList);
 
+            Collections.sort(leagueWrapperList, new Comparator<LeagueWrapper>() {
+                @Override
+                public int compare(LeagueWrapper o1, LeagueWrapper o2) {
+
+                    if (o1.getLeague() != null && o1.getLeague().getID().equals(LeagueWrapper.OVERALL_ID)) {
+                        return 1;
+                    }
+                    if (o2.getLeague() != null && o2.getLeague().getID().equals(LeagueWrapper.OVERALL_ID)) {
+                        return -1;
+                    }
+                    return 0;
+                }
+            });
+            GlobalData.getInstance().setLeagues(leagueWrapperList);
+
+
             Date serverTime = GlobalData.getInstance().getServerTime().getTime();
 
             int to = MatchUtils.getMatchNumberOfFirstNotPlayedMatched(matchList, serverTime);
@@ -143,10 +143,7 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
 
             int from = (to < 4) ? 0 : to - 4;
 
-            GlobalData.getInstance().setLeagues(leagueWrapperList);
-
-
-            getLatestPerformanceOfUsers(userList, from, to);
+            // TODO getLatestPerformanceOfUsers(userList, from, to);
 
         } else {
             getView().reportMessage(message);
@@ -261,7 +258,6 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
                     data.getCountryList(),
                     data.getMatchList(),
                     data.getPredictionList(),
-                    data.getUserList(),
                     data.getLeagueWrapperList());
         }
         else if (operationType == MobileClientData.OperationType.GET_LATEST_PERFORMANCE.ordinal()) {

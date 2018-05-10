@@ -31,23 +31,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <org.hugoandrade.euro2016.predictor.customview.RoundedCornerLayout
-                    android:visibility="invisible"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    custom:corner_radius="50dp"
-                    custom:background_color="#26629e">
-
-                    <TextView
-                        android:id="@+id/tv_stage_abbr"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:gravity="center"
-                        android:textColor="#fff"
-                        tools:text="16"/>
-
-                </org.hugoandrade.euro2016.predictor.customview.RoundedCornerLayout>
-
                 <TextView
                     android:id="@+id/tv_match_date_time"
                     android:layout_width="match_parent"
@@ -98,6 +81,7 @@
                     <TextView
                         android:id="@+id/tv_home_team_goals"
                         style="@style/Prediction.InputScore"
+                        android:textSize="18sp"
                         android:background="@null"
                         />
 
@@ -109,6 +93,7 @@
                     <TextView
                         android:id="@+id/tv_away_team_goals"
                         style="@style/Prediction.InputScore"
+                        android:textSize="18sp"
                         android:background="@null"
                         />
 

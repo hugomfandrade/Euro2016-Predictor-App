@@ -5,9 +5,8 @@ import android.os.Parcelable;
 
 public class LeagueUser implements Parcelable {
 
-    private String mID;
-    private String mLeagueID;
-    private String mUserID;
+    private User mUser;
+    private int mRank;
 
     public static class Entry {
 
@@ -17,38 +16,36 @@ public class LeagueUser implements Parcelable {
             public static final String ID = "id";
             public static final String LEAGUE_ID = "LeagueID";
             public static final String USER_ID = "UserID";
+            public static final String RANK = "Rank";
         }
     }
 
-    public LeagueUser(String id, String leagueID, String userID) {
-        mID = id;
-        mLeagueID = leagueID;
-        mUserID = userID;
+    public LeagueUser(User user, int rank) {
+        mUser = user;
+        mRank = rank;
     }
 
-    public String getID() {
-        return mID;
+    public LeagueUser(User user) {
+        mUser = user;
     }
 
-    public String getLeagueID() {
-        return mLeagueID;
+    public User getUser() {
+        return mUser;
     }
 
-    public String getUserID() {
-        return mUserID;
+    public int getRank() {
+        return mRank;
     }
 
     protected LeagueUser(Parcel in) {
-        mID = in.readString();
-        mLeagueID = in.readString();
-        mUserID = in.readString();
+        mUser = in.readParcelable(User.class.getClassLoader());
+        mRank = in.readInt();
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(mID);
-        dest.writeString(mLeagueID);
-        dest.writeString(mUserID);
+        dest.writeParcelable(mUser, flags);
+        dest.writeInt(mRank);
     }
 
     @Override

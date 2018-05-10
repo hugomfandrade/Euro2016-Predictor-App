@@ -4,6 +4,7 @@ import android.os.RemoteException;
 
 import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.MVP;
+import org.hugoandrade.euro2016.predictor.data.raw.LeagueUser;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
@@ -61,7 +62,7 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
             onUsersFetched(isOperationSuccessful,
                     data.getErrorMessage(),
                     data.getString(),
-                    data.getUserList());
+                    data.getLeagueUserList());
         }
     }
 
@@ -80,7 +81,7 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
             List<Prediction> predictionList = GlobalData.getInstance().getPredictionsOfUser(user.getID());
 
             if (predictionList.size() == to) {
-                getView().startUserPredictionsActivity(user, new ArrayList<Prediction>());
+                getView().startUserPredictionsActivity(user, predictionList);
             }
             else {
                 getPredictionsOfSelectedUser(user);
@@ -204,9 +205,11 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
         getView().enableUI();
     }
 
-    private void onUsersFetched(boolean isOk, String errorMessage, String leagueID, List<User> userList) {
+    private void onUsersFetched(boolean isOk, String errorMessage, String leagueID, List<LeagueUser> userList) {
         if (isOk) {
             GlobalData.getInstance().addUsersToLeague(leagueID, userList);
+
+            getView().updateListOfUsers(userList);
             //getView().leagueLeft();
         }
         else {

@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import org.hugoandrade.euro2016.predictor.data.raw.League;
+import org.hugoandrade.euro2016.predictor.data.raw.LeagueUser;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
 
 import java.util.ArrayList;
@@ -12,12 +13,12 @@ import java.util.List;
 public class LeagueWrapper implements Parcelable {
 
     public static final String OVERALL_ID = "Overall_ID";
-    public static final String OVERALL_NAME = "Predictor App members";
 
     private final League mLeague;
-    private final List<User> mUserList;
+    private LeagueUser mMainUser;
+    private List<LeagueUser> mUserList;
 
-    public LeagueWrapper(League league, List<User> userList) {
+    public LeagueWrapper(League league, List<LeagueUser> userList) {
         mLeague = league;
         mUserList = userList;
     }
@@ -27,11 +28,11 @@ public class LeagueWrapper implements Parcelable {
         mUserList = new ArrayList<>();
     }
 
-    public void setUserList(List<User> userList) {
-        mUserList.addAll(userList);
+    public void setLeagueUserList(List<LeagueUser> userList) {
+        mUserList = userList;
     }
 
-    public List<User> getUserList() {
+    public List<LeagueUser> getLeagueUserList() {
         return mUserList;
     }
 
@@ -39,14 +40,24 @@ public class LeagueWrapper implements Parcelable {
         return mLeague;
     }
 
+    public LeagueUser getMainUser() {
+        return mMainUser;
+    }
+
+    public void setMainUser(LeagueUser leagueUser) {
+        mMainUser = leagueUser;
+    }
+
     protected LeagueWrapper(Parcel in) {
         mLeague = in.readParcelable(League.class.getClassLoader());
-        mUserList = in.createTypedArrayList(User.CREATOR);
+        mMainUser = in.readParcelable(LeagueUser.class.getClassLoader());
+        mUserList = in.createTypedArrayList(LeagueUser.CREATOR);
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeParcelable(mLeague, flags);
+        dest.writeParcelable(mMainUser, flags);
         dest.writeTypedList(mUserList);
     }
 
@@ -70,18 +81,18 @@ public class LeagueWrapper implements Parcelable {
     @Override
     public String toString() {
         String s = "LeagueWrapper{" +
-                "mLeague=" + mLeague.getName() +
+                "mLeague=" + mLeague.getName() + "-" + mLeague.getNumberOfMembers() +
                 ", mUserList=";
-        for (User user : mUserList)
-            s += "username=" + user.getEmail() + ",";
+        for (LeagueUser user : mUserList)
+            s += "username=" + (user.getUser() == null? "null" : user.getUser().getEmail() + "-" + user.getUser().getScore()) + ",";
         s += '}';
         return s;
     }
 
-    public static LeagueWrapper createOverall(List<User> userList) {
+    /*public static LeagueWrapper createOverall(List<User> userList) {
         return new LeagueWrapper(
                 new League(OVERALL_ID, OVERALL_NAME, null, null, 0),
                 userList
         );
-    }
+    }/**/
 }

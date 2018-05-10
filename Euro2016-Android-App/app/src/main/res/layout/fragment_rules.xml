@@ -17,7 +17,7 @@
             android:textStyle="bold"
             android:textSize="20sp"
             android:lineSpacingMultiplier="1.5"
-            android:text="Match result scoring"/>
+            android:text="@string/match_result_scoring"/>
 
         <TextView
             android:layout_marginTop="10dp"
@@ -25,28 +25,28 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="start"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/tv_rule_correct_margin_of_victory"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="start"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/tv_rule_correct_outcome"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="start"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/tv_rule_incorrect_prediction"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="start"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:textSize="16sp" />
 
         <TextView
             android:layout_marginTop="10dp"
@@ -54,7 +54,7 @@
             android:layout_height="wrap_content"
             android:lineSpacingMultiplier="1.2"
             android:textSize="18sp"
-            android:text="Predictions can be changed at any point up to the scheduled kick-off time of the match in question."
+            android:text="@string/predictions_details"
             />
 
         <TextView
@@ -64,14 +64,14 @@
             android:textSize="20sp"
             android:layout_marginTop="20dp"
             android:lineSpacingMultiplier="1.5"
-            android:text="Winner prize"/>
+            android:text="@string/winner_prize"/>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:lineSpacingMultiplier="1.2"
             android:textSize="18sp"
-            android:text="Winner gets bragging rights."
+            android:text="@string/winner_gets_bragging_rights"
             />
 
     </LinearLayout>

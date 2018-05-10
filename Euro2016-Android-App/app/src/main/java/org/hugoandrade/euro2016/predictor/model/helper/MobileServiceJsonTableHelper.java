@@ -45,11 +45,14 @@ public class MobileServiceJsonTableHelper {
 
     private Pair<String, String[]> mSpecialWhere;
     private List<WhereClause> whereClauseList;
+    private List<Pair<String, String>> mParameterList;
 
     //private String mOrderField;
     //private QueryOrder mOrderOrder;
 
     private MHandler mHandler;
+    private int top = -1;
+    private int skip = -1;
 
     public static MobileServiceJsonTableHelper instance(String tableName, MobileServiceClient client) {
         ExecutableJsonQuery executableJsonQuery = new ExecutableJsonQuery();
@@ -178,14 +181,26 @@ public class MobileServiceJsonTableHelper {
     private void startQueryAllAsync() {
         buildQuery();
 
-        queryMore(new QueryParameters(0, 50));
+        QueryParameters q = new QueryParameters(0, 50);
+        if (top != -1) {
+            q.setTop(top);
+        }
+        if (skip != -1) {
+            q.setSkip(skip);
+        }
+        queryMore(q);
     }
 
     private void querySync(final QueryParameters queryParameters) {
 
         try {
+            int top = queryParameters.top;
+            if (queryParameters.maxTop != -1 &&
+                    queryParameters.skip + queryParameters.top >= queryParameters.maxTop) {
+                top = queryParameters.maxTop - queryParameters.skip;
+            }
 
-            JsonElement jsonElement = mExecutableJsonQuery.skip(queryParameters.skip).top(queryParameters.top).execute().get();
+            JsonElement jsonElement = mExecutableJsonQuery.skip(queryParameters.skip).top(top).execute().get();
 
             if (jsonElement != null && jsonElement.isJsonArray())
                 mJsonArray.addAll(jsonElement.getAsJsonArray());
@@ -193,6 +208,10 @@ public class MobileServiceJsonTableHelper {
             if (jsonElement == null
                     || !jsonElement.isJsonArray()
                     || jsonElement.getAsJsonArray().size() != queryParameters.top) {
+                successfulOperation();
+            }
+            else if (queryParameters.maxTop != -1 &&
+                    queryParameters.skip + queryParameters.top >= queryParameters.maxTop) {
                 successfulOperation();
             }
             else {
@@ -223,6 +242,12 @@ public class MobileServiceJsonTableHelper {
     }
 
     private void buildQuery() {
+
+        if (mParameterList != null) {
+            for (Pair<String, String> s : mParameterList) {
+                mExecutableJsonQuery.parameter(s.first, s.second);
+            }
+        }
 
         if (whereClauseList != null && whereClauseList.size() != 0) {
 
@@ -301,6 +326,23 @@ public class MobileServiceJsonTableHelper {
     private int getNumberOfWhereClauses() {
         return (whereClauseList == null ? 0 : whereClauseList.size()) +
                 (mSpecialWhere == null ? 0 : 1);
+    }
+
+    public MobileServiceJsonTableHelper top(int top) {
+        this.top = top;
+        return this;
+    }
+
+    public MobileServiceJsonTableHelper skip(int skip) {
+        this.skip = skip;
+        return this;
+    }
+
+    public MobileServiceJsonTableHelper parameters(String params, String value) {
+        if (mParameterList == null)
+            mParameterList = new ArrayList<>();
+        mParameterList.add(new Pair<>(params, value));
+        return this;
     }
 
     public class WhereClause {
@@ -410,6 +452,7 @@ public class MobileServiceJsonTableHelper {
 
         int skip;
         int top;
+        int maxTop = -1;
 
         QueryParameters(int skip, int top) {
             this.skip = skip;
@@ -419,12 +462,14 @@ public class MobileServiceJsonTableHelper {
         QueryParameters(Parcel in) {
             skip = in.readInt();
             top = in.readInt();
+            maxTop = in.readInt();
         }
 
         @Override
         public void writeToParcel(Parcel dest, int flags) {
             dest.writeInt(skip);
             dest.writeInt(top);
+            dest.writeInt(maxTop);
         }
 
         @Override
@@ -443,5 +488,13 @@ public class MobileServiceJsonTableHelper {
                 return new QueryParameters[size];
             }
         };
+
+        public void setTop(int top) {
+            maxTop = top;
+        }
+
+        public void setSkip(int skip) {
+            this.skip = skip;
+        }
     }
 }

@@ -18,7 +18,7 @@
             android:layout_marginTop="25dp"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="#ffffff"
-            android:text="Group Stage"/>
+            android:text="@string/group_stage"/>
 
         <include layout="@layout/layout_group"
             android:id="@+id/layout_group_a"

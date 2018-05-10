@@ -5,12 +5,10 @@ import java.util.List;
 import org.hugoandrade.euro2016.predictor.common.ContextView;
 import org.hugoandrade.euro2016.predictor.common.ServiceManager;
 import org.hugoandrade.euro2016.predictor.common.ServiceManagerOps;
-import org.hugoandrade.euro2016.predictor.data.raw.Country;
-import org.hugoandrade.euro2016.predictor.data.raw.League;
+import org.hugoandrade.euro2016.predictor.data.raw.LeagueUser;
 import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
 import org.hugoandrade.euro2016.predictor.common.ModelOps;
 import org.hugoandrade.euro2016.predictor.common.PresenterOps;
-import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.model.IMobileClientService;
@@ -137,22 +135,26 @@ public interface MVP {
 
     /** For MATCH PREDICTION **/
     interface RequiredMatchPredictionViewOps extends RequiredMobileClientViewBaseOps {
-        List<User> getUserList();
+        List<LeagueUser> getUserList();
 
         void setMatchPredictionList(int matchNumber, List<User> userList);
     }
     interface ProvidedMatchPredictionPresenterOps extends PresenterOps<RequiredMatchPredictionViewOps> {
-        void getPredictions(List<User> userList, int matchNumber);
+        void getPredictions(List<LeagueUser> userList, int matchNumber);
     }
 
 
     /** For MATCH PREDICTION **/
     interface RequiredLeagueDetailsViewOps extends RequiredMobileClientViewBaseOps {
         void leagueLeft();
+
+        void updateListOfUsers(List<LeagueUser> userList);
+
         void startUserPredictionsActivity(User user, List<Prediction> predictionList);
     }
     interface ProvidedLeagueDetailsPresenterOps extends PresenterOps<RequiredLeagueDetailsViewOps> {
         void deleteLeague(String userID, String leagueID);
+
         void leaveLeague(String userID, String leagueID);
 
         void fetchRemainingPredictions(User user);

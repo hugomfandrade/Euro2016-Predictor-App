@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Prognósticos Euro 2016</string>
+    <string name="sign_up" >Registar</string>
+    <string name="hint_confirm_password">Confirmar Password</string>
+
+    <string name="league_details"><u>Ver Classificação</u></string>
+    <string name="members">Membros</string>
+    <string name="in_group"> no Grupo </string>
+
+    <string name="group_stage">Fase de Grupos</string>
+    <string name="group_a">Grupo A</string>
+    <string name="group_b">Grupo B</string>
+    <string name="group_c">Grupo C</string>
+    <string name="group_d">Grupo D</string>
+    <string name="group_e">Grupo E</string>
+    <string name="group_f">Grupo F</string>
+    <string name="round_of_16">Oitavos de Final</string>
+    <string name="quarter_finals">Quartos de Finals</string>
+    <string name="semi_finals">Semi Finais</string>
+    <string name="finals">Final</string>
+    <string name="scores">Resultados</string>
+
+    <string name="name">Equipa</string>
+    <string name="victories_abbr">V</string>
+    <string name="draws_abbr">E</string>
+    <string name="defeats_abbr">D</string>
+    <string name="goals_for_abbr">GM</string>
+    <string name="goals_against_abbr">GS</string>
+    <string name="goals_difference_abbr">DG</string>
+    <string name="points_abbr">P</string>
+    <string name="position_abbr">#</string>
+
+    <string name="or" >ou</string>
+    <string name="loading" >A Carregar…</string>
+    <string name="prediction_filter_all">Euro 2016</string>
+    <string name="prediction_matchday_1" >Jornada 1</string>
+    <string name="prediction_matchday_2" >Jornada 2</string>
+    <string name="prediction_matchday_3" >Jornada 3</string>
+    <string name="prediction_round_of_16">Oitavos de Final</string>
+    <string name="prediction_quarter_finals" >Quartos de Finals</string>
+    <string name="prediction_semi_finals" >Semi Finais</string>
+    <string name="prediction_final" >Final</string>
+    <string name="match_number" >Jogo</string>
+
+    <string name="matches">Jogos</string>
+    <string name="final_result">Resultado Final</string>
+    <string name="predictions">Prognósticos</string>
+    <string name="standings">Classificações</string>
+    <string name="leagues">Ligas</string>
+    <string name="rules">Regras</string>
+
+    <string name="create_league" >Criar Liga</string>
+    <string name="join_league" >Juntar a Liga</string>
+
+    <string name="match_result_scoring" >Pontuação de resultado do jogo</string>
+    <string name="correct_prediction" >Prever resultado exacto</string>
+    <string name="correct_outcome" >Prever resultado correcto</string>
+    <string name="correct_margin" >Prever a margem de vitória correcta</string>
+    <string name="incorrect_prediction">Previsão incorrecta</string>
+    <string name="points">pontos</string>
+    <string name="point">ponto</string>
+
+    <string name="predictions_details">Os prognósticos podem ser alterados a qualquer momento até ao horário previsto para começo do jogo em questão.</string>
+    <string name="winner_prize">Prémio para o Vencedor</string>
+    <string name="winner_gets_bragging_rights">O Vencedor ganha o direito de se gabar.</string>
+
+    <string name="eliminated_round_of_16">Eliminado nos Oitavos de Final</string>
+    <string name="eliminated_quarter_finals">Eliminado nos Quartos de Final</string>
+    <string name="eliminated_semi_finals">Eliminado nas Semi Finais</string>
+    <string name="lost_final">Perdeu a Final</string>
+    <string name="winners">Vencedores do Euro 2016</string>
+
+    <string name="country_france" >França</string>
+    <string name="country_romania" >Roménia</string>
+    <string name="country_albania" >Albânia</string>
+    <string name="country_switzerland">Suíça</string>
+    <string name="country_england" >Inglaterra</string>
+    <string name="country_russia" >Russia</string>
+    <string name="country_wales" >País de Gales</string>
+    <string name="country_slovakia" >Eslováquia</string>
+    <string name="country_germany" >Alemanha</string>
+    <string name="country_ukraine" >Ucrânia</string>
+    <string name="country_poland" >Polónia</string>
+    <string name="country_northern_ireland" >Irlanda do Norte</string>
+    <string name="country_spain" >Espanha</string>
+    <string name="country_czech_republic" >República Checa"</string>
+    <string name="country_turkey" >Turquia</string>
+    <string name="country_croatia" >Croácia</string>
+    <string name="country_belgium" >Bélgica</string>
+    <string name="country_italy" >Itália</string>
+    <string name="country_ireland" >Irlanda</string>
+    <string name="country_sweden" >Suécia</string>
+    <string name="country_portugal" >Portugal</string>
+    <string name="country_iceland" >Islândia</string>
+    <string name="country_austria" >Áustria</string>
+    <string name="country_hungary" >Hungria</string>
+
+    <string name="leave_league">Abandonar Liga</string>
+    <string name="leave_league_details">Tem a certeza que pretende abandonar esta liga?</string>
+    <string name="delete_league">Apagar Liga</string>
+    <string name="delete_league_details">Tem a certeza que pretender apagar esta liga? Os restantes membros também abandonarão esta liga</string>
+
+    <string name="choose_the_name_of_your_league">Escolha o nome da sua liga</string>
+    <string name="write_the_name_of_the_league">Escreva o nome da liga</string>
+    <string name="maximum_of_20_characters">No máximo 20 caracteres</string>
+    <string name="create">Criar</string>
+
+    <string name="write_the_league_code">Introduza o código da liga</string>
+    <string name="write_the_code_of_the_league">Introduza o código</string>
+    <string name="join">Juntar-se</string>
+
+    <string name="winner">Vencedor do</string>
+    <string name="runner_up">2º do</string>
+    <string name="group">Grupo</string>
+    <string name="third_place" >3º do Grupo</string>
+    <string name="match">Jogo</string>
+
+    <string name="league_code">Código da Liga</string>
+    <string name="latest_match">Último Jogo</string>
+    <string name="leave_this_league">Deixar esta Liga</string>
+    <string name="delete_this_league">Apagar esta Liga</string>
+
+    <string name="user_name">Nome</string>
+    <string name="total">Total</string>
+
+</resources>

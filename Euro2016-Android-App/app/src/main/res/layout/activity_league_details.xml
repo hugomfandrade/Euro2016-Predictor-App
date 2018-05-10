@@ -89,7 +89,7 @@
                         android:textSize="16sp"
                         android:textStyle="bold"
                         android:textColor="@android:color/darker_gray"
-                        android:text="League code"/>
+                        android:text="@string/league_code"/>
 
                     <TextView
                         android:id="@+id/tv_league_code"
@@ -100,6 +100,7 @@
                         android:textSize="16sp"
                         android:textStyle="bold"
                         android:textColor="#000"
+                        android:textIsSelectable="true"
                         tools:text="af14vb6" />
 
                 </LinearLayout>
@@ -118,7 +119,7 @@
                 android:textColor="#ddffffff"
                 android:fontFamily="sans-serif-condensed"
                 android:gravity="center"
-                android:text="Latest Match"/>
+                android:text="@string/latest_match"/>
 
             <include
                 layout="@layout/list_item_league_standings_header" />
@@ -139,7 +140,7 @@
                 android:textColor="#ddffffff"
                 android:fontFamily="sans-serif-condensed"
                 android:gravity="center"
-                android:text="Leave this League"/>
+                android:text="@string/leave_this_league"/>
 
             <TextView
                 android:id="@+id/tv_delete_league"
@@ -150,7 +151,7 @@
                 android:fontFamily="sans-serif-condensed"
                 android:gravity="center"
                 android:layout_gravity="bottom|center"
-                android:text="Delete this League"
+                android:text="@string/delete_this_league"
                 android:textAllCaps="true"
                 android:textColor="#ddffffff"
                 android:textSize="18sp" />
@@ -169,7 +170,7 @@
         android:fontFamily="sans-serif-condensed"
         android:gravity="center"
         android:layout_gravity="bottom|center"
-        android:text="Leave this League"
+        android:text="@string/leave_this_league"
         android:textAllCaps="true"
         android:textColor="#ddffffff"
         android:textSize="18sp" />
@@ -183,7 +184,7 @@
         android:fontFamily="sans-serif-condensed"
         android:gravity="center"
         android:layout_gravity="bottom|center"
-        android:text="Delete this League"
+        android:text="@string/delete_this_league"
         android:textAllCaps="true"
         android:textColor="#ddffffff"
         android:textSize="18sp" />

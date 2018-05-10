@@ -1,29 +1,30 @@
 package org.hugoandrade.euro2016.predictor.view.listadapter;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.graphics.Typeface;
 import android.support.annotation.NonNull;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
+import android.util.SparseArray;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.List;
-
+import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.R;
 import org.hugoandrade.euro2016.predictor.data.raw.Country;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
-import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
+import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
+import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
+import org.hugoandrade.euro2016.predictor.utils.TranslationUtils;
+
+import java.util.List;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
@@ -32,10 +33,15 @@ public class KnockoutListAdapter extends RecyclerView.Adapter<KnockoutListAdapte
 
     public final String TAG = getClass().getSimpleName();
 
+    private static final String TIME_TEMPLATE = "d MMMM - HH:mm";
+
     private List<Match> mMatchList;
+    private SparseArray<Match> mMatchSet;
+
+    private OnKnockoutListAdapterListener mOnKnockoutListAdapterListener;
 
     public KnockoutListAdapter(List<Match> matchList) {
-        mMatchList = matchList;
+        set(matchList);
     }
 
     @NonNull
@@ -48,42 +54,35 @@ public class KnockoutListAdapter extends RecyclerView.Adapter<KnockoutListAdapte
     @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull final KnockoutListAdapter.ViewHolder holder, int position) {
+        Context context = holder.itemView.getContext();
         final Match match = mMatchList.get(holder.getAdapterPosition());
 
-        holder.tvHomeTeam.setText(match.getHomeTeamName());
-        holder.tvAwayTeam.setText(match.getAwayTeamName());
+        holder.tvHomeTeam.setText(MatchUtils.tryGetTemporaryHomeTeam(context, mMatchSet, match));
+        holder.tvAwayTeam.setText(MatchUtils.tryGetTemporaryAwayTeam(context, mMatchSet, match));
+
         holder.ivHomeTeam.setImageResource(Country.getImageID(match.getHomeTeam()));
         holder.ivAwayTeam.setImageResource(Country.getImageID(match.getAwayTeam()));
-        holder.tvHomeTeamGoals.setText(
-                (match.getHomeTeamGoals() == -1)? "" :
-                        ((match.getHomeTeamNotes() == null ? "" : match.getHomeTeamNotes())
-                                + String.valueOf(match.getHomeTeamGoals())));
-        holder.tvAwayTeamGoals.setText(
-                (match.getAwayTeamGoals() == -1)? "" :
-                        (String.valueOf(match.getAwayTeamGoals())
-                                + (match.getAwayTeamNotes() == null ? "" : match.getAwayTeamNotes())));
-        holder.tvDateAndTime.setText(
-                DateFormat.format("dd-MM-yyyy HH:mm", match.getDateAndTime()).toString());
+        holder.tvHomeTeamGoals.setText(MatchUtils.getScoreOfHomeTeam(match));
+        holder.tvAwayTeamGoals.setText(MatchUtils.getScoreOfAwayTeam(match));
+        holder.tvDateAndTime.setText(DateFormat.format(TIME_TEMPLATE, match.getDateAndTime()));
 
-        holder.tvMatchNumber.setText(TextUtils.concat("Match number: ", String.valueOf(match.getMatchNumber())));
+        holder.tvMatchNumber.setText(TextUtils.concat(
+                context.getString(R.string.match_number),
+                ": ",
+                String.valueOf(match.getMatchNumber())));
         holder.tvStage.setText(
-                String.format("%s%s", match.getStage(), match.getGroup() == null ? "" : (" - " + match.getGroup())));
+                String.format("%s%s", TranslationUtils.translateStage(context, match.getStage()), match.getGroup() == null ? "" : (" - " + match.getGroup())));
         holder.tvStadium.setText(match.getStadium());
 
 
-        holder.tvHomeTeam.setTypeface(null, Typeface.NORMAL);
-        holder.tvAwayTeam.setTypeface(null, Typeface.NORMAL);
-        if (match.getHomeTeamGoals() != -1 && match.getAwayTeamGoals() != -1) {
-            if (match.getHomeTeamGoals() == match.getAwayTeamGoals()) {
-                if (match.getHomeTeamNotes() != null && match.getAwayTeamNotes() == null)
-                    holder.tvHomeTeam.setTypeface(null, Typeface.BOLD);
-                else if (match.getHomeTeamNotes() == null && match.getAwayTeamNotes() != null)
-                    holder.tvAwayTeam.setTypeface(null, Typeface.BOLD);
-            }
-            else if (match.getHomeTeamGoals() > match.getAwayTeamGoals())
-                holder.tvHomeTeam.setTypeface(null, Typeface.BOLD);
-            else if (match.getHomeTeamGoals() < match.getAwayTeamGoals())
-                holder.tvAwayTeam.setTypeface(null, Typeface.BOLD);
+        holder.tvHomeTeam.setTypeface(holder.tvHomeTeam.getTypeface(), Typeface.NORMAL);
+        holder.tvAwayTeam.setTypeface(holder.tvAwayTeam.getTypeface(), Typeface.NORMAL);
+
+        if (MatchUtils.isMatchPlayed(match)) {
+            if (MatchUtils.didHomeTeamWin(match))
+                holder.tvHomeTeam.setTypeface(holder.tvHomeTeam.getTypeface(), Typeface.BOLD);
+            else if (MatchUtils.didAwayTeamWin(match))
+                holder.tvAwayTeam.setTypeface(holder.tvAwayTeam.getTypeface(), Typeface.BOLD);
         }
 
         boolean hasHomeCountryFlag = Country.getImageID(match.getHomeTeam()) != 0;
@@ -106,7 +105,18 @@ public class KnockoutListAdapter extends RecyclerView.Adapter<KnockoutListAdapte
 
     public void set(List<Match> matchList) {
         mMatchList = matchList;
-        notifyDataSetChanged();
+        mMatchSet = new SparseArray<>();
+        for (Match m : GlobalData.getInstance().getMatchList()) {
+            mMatchSet.put(m.getMatchNumber(), m);
+        }
+    }
+
+    public void setOnKnockoutListAdapterListener(OnKnockoutListAdapterListener listener) {
+        mOnKnockoutListAdapterListener = listener;
+    }
+
+    public interface OnKnockoutListAdapterListener {
+        void onCountryClicked(Country country);
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -132,6 +142,7 @@ public class KnockoutListAdapter extends RecyclerView.Adapter<KnockoutListAdapte
         ViewHolder(View itemView) {
             super(itemView);
 
+            tvMatchNumber = itemView.findViewById(R.id.tv_match_number);
             tvDateAndTime = itemView.findViewById(R.id.tv_match_date_time);
             tvHomeTeam = itemView.findViewById(R.id.tv_match_home_team);
             tvAwayTeam = itemView.findViewById(R.id.tv_match_away_team);
@@ -161,7 +172,27 @@ public class KnockoutListAdapter extends RecyclerView.Adapter<KnockoutListAdapte
                     return true;
                 }
             });
-            tvMatchNumber = itemView.findViewById(R.id.tv_match_number);
+
+            ivHomeTeam.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Country c = mMatchList.get(getAdapterPosition()).getHomeTeam();
+
+                    if (c != null && mOnKnockoutListAdapterListener != null) {
+                        mOnKnockoutListAdapterListener.onCountryClicked(c);
+                    }
+                }
+            });
+            ivAwayTeam.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Country c = mMatchList.get(getAdapterPosition()).getAwayTeam();
+
+                    if (c != null && mOnKnockoutListAdapterListener != null) {
+                        mOnKnockoutListAdapterListener.onCountryClicked(c);
+                    }
+                }
+            });
         }
     }
 }

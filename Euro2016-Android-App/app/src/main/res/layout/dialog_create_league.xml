@@ -14,14 +14,14 @@
         android:textAllCaps="true"
         android:fontFamily="sans-serif-condensed"
         android:gravity="center_horizontal"
-        android:text="Create League"/>
+        android:text="@string/create_league"/>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="16sp"
         android:gravity="center_horizontal"
-        android:text="Choose the name of your league"/>
+        android:text="@string/choose_the_name_of_your_league"/>
 
     <EditText
         android:id="@+id/et_league_name"
@@ -29,7 +29,7 @@
         android:layout_height="70dp"
         android:layout_gravity="center"
         android:maxLength="20"
-        android:hint="Write the name of the league"
+        android:hint="@string/write_the_name_of_the_league"
         android:layout_marginTop="12dp"
         android:gravity="center"
         android:background="@drawable/bg_edittext_icon"/>
@@ -40,7 +40,7 @@
         android:layout_marginBottom="10dp"
         android:textSize="16sp"
         android:gravity="center_horizontal"
-        android:text="Maximum of 20 characters"/>
+        android:text="@string/maximum_of_20_characters"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -60,7 +60,7 @@
             android:textColor="#fff"
             android:fontFamily="sans-serif-condensed"
             android:gravity="center"
-            android:text="Create"/>
+            android:text="@string/create"/>
 
     </LinearLayout>
 </LinearLayout>

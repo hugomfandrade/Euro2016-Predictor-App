@@ -1,8 +1,8 @@
 package org.hugoandrade.euro2016.predictor.view;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
-import android.opengl.Visibility;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.NestedScrollView;
@@ -10,7 +10,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
@@ -18,22 +17,22 @@ import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.MVP;
 import org.hugoandrade.euro2016.predictor.R;
 import org.hugoandrade.euro2016.predictor.data.LeagueWrapper;
-import org.hugoandrade.euro2016.predictor.data.raw.League;
+import org.hugoandrade.euro2016.predictor.data.raw.LeagueUser;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.presenter.LeagueDetailsPresenter;
-import org.hugoandrade.euro2016.predictor.utils.LeagueUtils;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
 import org.hugoandrade.euro2016.predictor.utils.StickyFooterUtils;
+import org.hugoandrade.euro2016.predictor.view.dialog.SimpleDialog;
 import org.hugoandrade.euro2016.predictor.view.listadapter.LeagueStandingFullListAdapter;
-import org.hugoandrade.euro2016.predictor.view.listadapter.LeagueStandingListAdapter;
 
-import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
-public class LeagueDetailsActivity extends ActivityBase<MVP.RequiredLeagueDetailsViewOps,
-                                                        MVP.ProvidedLeagueDetailsPresenterOps,
-                                                        LeagueDetailsPresenter>
+public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDetailsViewOps,
+                                                            MVP.ProvidedLeagueDetailsPresenterOps,
+                                                            LeagueDetailsPresenter>
 
         implements MVP.RequiredLeagueDetailsViewOps {
 
@@ -75,18 +74,6 @@ public class LeagueDetailsActivity extends ActivityBase<MVP.RequiredLeagueDetail
         }
 
         super.onCreate(LeagueDetailsPresenter.class, this);
-
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-                return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     private void initializeUI() {
@@ -96,13 +83,14 @@ public class LeagueDetailsActivity extends ActivityBase<MVP.RequiredLeagueDetail
         setSupportActionBar((Toolbar) findViewById(R.id.anim_toolbar));
 
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("League");
+            getSupportActionBar().setTitle(mLeagueWrapper.getLeague().getName());
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
         int currentMatchNumber = MatchUtils.getMatchNumberOfFirstNotPlayedMatched(
                 GlobalData.getInstance().getMatchList(),
                 GlobalData.getInstance().getServerTime().getTime());
+        boolean isOverall = mLeagueWrapper.getLeague().getID().equals(LeagueWrapper.OVERALL_ID);
 
         mScrollViewContainer = findViewById(R.id.nestedScrollView);
 
@@ -114,10 +102,10 @@ public class LeagueDetailsActivity extends ActivityBase<MVP.RequiredLeagueDetail
         TextView tvLeagueCode = findViewById(R.id.tv_league_code);
         TextView tvLeagueCodeHeader = findViewById(R.id.tv_league_code_header);
 
-        tvLeagueName.setText(mLeagueWrapper.getLeague().getName());
+        tvLeagueName.setText(isOverall? getString(R.string.app_name) : mLeagueWrapper.getLeague().getName());
         tvLeagueCode.setText(mLeagueWrapper.getLeague().getCode());
-        tvLeagueCodeHeader.setVisibility(mLeagueWrapper.getLeague().getID().equals(LeagueWrapper.OVERALL_ID)? View.GONE : View.VISIBLE);
-        tvLeagueCode.setVisibility(mLeagueWrapper.getLeague().getID().equals(LeagueWrapper.OVERALL_ID)? View.GONE : View.VISIBLE);
+        tvLeagueCodeHeader.setVisibility(isOverall? View.GONE : View.VISIBLE);
+        tvLeagueCode.setVisibility(isOverall? View.GONE : View.VISIBLE);
         tvLeagueMembers.setText(TextUtils.concat("(",
                 String.valueOf(mLeagueWrapper.getLeague().getNumberOfMembers()),
                 " ",
@@ -125,8 +113,7 @@ public class LeagueDetailsActivity extends ActivityBase<MVP.RequiredLeagueDetail
                 ")"));
 
 
-        leagueStandingListAdapter = new LeagueStandingFullListAdapter();
-        leagueStandingListAdapter.set(mLeagueWrapper.getUserList());
+        leagueStandingListAdapter = new LeagueStandingFullListAdapter(mLeagueWrapper);
         leagueStandingListAdapter.setOnLeagueStandingClicked(new LeagueStandingFullListAdapter.OnLeagueStandingClicked() {
             @Override
             public void onUserSelected(User user) {
@@ -135,14 +122,10 @@ public class LeagueDetailsActivity extends ActivityBase<MVP.RequiredLeagueDetail
 
             @Override
             public void onMoreClicked() {
-                getPresenter().fetchMoreUsers(mLeagueWrapper.getLeague().getID(), mLeagueWrapper.getUserList().size());
+                getPresenter().fetchMoreUsers(mLeagueWrapper.getLeague().getID(), mLeagueWrapper.getLeagueUserList().size());
 
             }
         });
-
-        if (mLeagueWrapper.getLeague().getNumberOfMembers() == mLeagueWrapper.getUserList().size()) {
-            leagueStandingListAdapter.disableMoreButton();
-        }
 
         RecyclerView rvLeagueStandings = findViewById(R.id.rv_league_standings);
         rvLeagueStandings.setNestedScrollingEnabled(false);
@@ -157,8 +140,6 @@ public class LeagueDetailsActivity extends ActivityBase<MVP.RequiredLeagueDetail
 
         progressBar = findViewById(R.id.progressBar_waiting);
 
-        boolean isOverall = mLeagueWrapper.getLeague().getID().equals(LeagueWrapper.OVERALL_ID);
-
         if (isOverall) {
             tvLatestMatch.setVisibility(View.GONE);
         }
@@ -170,7 +151,8 @@ public class LeagueDetailsActivity extends ActivityBase<MVP.RequiredLeagueDetail
 
                     startActivity(MatchPredictionActivity.makeIntent(
                             LeagueDetailsActivity.this,
-                            mLeagueWrapper.getUserList()));
+                            mLeagueWrapper.getLeagueUserList(),
+                            mLeagueWrapper.getLeague().getName()));
                 }
             });
         }
@@ -180,7 +162,9 @@ public class LeagueDetailsActivity extends ActivityBase<MVP.RequiredLeagueDetail
 
     @Override
     public void startUserPredictionsActivity(User user, List<Prediction> predictionList) {
-        startActivity(UsersPredictionsActivity.makeIntent(this, user, predictionList));
+        if (!isPaused()) {
+            startActivity(UsersPredictionsActivity.makeIntent(this, user, predictionList));
+        }
     }
 
     private void setupFooter() {
@@ -200,9 +184,7 @@ public class LeagueDetailsActivity extends ActivityBase<MVP.RequiredLeagueDetail
                 View.OnClickListener mOnClickListener = new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        getPresenter().deleteLeague(
-                                GlobalData.getInstance().user.getID(),
-                                mLeagueWrapper.getLeague().getID());
+                        deleteLeague();
                     }
                 };
                 StickyFooterUtils.initialize(mScrollViewContainer, tvDeleteLeague, tvDeleteLeagueFixed);
@@ -215,9 +197,7 @@ public class LeagueDetailsActivity extends ActivityBase<MVP.RequiredLeagueDetail
                 View.OnClickListener mOnClickListener = new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        getPresenter().leaveLeague(
-                                GlobalData.getInstance().user.getID(),
-                                mLeagueWrapper.getLeague().getID());
+                        leaveLeague();
                     }
                 };
                 StickyFooterUtils.initialize(mScrollViewContainer, tvLeaveLeague, tvLeaveLeagueFixed);
@@ -227,6 +207,44 @@ public class LeagueDetailsActivity extends ActivityBase<MVP.RequiredLeagueDetail
                 tvDeleteLeagueFixed.setVisibility(View.GONE);
             }
         }
+    }
+
+    private void deleteLeague() {
+        String title = getString(R.string.delete_league);
+        String message = getString(R.string.delete_league_details);
+        SimpleDialog mDeleteLeagueDialog = new SimpleDialog(getActivityContext(), title, message);
+        mDeleteLeagueDialog.setOnDialogResultListener(new SimpleDialog.OnDialogResult() {
+            @Override
+            public void onResult(DialogInterface dialog, @SimpleDialog.Result int result) {
+                if (result == SimpleDialog.YES) {
+                    getPresenter().deleteLeague(
+                            GlobalData.getInstance().user.getID(),
+                            mLeagueWrapper.getLeague().getID());
+                } else if (result == SimpleDialog.BACK) {
+                    dialog.dismiss();
+                }
+            }
+        });
+        mDeleteLeagueDialog.show();
+    }
+
+    private void leaveLeague() {
+        String title = getString(R.string.leave_league);
+        String message = getString(R.string.leave_league_details);
+        SimpleDialog mLeaveLeagueDialog = new SimpleDialog(getActivityContext(), title, message);
+        mLeaveLeagueDialog.setOnDialogResultListener(new SimpleDialog.OnDialogResult() {
+            @Override
+            public void onResult(DialogInterface dialog, @SimpleDialog.Result int result) {
+                if (result == SimpleDialog.YES) {
+                    getPresenter().leaveLeague(
+                            GlobalData.getInstance().user.getID(),
+                            mLeagueWrapper.getLeague().getID());
+                } else if (result == SimpleDialog.BACK) {
+                    dialog.dismiss();
+                }
+            }
+        });
+        mLeaveLeagueDialog.show();
     }
 
     @Override
@@ -248,5 +266,41 @@ public class LeagueDetailsActivity extends ActivityBase<MVP.RequiredLeagueDetail
     public void leagueLeft() {
         GlobalData.getInstance().removeLeague(mLeagueWrapper);
         finish();
+    }
+
+    @Override
+    public void updateListOfUsers(List<LeagueUser> userList) {
+        if (leagueStandingListAdapter != null) {
+            for (LeagueUser newUser : userList) {
+
+                boolean isUserOnList = false;
+                for (LeagueUser user : mLeagueWrapper.getLeagueUserList()) {
+                    if (user.getUser().getID().equals(newUser.getUser().getID())) {
+                        isUserOnList = true;
+                        break;
+                    }
+                }
+
+                if (!isUserOnList) {
+                    mLeagueWrapper.getLeagueUserList().add(newUser);
+                }
+
+            }
+
+            Collections.sort(mLeagueWrapper.getLeagueUserList(), new Comparator<LeagueUser>() {
+                @Override
+                public int compare(LeagueUser o1, LeagueUser o2) {
+                    return o1.getRank() - o2.getRank();
+                }
+            });
+
+            leagueStandingListAdapter.updateMoreButton();
+            leagueStandingListAdapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
+    protected void logout() {
+        reportMessage("Logout not implemented yet");
     }
 }

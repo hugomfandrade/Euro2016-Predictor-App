@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.TextView;
 
-import org.hugoandrade.euro2016.predictor.FragComm;
 import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.R;
 import org.hugoandrade.euro2016.predictor.data.raw.Country;
@@ -21,6 +20,7 @@ import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
 import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils.SGroup;
 import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils.SStage;
+import org.hugoandrade.euro2016.predictor.view.CountryDetailsActivity;
 import org.hugoandrade.euro2016.predictor.view.listadapter.GroupListAdapter;
 import org.hugoandrade.euro2016.predictor.view.listadapter.KnockoutListAdapter;
 
@@ -358,12 +358,21 @@ public class StandingsFragment extends FragmentBase<FragComm.RequiredActivityBas
             mTitleResID = titleResID;
             mMatchList = new ArrayList<>();
             mKnockoutAdapter = new KnockoutListAdapter(mMatchList);
+            mKnockoutAdapter.setOnKnockoutListAdapterListener(new KnockoutListAdapter.OnKnockoutListAdapterListener() {
+                @Override
+                public void onCountryClicked(Country country) {
+
+                    startActivity(CountryDetailsActivity.makeIntent(getActivity(), country));
+
+                }
+            });
         }
 
 
         void set(List<Match> matchList) {
             mMatchList = matchList;
             mKnockoutAdapter.set(mMatchList);
+            mKnockoutAdapter.notifyDataSetChanged();
         }
 
         RecyclerView.Adapter getAdapter() {

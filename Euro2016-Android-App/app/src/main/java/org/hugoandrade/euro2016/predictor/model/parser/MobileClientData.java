@@ -6,12 +6,12 @@ import android.os.Parcelable;
 import org.hugoandrade.euro2016.predictor.data.LeagueWrapper;
 import org.hugoandrade.euro2016.predictor.data.raw.Country;
 import org.hugoandrade.euro2016.predictor.data.raw.League;
+import org.hugoandrade.euro2016.predictor.data.raw.LeagueUser;
 import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.SystemData;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
-import org.hugoandrade.euro2016.predictor.data.raw.WaitingLeagueUser;
 
 import java.util.Calendar;
 import java.util.List;
@@ -30,6 +30,7 @@ public class MobileClientData implements Parcelable {
     private List<Match> mMatchList;
     private User mUser;
     private List<User> mUserList;
+    private List<LeagueUser> mLeagueUserList;
     private Prediction mPrediction;
     private List<Prediction> mPredictionList;
     private int mPredictionMatchNo;
@@ -38,7 +39,6 @@ public class MobileClientData implements Parcelable {
     private LeagueWrapper mLeagueWrapper;
     private List<League> mLeagueList;
     private List<LeagueWrapper> mLeagueWrapperList;
-    private WaitingLeagueUser mWaitingLeagueUser;
     private String mErrorMessage;
     private boolean mNetworkState;
     private int mInteger;
@@ -89,6 +89,7 @@ public class MobileClientData implements Parcelable {
         mMatchList = in.createTypedArrayList(Match.CREATOR);
         mUser = in.readParcelable(User.class.getClassLoader());
         mUserList = in.createTypedArrayList(User.CREATOR);
+        mLeagueUserList = in.createTypedArrayList(LeagueUser.CREATOR);
 
         mPrediction = in.readParcelable(Prediction.class.getClassLoader());
         mPredictionList = in.createTypedArrayList(Prediction.CREATOR);
@@ -100,7 +101,6 @@ public class MobileClientData implements Parcelable {
         mLeagueWrapper = in.readParcelable(LeagueWrapper.class.getClassLoader());
         mLeagueWrapperList = in.createTypedArrayList(LeagueWrapper.CREATOR);
 
-        mWaitingLeagueUser = in.readParcelable(WaitingLeagueUser.class.getClassLoader());
         mErrorMessage = in.readString();
         mNetworkState = in.readByte() != 0;
         mServerTime = (Calendar) in.readSerializable();
@@ -122,6 +122,7 @@ public class MobileClientData implements Parcelable {
         dest.writeTypedList(mMatchList);
         dest.writeParcelable(mUser, flags);
         dest.writeTypedList(mUserList);
+        dest.writeTypedList(mLeagueUserList);
 
         dest.writeParcelable(mPrediction, flags);
         dest.writeTypedList(mPredictionList);
@@ -132,8 +133,7 @@ public class MobileClientData implements Parcelable {
         dest.writeTypedList(mLeagueList);
         dest.writeParcelable(mLeagueWrapper, flags);
         dest.writeTypedList(mLeagueWrapperList);
-        
-        dest.writeParcelable(mWaitingLeagueUser, flags);
+
         dest.writeString(mErrorMessage);
         dest.writeByte((byte) (mNetworkState ? 1 : 0));
         dest.writeSerializable(mServerTime);
@@ -232,14 +232,6 @@ public class MobileClientData implements Parcelable {
         mLeagueWrapperList = leagueWrapperList;
     }
 
-    public WaitingLeagueUser getWaitingLeagueUser() {
-        return mWaitingLeagueUser;
-    }
-
-    public void setWaitingLeagueUser(WaitingLeagueUser waitingLeagueUser) {
-        mWaitingLeagueUser = waitingLeagueUser;
-    }
-
     public void setCountryList(List<Country> countryList) {
         mCountryList = countryList;
     }
@@ -262,6 +254,14 @@ public class MobileClientData implements Parcelable {
 
     public void setMatchList(List<Match> matchList) {
         mMatchList = matchList;
+    }
+
+    public List<LeagueUser> getLeagueUserList() {
+        return mLeagueUserList;
+    }
+
+    public void setLeagueUserList(List<LeagueUser> leagueUserList) {
+        mLeagueUserList = leagueUserList;
     }
 
     public List<User> getUserList() {

@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import org.hugoandrade.euro2016.predictor.data.LeagueWrapper;
 import org.hugoandrade.euro2016.predictor.data.raw.Country;
 import org.hugoandrade.euro2016.predictor.data.raw.League;
+import org.hugoandrade.euro2016.predictor.data.raw.LeagueUser;
 import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
@@ -39,6 +40,7 @@ public class MobileServiceData implements Parcelable {
     public static final int DELETE_LEAGUE = 21;
     public static final int LEAVE_LEAGUE = 22;
     public static final int FETCH_MORE_USERS = 23;
+    public static final int FETCH_RANK_OF_USER = 24;
 
     public static final int REQUEST_RESULT_FAILURE = 0;
     public static final int REQUEST_RESULT_SUCCESS = 1;
@@ -52,6 +54,7 @@ public class MobileServiceData implements Parcelable {
     private List<Match> mMatchList;
     private User mUser;
     private List<User> mUserList;
+    private List<LeagueUser> mLeagueUserList;
     private Prediction mPrediction;
     private List<Prediction> mPredictionList;
     private LoginData mLoginData;
@@ -121,6 +124,14 @@ public class MobileServiceData implements Parcelable {
 
     private void setUser(User user) {
         mUser = user;
+    }
+
+    public List<LeagueUser> getLeagueUserList() {
+        return mLeagueUserList;
+    }
+
+    private void setLeagueUserList(List<LeagueUser> leagueUserList) {
+        mLeagueUserList = leagueUserList;
     }
 
     public List<User> getUserList() {
@@ -253,6 +264,11 @@ public class MobileServiceData implements Parcelable {
             return this;
         }
 
+        public Builder setLeagueUserList(List<LeagueUser> leagueUserList) {
+            m.setLeagueUserList(leagueUserList);
+            return this;
+        }
+
         public Builder setString(String aString) {
             m.setString(aString);
             return this;
@@ -313,6 +329,7 @@ public class MobileServiceData implements Parcelable {
         mMatchList = in.createTypedArrayList(Match.CREATOR);
         mUser = in.readParcelable(User.class.getClassLoader());
         mUserList = in.createTypedArrayList(User.CREATOR);
+        mLeagueUserList = in.createTypedArrayList(LeagueUser.CREATOR);
         mPrediction = in.readParcelable(Prediction.class.getClassLoader());
         mPredictionList = in.createTypedArrayList(Prediction.CREATOR);
         mLoginData = in.readParcelable(LoginData.class.getClassLoader());
@@ -335,6 +352,7 @@ public class MobileServiceData implements Parcelable {
         dest.writeTypedList(mMatchList);
         dest.writeParcelable(mUser, flags);
         dest.writeTypedList(mUserList);
+        dest.writeTypedList(mLeagueUserList);
         dest.writeParcelable(mPrediction, flags);
         dest.writeTypedList(mPredictionList);
         dest.writeParcelable(mLoginData, flags);

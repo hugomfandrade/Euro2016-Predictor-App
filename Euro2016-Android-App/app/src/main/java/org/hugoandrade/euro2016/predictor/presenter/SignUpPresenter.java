@@ -84,6 +84,7 @@ public class SignUpPresenter extends MobileClientPresenterBase<MVP.RequiredSignU
 
     private void signUpOperationResult(boolean wasOperationSuccessful, String message, LoginData loginData) {
         if (wasOperationSuccessful) {
+            Log.e(TAG, "successfulRegister::" + loginData.toString());
             getView().successfulRegister(loginData);
         }
         else {

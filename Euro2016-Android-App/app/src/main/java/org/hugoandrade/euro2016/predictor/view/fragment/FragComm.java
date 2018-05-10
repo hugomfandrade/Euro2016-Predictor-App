@@ -1,4 +1,4 @@
-package org.hugoandrade.euro2016.predictor;
+package org.hugoandrade.euro2016.predictor.view.fragment;
 
 import org.hugoandrade.euro2016.predictor.common.ContextView;
 import org.hugoandrade.euro2016.predictor.common.ServiceManager;

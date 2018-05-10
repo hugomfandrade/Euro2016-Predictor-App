@@ -5,6 +5,7 @@ import android.util.Log;
 
 import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.MVP;
+import org.hugoandrade.euro2016.predictor.data.raw.LeagueUser;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
@@ -40,18 +41,22 @@ public class MatchPredictionPresenter extends MobileClientPresenterBase<MVP.Requ
     }
 
     @Override
-    public void getPredictions(List<User> userList, int matchNumber) {
+    public void getPredictions(List<LeagueUser> userList, int matchNumber) {
 
         // filter users whose predictions need to be fetched
         List<User> uList = new ArrayList<>();
-        for (User user : userList) {
-            if (!GlobalData.getInstance().wasPredictionFetched(user, matchNumber)) {
-                uList.add(user);
+        for (LeagueUser user : userList) {
+            if (!GlobalData.getInstance().wasPredictionFetched(user.getUser(), matchNumber)) {
+                uList.add(user.getUser());
             }
         }
 
         if (uList.size() == 0) {
-            getView().setMatchPredictionList(matchNumber, userList);
+            List<User> t = new ArrayList<>();
+            for (LeagueUser u : userList) {
+                t.add(u.getUser());
+            }
+            getView().setMatchPredictionList(matchNumber, t);
             getView().enableUI();
             return;
         }

@@ -13,7 +13,6 @@ import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
-import org.hugoandrade.euro2016.predictor.data.raw.WaitingLeagueUser;
 import org.hugoandrade.euro2016.predictor.model.IMobileClientService;
 import org.hugoandrade.euro2016.predictor.model.IMobileClientServiceCallback;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
@@ -166,7 +165,9 @@ public class MobileService extends LifecycleLoggingService {
                             requestResult);
 
                     if (data.wasSuccessful()) {
-                        m.setLoginData(data.getLoginData());
+                        LoginData resultLoginData = data.getLoginData();
+                        resultLoginData.setPassword(loginData.getPassword());
+                        m.setLoginData(resultLoginData);
                     }
                     else {
                         m.setErrorMessage(data.getMessage());
@@ -184,13 +185,14 @@ public class MobileService extends LifecycleLoggingService {
                     MobileClientData.OperationType.GET_INFO.ordinal(),
                     MobileClientData.REQUEST_RESULT_SUCCESS);
 
-            final MultipleCloudStatus n = new MultipleCloudStatus(5);
+            final MultipleCloudStatus n = new MultipleCloudStatus(4);
 
             MobileServiceCallback iCountries = MobileServiceAdapter.getInstance().getCountries();
             MobileServiceCallback.addCallback(iCountries, new MobileServiceCallback.OnResult() {
                 @Override
                 public void onResult(MobileServiceData data) {
                     synchronized (syncObj) {
+                        Log.e(TAG, "iCountries finished");
 
                         if (n.isAborted()) return; // An error occurred
                         n.operationCompleted();
@@ -219,6 +221,7 @@ public class MobileService extends LifecycleLoggingService {
                 @Override
                 public void onResult(MobileServiceData data) {
                     synchronized (syncObj) {
+                        Log.e(TAG, "iMatches finished");
 
                         if (n.isAborted()) return; // An error occurred
                         n.operationCompleted();
@@ -242,37 +245,12 @@ public class MobileService extends LifecycleLoggingService {
                 }
             });
 
-            MobileServiceCallback iUsers = MobileServiceAdapter.getInstance().getUsers();
-            MobileServiceCallback.addCallback(iUsers, new MobileServiceCallback.OnResult() {
-                @Override
-                public void onResult(MobileServiceData data) {
-                    synchronized (syncObj) {
-
-                        if (n.isAborted()) return; // An error occurred
-                        n.operationCompleted();
-
-                        if (data.wasSuccessful()) {
-
-                            m.setUsers(data.getUserList());
-
-                            if (n.isFinished()) {
-                                sendMobileDataMessage(m);
-                            }
-
-                        } else {
-                            n.abort();
-                            Log.e(TAG, "sendErrorMessage: (" + 3 + ") " + data.getMessage());
-                            sendErrorMessage(MobileClientData.OperationType.GET_INFO.ordinal(), data.getMessage());
-                        }
-                    }
-                }
-            });
-
             MobileServiceCallback iPredictions = MobileServiceAdapter.getInstance().getPredictions(userID);
             MobileServiceCallback.addCallback(iPredictions, new MobileServiceCallback.OnResult() {
                 @Override
                 public void onResult(MobileServiceData data) {
                     synchronized (syncObj) {
+                        Log.e(TAG, "iPredictions finished");
 
                         if (n.isAborted()) return; // An error occurred
                         n.operationCompleted();
@@ -298,6 +276,7 @@ public class MobileService extends LifecycleLoggingService {
                 @Override
                 public void onResult(MobileServiceData data) {
                     synchronized (syncObj) {
+                        Log.e(TAG, "iLeagues finished");
 
                         if (n.isAborted()) return; // An error occurred
                         n.operationCompleted();
@@ -442,9 +421,9 @@ public class MobileService extends LifecycleLoggingService {
         }
 
         @Override
-        public void joinLeague(final WaitingLeagueUser waitingLeagueUser) {
+        public void joinLeague(String userID, String leagueCode) {
 
-            MobileServiceCallback i = MobileServiceAdapter.getInstance().joinLeague(waitingLeagueUser);
+            MobileServiceCallback i = MobileServiceAdapter.getInstance().joinLeague(userID, leagueCode);
             MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
 
                 @Override
@@ -527,7 +506,7 @@ public class MobileService extends LifecycleLoggingService {
                     MobileClientData m = MobileClientData.makeMessage(
                             MobileClientData.OperationType.FETCH_MORE_USERS.ordinal(),
                             requestResult);
-                    m.setUsers(data.getUserList());
+                    m.setLeagueUserList(data.getLeagueUserList());
                     m.setString(data.getString());
                     m.setErrorMessage(data.getMessage());
 

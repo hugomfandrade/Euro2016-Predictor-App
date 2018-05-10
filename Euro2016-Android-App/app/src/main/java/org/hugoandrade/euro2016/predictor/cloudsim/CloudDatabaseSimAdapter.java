@@ -19,7 +19,6 @@ import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.SystemData;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
-import org.hugoandrade.euro2016.predictor.data.raw.WaitingLeagueUser;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientDataJsonFormatter;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientDataJsonParser;
 import org.hugoandrade.euro2016.predictor.network.HttpConstants;
@@ -203,31 +202,6 @@ public class CloudDatabaseSimAdapter {
             @Override
             public void onFailure(@NonNull String throwable) {
                 sendErrorMessage(callback, MobileServiceData.GET_COUNTRIES, throwable);
-            }
-        });
-
-        return true;
-    }
-
-    public boolean getUsers(final MobileServiceCallback callback) {
-        if (!DevConstants.CLOUD_DATABASE_SIM)
-            return false;
-
-        CloudDatabaseSimImpl.ListenableCallback<JsonElement> f
-                = new CloudDatabaseSimImpl(User.Entry.TABLE_NAME, mContentProviderClient)
-                .orderBy(User.Entry.Cols.SCORE, CloudDatabaseSimImpl.SortOrder.Descending).execute();
-        CloudDatabaseSimImpl.addCallback(f, new CloudDatabaseSimImpl.Callback<JsonElement>() {
-            @Override
-            public void onSuccess(JsonElement jsonElement) {
-                callback.set(MobileServiceData.Builder
-                        .instance(MobileServiceData.GET_USERS, MobileServiceData.REQUEST_RESULT_SUCCESS)
-                        .setUserList(parser.parseUserList(jsonElement))
-                        .create());
-            }
-
-            @Override
-            public void onFailure(@NonNull String throwable) {
-                sendErrorMessage(callback, MobileServiceData.GET_USERS, throwable);
             }
         });
 
@@ -456,6 +430,44 @@ public class CloudDatabaseSimAdapter {
         return true;
     }
 
+    public boolean fetchRankOfUser(final MobileServiceCallback callback, final String leagueID, String userID) {
+        if (!DevConstants.CLOUD_DATABASE_SIM)
+            return false;
+
+        CloudDatabaseSimImpl.ListenableCallback<JsonElement> f
+                = new CloudDatabaseSimImpl(LeagueUser.Entry.TABLE_NAME, mContentProviderClient)
+                .orderBy(User.Entry.Cols.SCORE, CloudDatabaseSimImpl.SortOrder.Descending)
+                .where().field(League.Entry.Cols.ID).eq(userID)
+                .and().field(LeagueUser.Entry.Cols.LEAGUE_ID).eq(leagueID)
+                .execute();
+        CloudDatabaseSimImpl.addCallback(f, new CloudDatabaseSimImpl.Callback<JsonElement>() {
+            @Override
+            public void onSuccess(JsonElement jsonElement) {
+                Log.e(TAG, "leagueTop::" + jsonElement.toString());
+
+                callback.set(MobileServiceData.Builder
+                        .instance(MobileServiceData.FETCH_RANK_OF_USER, MobileServiceData.REQUEST_RESULT_SUCCESS)
+                        .setUserList(parser.parseUserList(jsonElement))
+                        .setString(leagueID)
+                        .create());
+
+            }
+
+            @Override
+            public void onFailure(@NonNull String throwable) {
+                Log.e(TAG, "leagueTop::(e)::" + throwable);
+                callback.set(MobileServiceData.Builder
+                        .instance(MobileServiceData.FETCH_RANK_OF_USER, MobileServiceData.REQUEST_RESULT_FAILURE)
+                        .setUserList(new ArrayList<User>())
+                        .setString(leagueID)
+                        .setMessage(throwable)
+                        .create());
+            }
+        });
+
+        return true;
+    }
+
     public boolean getLeagues(final MobileServiceCallback callback, String userID) {
         if (!DevConstants.CLOUD_DATABASE_SIM)
             return false;
@@ -494,7 +506,7 @@ public class CloudDatabaseSimAdapter {
                         MobileServiceCallback.addCallback(c, new MobileServiceCallback.OnResult() {
                             @Override
                             public void onResult(MobileServiceData data) {
-                                leagueWrapper.setUserList(data.getUserList());
+                                leagueWrapper.setLeagueUserList(data.getLeagueUserList());
                                 leagueWrapperList.add(leagueWrapper);
 
                                 tryOnFinished();
@@ -555,14 +567,17 @@ public class CloudDatabaseSimAdapter {
         return true;
     }
 
-    public boolean joinLeague(final MobileServiceCallback callback, final WaitingLeagueUser waitingLeagueUser) {
+    public boolean joinLeague(final MobileServiceCallback callback, String userID, String leagueCode) {
         if (!DevConstants.CLOUD_DATABASE_SIM)
             return false;
 
         CloudDatabaseSimImpl.ListenableCallback<JsonElement> future =
                 new CloudDatabaseSimImpl(
                         League.Entry.API_NAME_JOIN_LEAGUE,
-                        formatter.getAsJsonObject(waitingLeagueUser),
+                        formatter.build()
+                                .addProperty(League.Entry.Cols.USER_ID, userID)
+                                .addProperty(League.Entry.Cols.CODE, leagueCode)
+                                .create(),
                         HttpConstants.PostMethod,
                         mContentProviderClient).execute();
         CloudDatabaseSimImpl.addCallback(future, new CloudDatabaseSimImpl.Callback<JsonElement>() {
@@ -588,7 +603,7 @@ public class CloudDatabaseSimAdapter {
                     MobileServiceCallback.addCallback(c, new MobileServiceCallback.OnResult() {
                         @Override
                         public void onResult(MobileServiceData data) {
-                            leagueWrapper.setUserList(data.getUserList());
+                            leagueWrapper.setLeagueUserList(data.getLeagueUserList());
 
                             tryOnFinished();
                         }

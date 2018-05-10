@@ -14,7 +14,8 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:padding="8dp"
-            android:background="#ddffffff">
+            android:background="#ddffffff"
+            android:baselineAligned="false">
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -36,7 +37,7 @@
                     android:textColor="#ddffffff"
                     android:fontFamily="sans-serif-condensed"
                     android:gravity="center"
-                    android:text="Create League"/>
+                    android:text="@string/create_league"/>
 
             </LinearLayout>
 
@@ -61,7 +62,7 @@
                     android:textColor="#ddffffff"
                     android:fontFamily="sans-serif-condensed"
                     android:gravity="center"
-                    android:text="Join League"/>
+                    android:text="@string/join_league"/>
 
             </LinearLayout>
         </LinearLayout>
@@ -71,21 +72,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:background="#ddffffff">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="My Leagues"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textAllCaps="true"
-                android:fontFamily="sans-serif-condensed"
-                android:paddingStart="8sp"
-                android:paddingEnd="8sp"
-                android:paddingTop="16sp"
-                android:paddingBottom="16sp"
-                android:textColor="#000"
-                />
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/rv_leagues"

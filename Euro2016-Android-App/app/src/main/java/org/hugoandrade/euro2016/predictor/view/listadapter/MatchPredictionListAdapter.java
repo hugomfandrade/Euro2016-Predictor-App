@@ -34,25 +34,12 @@ public class MatchPredictionListAdapter extends RecyclerView.Adapter<MatchPredic
 
     private List<Pair<User, Prediction>> mPredictionList;
 
-    private RecyclerView mRecyclerView;
-
     public MatchPredictionListAdapter() {
-    }
-
-    public MatchPredictionListAdapter(Match match, List<Pair<User, Prediction>> predictionList) {
-        mMatch = match;
-        mPredictionList = predictionList;
     }
 
     @Override
     public int getItemViewType(int position) {
         return position;
-    }
-
-    @Override
-    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
-        super.onAttachedToRecyclerView(recyclerView);
-        mRecyclerView = recyclerView;
     }
 
     @NonNull

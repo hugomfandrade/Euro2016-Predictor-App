@@ -7,7 +7,6 @@ public class User implements Parcelable {
 
     private final String mID;
     private final String mEmail;
-    private final String mPassword;
     private final int mScore;
 
     public static class Entry {
@@ -17,20 +16,18 @@ public class User implements Parcelable {
         public static class Cols {
             public final static String ID = "id";
             public final static String EMAIL = "Email";
-            public final static String PASSWORD = "Password";
             public final static String SCORE = "Score";
         }
     }
 
-    public User(String id, String username, String password, int score) {
+    public User(String id, String username, int score) {
         mID = id;
         mEmail = username;
-        mPassword = password;
         mScore = score;
     }
 
     public User(String id, String username) {
-        this(id, username, null, 0);
+        this(id, username, 0);
     }
 
     public String getID() {
@@ -41,10 +38,6 @@ public class User implements Parcelable {
         return mEmail;
     }
 
-    public String getPassword() {
-        return mPassword;
-    }
-
     public int getScore() {
         return mScore;
     }
@@ -52,7 +45,6 @@ public class User implements Parcelable {
     protected User(Parcel in) {
         mID = in.readString();
         mEmail = in.readString();
-        mPassword = in.readString();
         mScore = in.readInt();
     }
 
@@ -77,7 +69,6 @@ public class User implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(mID);
         dest.writeString(mEmail);
-        dest.writeString(mPassword);
         dest.writeInt(mScore);
     }
 }

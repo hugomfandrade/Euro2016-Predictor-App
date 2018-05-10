@@ -51,6 +51,10 @@ public class League implements Parcelable {
         return mName;
     }
 
+    public void setName(String name) {
+        mName = name;
+    }
+
     public String getAdminID() {
         return mAdminID;
     }

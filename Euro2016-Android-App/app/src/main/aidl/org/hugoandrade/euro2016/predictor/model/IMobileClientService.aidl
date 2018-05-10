@@ -7,7 +7,6 @@ import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.data.raw.League;
-import org.hugoandrade.euro2016.predictor.data.raw.WaitingLeagueUser;
 
 interface IMobileClientService {
 
@@ -33,7 +32,7 @@ interface IMobileClientService {
 
     void createLeague(in String userID, in String leagueName);
 
-    void joinLeague(in WaitingLeagueUser waitingLeagueUser);
+    void joinLeague(in String userID, in String leagueCode);
 
     void leaveLeague(in String userID, in String leagueID);
 

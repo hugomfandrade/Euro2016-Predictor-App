@@ -19,7 +19,7 @@
             android:id="@+id/iv_filter_previous"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:tint="#26629e"
+            android:tint="@color/colorMain"
             android:src="@drawable/ic_chevron_start"/>
         
         <TextView
@@ -39,7 +39,7 @@
             android:id="@+id/iv_filter_next"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:tint="#26629e"
+            android:tint="@color/colorMain"
             android:src="@drawable/ic_chevron_end" />
 
     </LinearLayout>

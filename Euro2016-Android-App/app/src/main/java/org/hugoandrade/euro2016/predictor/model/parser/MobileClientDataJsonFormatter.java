@@ -5,8 +5,6 @@ import com.google.gson.JsonObject;
 import org.hugoandrade.euro2016.predictor.data.raw.League;
 import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
-import org.hugoandrade.euro2016.predictor.data.raw.WaitingLeagueUser;
-
 /**
  * Parses the objects to Json data.
  */
@@ -40,15 +38,6 @@ public class MobileClientDataJsonFormatter {
                 .addProperty(League.Entry.Cols.NAME, league.getName())
                 .addProperty(League.Entry.Cols.ADMIN_ID, league.getAdminID())
                 .addProperty(League.Entry.Cols.CODE, league.getCode())
-                .removeProperties(exceptProperties)
-                .create();
-    }
-
-    public JsonObject getAsJsonObject(WaitingLeagueUser waitingLeagueUser, String... exceptProperties) {
-
-        return JsonObjectBuilder.instance()
-                .addProperty(WaitingLeagueUser.Entry.Cols.USER_ID, waitingLeagueUser.getUserID())
-                .addProperty(WaitingLeagueUser.Entry.Cols.LEAGUE_CODE, waitingLeagueUser.getLeagueCode())
                 .removeProperties(exceptProperties)
                 .create();
     }

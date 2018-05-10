@@ -6,6 +6,7 @@ import android.util.SparseArray;
 
 import org.hugoandrade.euro2016.predictor.data.LeagueWrapper;
 import org.hugoandrade.euro2016.predictor.data.raw.Country;
+import org.hugoandrade.euro2016.predictor.data.raw.LeagueUser;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.SystemData;
@@ -34,16 +35,19 @@ public class GlobalData {
     private HashSet<OnMatchesChangedListener> mOnMatchesChangedListenerSet = new HashSet<>();
     private HashSet<OnCountriesChangedListener> mOnCountriesChangedListenerSet = new HashSet<>();
     private HashSet<OnPredictionsChangedListener> mOnPredictionsChangedListenerSet = new HashSet<>();
-    private HashSet<OnUsersChangedListener> mOnUsersChangedListenerSet = new HashSet<>();
     private HashSet<OnLatestPerformanceChangedListener> mOnLatestPerformanceChangedListenerSet = new HashSet<>();
     private HashSet<OnLeaguesChangedListener> mOnLeaguesChangedListenerSet = new HashSet<>();
 
     private List<Country> mCountryList = new ArrayList<>();
     private List<Match> mMatchList = new ArrayList<>();
-    private List<User> mUserList = new ArrayList<>();
     private List<Prediction> mPredictionList = new ArrayList<>();
     private List<LeagueWrapper> mLeagueWrapperList = new ArrayList<>();
     private HashMap<String, List<Prediction>> mLatestPerformanceMap = new HashMap<>();
+
+    // UserID, list of matches whose predictions where fetched
+    private Map<String, List<Integer>> mPredictionOfUserMap = new HashMap<>();
+    // UserID, Map MatchNumber - predictions
+    private HashMap<String, SparseArray<Prediction>> mMatchPredictionMap = new HashMap<>();
 
     /*public static GlobalData getInstance() {
         if (mInstance == null) {
@@ -85,27 +89,11 @@ public class GlobalData {
         this.user = user;
     }
 
-    public List<User> getUserList() {
-        return mUserList;
-    }
-
-    public void setUserList(List<User> userList) {
-        mUserList = userList;
-
-        for (OnUsersChangedListener listener : mOnUsersChangedListenerSet) {
-            listener.onUsersChanged();
-        }
-
-        mLeagueWrapperList.add(LeagueWrapper.createOverall(mUserList));
-
-        for (OnLeaguesChangedListener listener : mOnLeaguesChangedListenerSet) {
-            listener.onLeaguesChanged();
-        }
-    }
-
     public void setLeagues(List<LeagueWrapper> leagueWrapperList) {
         mLeagueWrapperList = leagueWrapperList;
-        mLeagueWrapperList.add(LeagueWrapper.createOverall(mUserList));
+        if (mLeagueWrapperList == null)
+            mLeagueWrapperList = new ArrayList<>();
+        //mLeagueWrapperList.add(LeagueWrapper.createOverall(mUserList));
 
         for (OnLeaguesChangedListener listener : mOnLeaguesChangedListenerSet) {
             listener.onLeaguesChanged();
@@ -261,12 +249,6 @@ public class GlobalData {
         return countryList;
     }
 
-
-    // UserID, list of matches whose predictions where fetched
-    private Map<String, List<Integer>> mPredictionOfUserMap = new HashMap<>();
-    // UserID, list of predictions
-    private HashMap<String, SparseArray<Prediction>> mMatchPredictionMap = new HashMap<>();
-
     public void setPredictionsOfUsers(int matchNumber, List<User> userList, List<Prediction> predictionList) {
         for (User u : userList) {
             String userID = u.getID();
@@ -379,30 +361,30 @@ public class GlobalData {
 
     }
 
-    public void addUsersToLeague(String leagueID, List<User> userList) {
+    public void addUsersToLeague(String leagueID, List<LeagueUser> userList) {
 
         for (LeagueWrapper leagueWrapper : mLeagueWrapperList) {
             if (leagueWrapper.getLeague().getID().equals(leagueID)) {
-                for (User newUser : userList) {
+                for (LeagueUser newUser : userList) {
 
                     boolean isUserOnList = false;
-                    for (User user : leagueWrapper.getUserList()) {
-                        if (user.getID().equals(newUser.getID())) {
+                    for (LeagueUser user : leagueWrapper.getLeagueUserList()) {
+                        if (user.getUser().getID().equals(newUser.getUser().getID())) {
                             isUserOnList = true;
                             break;
                         }
                     }
 
                     if (!isUserOnList) {
-                        leagueWrapper.getUserList().add(newUser);
+                        leagueWrapper.getLeagueUserList().add(newUser);
                     }
 
                 }
 
-                Collections.sort(leagueWrapper.getUserList(), new Comparator<User>() {
+                Collections.sort(leagueWrapper.getLeagueUserList(), new Comparator<LeagueUser>() {
                     @Override
-                    public int compare(User o1, User o2) {
-                        return o1.getScore() - o2.getScore();
+                    public int compare(LeagueUser o1, LeagueUser o2) {
+                        return o1.getRank() - o2.getRank();
                     }
                 });
 
@@ -455,10 +437,6 @@ public class GlobalData {
         void onPredictionsChanged();
     }
 
-    public interface OnUsersChangedListener {
-        void onUsersChanged();
-    }
-
     public interface OnLeaguesChangedListener {
         void onLeaguesChanged();
     }
@@ -485,14 +463,6 @@ public class GlobalData {
 
     public void removeOnPredictionsChangedListener(OnPredictionsChangedListener listener) {
         mOnPredictionsChangedListenerSet.remove(listener);
-    }
-
-    public void addOnUsersChangedListener(OnUsersChangedListener listener) {
-        mOnUsersChangedListenerSet.add(listener);
-    }
-
-    public void removeOnUsersChangedListener(OnUsersChangedListener listener) {
-        mOnUsersChangedListenerSet.remove(listener);
     }
 
     public void addOnLatestPerformanceChangedListener(OnLatestPerformanceChangedListener listener) {

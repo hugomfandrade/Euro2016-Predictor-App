@@ -47,7 +47,7 @@
                 android:gravity="center"
                 android:inputType="textEmailAddress"
                 android:textColor="@android:color/white"
-                android:textColorHint="@android:color/white"
+                android:textColorHint="#66ffffff"
                 android:hint="@string/hint_username"
                 android:maxLines="1" />
 
@@ -60,7 +60,7 @@
                 android:gravity="center"
                 android:inputType="textPassword"
                 android:textColor="@android:color/white"
-                android:textColorHint="@android:color/white"
+                android:textColorHint="#66ffffff"
                 android:hint="@string/hint_password"
                 android:maxLines="1"
                 android:layout_marginTop="8dp"

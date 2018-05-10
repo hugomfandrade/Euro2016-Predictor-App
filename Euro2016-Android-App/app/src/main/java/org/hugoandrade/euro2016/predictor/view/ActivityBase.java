@@ -9,8 +9,8 @@ import org.hugoandrade.euro2016.predictor.common.PresenterOps;
 import org.hugoandrade.euro2016.predictor.common.RetainedFragmentManager;
 
 public abstract class ActivityBase<RequiredViewOps,
-                                      ProvidedPresenterOps,
-                                      PresenterType extends PresenterOps<RequiredViewOps>>
+                                   ProvidedPresenterOps,
+                                   PresenterType extends PresenterOps<RequiredViewOps>>
         extends AppCompatActivity
         implements ContextView {
 

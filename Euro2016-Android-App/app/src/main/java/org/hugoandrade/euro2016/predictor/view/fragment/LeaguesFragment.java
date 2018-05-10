@@ -12,17 +12,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.hugoandrade.euro2016.predictor.FragComm;
 import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.R;
 import org.hugoandrade.euro2016.predictor.common.ServiceManager;
 import org.hugoandrade.euro2016.predictor.common.ServiceManagerOps;
 import org.hugoandrade.euro2016.predictor.data.LeagueWrapper;
 import org.hugoandrade.euro2016.predictor.data.raw.League;
-import org.hugoandrade.euro2016.predictor.data.raw.WaitingLeagueUser;
+import org.hugoandrade.euro2016.predictor.data.raw.LeagueUser;
 import org.hugoandrade.euro2016.predictor.model.IMobileClientService;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
-import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
 import org.hugoandrade.euro2016.predictor.view.LeagueDetailsActivity;
 import org.hugoandrade.euro2016.predictor.view.dialog.CreateLeagueDialog;
 import org.hugoandrade.euro2016.predictor.view.dialog.JoinLeagueDialog;
@@ -48,7 +46,6 @@ public class LeaguesFragment extends FragmentBase<FragComm.RequiredActivityOps>
             mServiceManager.subscribeServiceCallback(mServiceCallback);
         }
 
-        GlobalData.getInstance().addOnUsersChangedListener(mOnUsersChangedListener);
         GlobalData.getInstance().addOnLatestPerformanceChangedListener(mOnLatestPerformanceChangedListener);
         GlobalData.getInstance().addOnLeaguesChangedListener(mOnLeaguesChangedListener);
 
@@ -159,7 +156,7 @@ public class LeaguesFragment extends FragmentBase<FragComm.RequiredActivityOps>
         }
 
         try {
-            service.joinLeague(new WaitingLeagueUser(GlobalData.getInstance().user.getID(), leagueCode));
+            service.joinLeague(GlobalData.getInstance().user.getID(), leagueCode);
         } catch (RemoteException e) {
             e.printStackTrace();
             onLeagueJoined(false, "Error sending message", null);
@@ -169,7 +166,7 @@ public class LeaguesFragment extends FragmentBase<FragComm.RequiredActivityOps>
     public void onLeagueCreated(boolean isOperationSuccessful, String errorMessage, League league) {
         if (isOperationSuccessful) {
 
-            LeagueWrapper leagueWrapper = new LeagueWrapper(league, Collections.singletonList(GlobalData.getInstance().user));
+            LeagueWrapper leagueWrapper = new LeagueWrapper(league, Collections.singletonList(new LeagueUser(GlobalData.getInstance().user, 1)));
 
             GlobalData.getInstance().addLeague(leagueWrapper);
 
@@ -199,21 +196,9 @@ public class LeaguesFragment extends FragmentBase<FragComm.RequiredActivityOps>
     public void onDestroyView() {
         super.onDestroyView();
 
-        GlobalData.getInstance().removeOnUsersChangedListener(mOnUsersChangedListener);
         GlobalData.getInstance().removeOnLatestPerformanceChangedListener(mOnLatestPerformanceChangedListener);
         GlobalData.getInstance().removeOnLeaguesChangedListener(mOnLeaguesChangedListener);
     }
-
-    private GlobalData.OnUsersChangedListener mOnUsersChangedListener
-            = new GlobalData.OnUsersChangedListener() {
-
-        @Override
-        public void onUsersChanged() {
-            /*if (mLeagueListAdapter != null) {
-                mLeagueListAdapter.set(GlobalData.getInstance().getUserList());
-            }/**/
-        }
-    };
 
     private GlobalData.OnLatestPerformanceChangedListener mOnLatestPerformanceChangedListener
             = new GlobalData.OnLatestPerformanceChangedListener() {

@@ -4,8 +4,6 @@ import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 
-import org.hugoandrade.euro2016.predictor.FragComm;
-
 public abstract class FragmentBase<RequiredParentActivityOps extends FragComm.RequiredActivityBaseOps>
         extends Fragment {
 

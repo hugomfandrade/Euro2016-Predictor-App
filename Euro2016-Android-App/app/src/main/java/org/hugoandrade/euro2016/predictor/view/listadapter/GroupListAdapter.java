@@ -1,5 +1,6 @@
 package org.hugoandrade.euro2016.predictor.view.listadapter;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.support.annotation.NonNull;
@@ -16,6 +17,7 @@ import java.util.List;
 
 import org.hugoandrade.euro2016.predictor.R;
 import org.hugoandrade.euro2016.predictor.data.raw.Country;
+import org.hugoandrade.euro2016.predictor.utils.TranslationUtils;
 
 public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.ViewHolder> {
 
@@ -35,13 +37,14 @@ public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.View
 
     @Override
     public void onBindViewHolder(@NonNull final GroupListAdapter.ViewHolder holder, int position) {
+        Context context = holder.itemView.getContext();
         final Country country = mCountryList.get(holder.getAdapterPosition());
 
         boolean isPrimary = mPrimaryCountry != null && mPrimaryCountry.getID().equals(country.getID());
         holder.itemView.setBackgroundColor(isPrimary? Color.parseColor("#6626629e") : Color.TRANSPARENT);
 
         holder.tvPosition.setText(String.valueOf(country.getPosition()));
-        holder.tvCountryName.setText(country.getName());
+        holder.tvCountryName.setText(TranslationUtils.translateCountryName(context, country.getName()));
         holder.tvCountryName.setGravity(Gravity.START);
         holder.ivCountryFlag.setImageResource(Country.getImageID(country));
         holder.tvVictories.setText(String.valueOf(country.getVictories()));
@@ -99,16 +102,16 @@ public class GroupListAdapter extends RecyclerView.Adapter<GroupListAdapter.View
         ViewHolder(View itemView) {
             super(itemView);
 
-            tvPosition = (TextView) itemView.findViewById(R.id.tv_country_position);
-            tvCountryName = (TextView) itemView.findViewById(R.id.tv_country_name);
-            ivCountryFlag = (ImageView) itemView.findViewById(R.id.iv_country_flag);
-            tvVictories = (TextView) itemView.findViewById(R.id.tv_country_victories);
-            tvDraws = (TextView) itemView.findViewById(R.id.tv_country_draws);
-            tvDefeats = (TextView) itemView.findViewById(R.id.tv_country_defeats);
-            tvGoalsFor = (TextView) itemView.findViewById(R.id.tv_country_goals_for);
-            tvGoalsAgainst = (TextView) itemView.findViewById(R.id.tv_country_goals_against);
-            tvGoalsDifference = (TextView) itemView.findViewById(R.id.tv_country_goals_difference);
-            tvPoints = (TextView) itemView.findViewById(R.id.tv_country_points);
+            tvPosition = itemView.findViewById(R.id.tv_country_position);
+            tvCountryName = itemView.findViewById(R.id.tv_country_name);
+            ivCountryFlag = itemView.findViewById(R.id.iv_country_flag);
+            tvVictories = itemView.findViewById(R.id.tv_country_victories);
+            tvDraws = itemView.findViewById(R.id.tv_country_draws);
+            tvDefeats = itemView.findViewById(R.id.tv_country_defeats);
+            tvGoalsFor = itemView.findViewById(R.id.tv_country_goals_for);
+            tvGoalsAgainst = itemView.findViewById(R.id.tv_country_goals_against);
+            tvGoalsDifference = itemView.findViewById(R.id.tv_country_goals_difference);
+            tvPoints = itemView.findViewById(R.id.tv_country_points);
 
         }
     }

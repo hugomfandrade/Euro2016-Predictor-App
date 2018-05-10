@@ -23,6 +23,9 @@ public class Prediction implements Parcelable {
             public static final String HOME_TEAM_GOALS = "HomeTeamGoals";
             public static final String AWAY_TEAM_GOALS = "AwayTeamGoals";
             public static final String SCORE = "Score";
+
+            public static final String MIN_MATCH_NUMBER = "MinMatchNumber";
+            public static final String MAX_MATCH_NUMBER = "MaxMatchNumber";
         }
         public static String PastMatchDate = "Past match date";
     }

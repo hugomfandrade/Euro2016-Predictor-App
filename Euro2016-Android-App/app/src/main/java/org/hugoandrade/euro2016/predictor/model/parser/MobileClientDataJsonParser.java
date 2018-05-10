@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 
 import org.hugoandrade.euro2016.predictor.data.raw.Country;
 import org.hugoandrade.euro2016.predictor.data.raw.League;
+import org.hugoandrade.euro2016.predictor.data.raw.LeagueUser;
 import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
@@ -97,8 +98,30 @@ public class MobileClientDataJsonParser {
         return new User(
                 getJsonPrimitive(jsonObject, User.Entry.Cols.ID, null),
                 getJsonPrimitive(jsonObject, User.Entry.Cols.EMAIL, null),
-                getJsonPrimitive(jsonObject, User.Entry.Cols.PASSWORD, null),
                 getJsonPrimitive(jsonObject, User.Entry.Cols.SCORE, 0));
+    }
+
+    public ArrayList<LeagueUser> parseLeagueUserList(JsonElement result) {
+
+        ArrayList<LeagueUser> allUserList = new ArrayList<>();
+
+        if (!result.isJsonArray())
+            return allUserList;
+
+        for (JsonElement item : result.getAsJsonArray()) {
+            try {
+                allUserList.add(parseLeagueUser(item.getAsJsonObject()));
+            } catch (ClassCastException e) {
+                Log.e(TAG, "Exception caught when parsing LeagueUser" +
+                        " data from azure table: " + e.getMessage());
+            }
+        }
+        return allUserList;
+    }
+
+    public LeagueUser parseLeagueUser(JsonObject jsonObject) {
+        return new LeagueUser(parseUser(jsonObject),
+                getJsonPrimitive(jsonObject, LeagueUser.Entry.Cols.RANK, 0));
     }
 
     public ArrayList<Country> parseCountryList(JsonElement result) {
