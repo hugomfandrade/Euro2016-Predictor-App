@@ -11,6 +11,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
+import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.MVP;
 import org.hugoandrade.euro2016.predictor.R;
 import org.hugoandrade.euro2016.predictor.common.ServiceManager;
@@ -18,7 +19,10 @@ import org.hugoandrade.euro2016.predictor.common.ServiceManagerOps;
 import org.hugoandrade.euro2016.predictor.customview.IconTabLayout;
 import org.hugoandrade.euro2016.predictor.customview.NonSwipeableViewPager;
 import org.hugoandrade.euro2016.predictor.presenter.MainPresenter;
+import org.hugoandrade.euro2016.predictor.utils.ErrorMessageUtils;
+import org.hugoandrade.euro2016.predictor.utils.NetworkUtils;
 import org.hugoandrade.euro2016.predictor.utils.SharedPreferencesUtils;
+import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
 import org.hugoandrade.euro2016.predictor.view.fragment.FragComm;
 import org.hugoandrade.euro2016.predictor.view.fragment.LeaguesFragment;
 import org.hugoandrade.euro2016.predictor.view.fragment.PredictionsFragment;
@@ -56,6 +60,9 @@ public class MainActivity extends MainActivityBase<MVP.RequiredMainViewOps,
     public int[] mFragmentIconArray = {
             R.drawable.ic_soccer_field, R.drawable.ic_podium,
             R.drawable.ic_trophy, R.drawable.ic_rules};
+
+    private View errorContainer;
+    private View tvTryAgain;
 
     /**
      * Factory method that returns an implicit Intent for displaying
@@ -102,6 +109,10 @@ public class MainActivity extends MainActivityBase<MVP.RequiredMainViewOps,
             getSupportActionBar().setTitle(R.string.app_name);
         }
 
+        errorContainer = findViewById(R.id.error_container);
+        errorContainer.setVisibility(View.GONE);
+        tvTryAgain = findViewById(R.id.tv_try_again);
+
         // initialize TabLayout.
         TabLayout tabLayout = findViewById(R.id.tabanim_tabs);
 
@@ -143,17 +154,8 @@ public class MainActivity extends MainActivityBase<MVP.RequiredMainViewOps,
 
     @Override
     public void reportMessage(String message) {
-        showSnackBar(message);
-    }
-
-    /**
-     * The child fragment sends the message to the Parent activity, MainActivity,
-     * to be displayed as a SnackBar.
-     */
-    public void showSnackBar(String message) {
-        Snackbar.make(findViewById(android.R.id.content),
-                message,
-                Snackbar.LENGTH_SHORT).show();
+        //Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_SHORT).show();
+        ViewUtils.showToast(this, message);
     }
 
     @Override
@@ -175,6 +177,32 @@ public class MainActivity extends MainActivityBase<MVP.RequiredMainViewOps,
         getPresenter().logout();
 
         super.logout();
+    }
+
+    @Override
+    protected void notifyNetworkIsAvailable() {
+        if (!GlobalData.getInstance().hasFetchedInfo()) {
+            errorContainer.setVisibility(View.GONE);
+            getPresenter().getInfo();
+        }
+    }
+
+    @Override
+    public void showGettingInfoErrorMessage() {
+        errorContainer.setVisibility(View.VISIBLE);
+        tvTryAgain.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (NetworkUtils.isNetworkAvailable(MainActivity.this)) {
+                    errorContainer.setVisibility(View.GONE);
+                    tvTryAgain.setOnClickListener(null);
+                    getPresenter().getInfo();
+                }
+                else {
+                    ViewUtils.showToast(MainActivity.this, getString(R.string.no_network_connection));
+                }
+            }
+        });
     }
 
     private class SectionsPagerAdapter extends FragmentPagerAdapter implements IconTabLayout.IconTabLayoutListener {

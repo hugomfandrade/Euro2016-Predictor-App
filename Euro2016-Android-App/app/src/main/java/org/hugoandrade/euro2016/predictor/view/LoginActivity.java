@@ -1,12 +1,13 @@
 package org.hugoandrade.euro2016.predictor.view;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
+import android.text.Editable;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -16,10 +17,10 @@ import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.MVP;
 import org.hugoandrade.euro2016.predictor.R;
 import org.hugoandrade.euro2016.predictor.common.SplashScreenAnimation;
+import org.hugoandrade.euro2016.predictor.common.TextWatcherAdapter;
 import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
 import org.hugoandrade.euro2016.predictor.presenter.LoginPresenter;
-import org.hugoandrade.euro2016.predictor.utils.NetworkBroadcastReceiverUtils;
-import org.hugoandrade.euro2016.predictor.utils.NetworkUtils;
+import org.hugoandrade.euro2016.predictor.utils.LoginUtils;
 import org.hugoandrade.euro2016.predictor.utils.SharedPreferencesUtils;
 import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
 
@@ -38,6 +39,12 @@ public class LoginActivity extends ActivityBase<MVP.RequiredLoginViewOps,
     private EditText etPassword;
     private TextView tvSignUp;
     private ProgressBar progressBar;
+
+    private View tryAgainContainer;
+    private View tvTryAgain;
+    private View appStateContainer;
+    private TextView tvAppStateMessage;
+    private TextView tvAppStateMessageDetails;
 
     private SplashScreenAnimation mSplashScreenAnimation;
 
@@ -62,6 +69,13 @@ public class LoginActivity extends ActivityBase<MVP.RequiredLoginViewOps,
     private void initializeUI() {
         setContentView(R.layout.activity_login);
 
+        tryAgainContainer = findViewById(R.id.try_again_container);
+        tvTryAgain = findViewById(R.id.tv_try_again);
+        appStateContainer = findViewById(R.id.app_state_message_container);
+        tvAppStateMessage = findViewById(R.id.tv_app_state_message);
+        tvAppStateMessageDetails = findViewById(R.id.tv_app_state_message_details);
+        appStateContainer.setVisibility(View.GONE);
+
         tvSignUp        = findViewById(R.id.tv_sign_up);
         etUsername      = findViewById(R.id.et_username_login);
         etPassword      = findViewById(R.id.et_password_login);
@@ -72,6 +86,21 @@ public class LoginActivity extends ActivityBase<MVP.RequiredLoginViewOps,
         progressBar     = findViewById(R.id.progressBar_login);
         progressBar.setVisibility(ProgressBar.INVISIBLE);
 
+        etUsername.addTextChangedListener(new TextWatcherAdapter() {
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                areLoginInputFieldsValid();
+            }
+        });
+        etPassword.addTextChangedListener(new TextWatcherAdapter() {
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                areLoginInputFieldsValid();
+            }
+        });
+
         etUsername.setEnabled(false);
         etPassword.setEnabled(false);
         tvSignUp.setEnabled(false);
@@ -79,6 +108,25 @@ public class LoginActivity extends ActivityBase<MVP.RequiredLoginViewOps,
 
         tvSignUp.setOnClickListener(loginClickListener);
         btLogin.setOnClickListener(loginClickListener);
+        etPassword.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+
+                if (id == EditorInfo.IME_ACTION_DONE) {
+
+                    String email = etUsername.getText().toString().trim();
+                    String password = etPassword.getText().toString().trim();
+
+                    if (LoginUtils.isValid(email, password)) {
+                        getPresenter().login(
+                                etUsername.getText().toString(),
+                                etPassword.getText().toString());
+                    }
+                    return true;
+                }
+                return false;
+            }
+        });
 
         mSplashScreenAnimation = SplashScreenAnimation.Builder.instance(ivLogoSplash, ivLogo)
                 .setAppearingViews(tvSignUp, etUsername, etPassword, btLogin, llInputFields)
@@ -87,6 +135,21 @@ public class LoginActivity extends ActivityBase<MVP.RequiredLoginViewOps,
                 .withEndAction(this)
                 .start(true);
 
+    }
+
+    private void areLoginInputFieldsValid() {
+
+        String email = etUsername.getText().toString().trim();
+        String password = etPassword.getText().toString().trim();
+
+        if (!LoginUtils.isValid(email, password)) {
+            btLogin.setClickable(false);
+            btLogin.setBackgroundColor(Color.parseColor("#3d000000"));
+        }
+        else {
+            btLogin.setClickable(true);
+            btLogin.setBackgroundColor(getResources().getColor(R.color.colorAccent));
+        }
     }
 
     @Override
@@ -127,18 +190,39 @@ public class LoginActivity extends ActivityBase<MVP.RequiredLoginViewOps,
     @Override
     public void successfulLogin() {
         getPresenter().notifyMovingToNextActivity();
-        startActivity(MainActivity.makeIntent(getActivityContext()));//, TempActivity.class));
+        startActivity(MainActivity.makeIntent(getActivityContext()));
         finish();
     }
 
     @Override
-    public void finishApp() {
-        finish();
+    public void showAppStateDisabledMessage() {
+        appStateContainer.setVisibility(View.VISIBLE);
+        tvAppStateMessage.setText(getString(R.string.app_state_unavailable_updating_scores));
+        tvAppStateMessageDetails.setText(getString(R.string.app_state_unavailable_details));
+        tvAppStateMessageDetails.setVisibility(View.VISIBLE);
+        tryAgainContainer.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void showAppStateErrorGettingSystemDataMessage() {
+        appStateContainer.setVisibility(View.VISIBLE);
+        tvAppStateMessage.setText(getString(R.string.app_state_error));
+        tvAppStateMessageDetails.setText(getString(R.string.app_state_unavailable_details));
+        tvAppStateMessageDetails.setVisibility(View.GONE);
+        tryAgainContainer.setVisibility(View.VISIBLE);
+        tvTryAgain.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getPresenter().getSystemData();
+                appStateContainer.setVisibility(View.GONE);
+                tvTryAgain.setOnClickListener(null);
+            }
+        });
     }
 
     @Override
     public void stopHoldingSplashScreenAnimation() {
-        if (mSplashScreenAnimation != null) {
+        if (mSplashScreenAnimation != null && !mSplashScreenAnimation.hasFinished()) {
             mSplashScreenAnimation.stopHold();
         }
     }
@@ -151,19 +235,20 @@ public class LoginActivity extends ActivityBase<MVP.RequiredLoginViewOps,
                                        SIGN_UP_REQUEST_CODE);
             } else if (v == btLogin) {
                 getPresenter().login(
-                        etUsername.getText().toString(),
-                        etPassword.getText().toString());
+                        etUsername.getText().toString().trim(),
+                        etPassword.getText().toString().trim());
             }
         }
     };
 
-    public void showSnackBar(String message) {
-        Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_SHORT).show();
-    }
-
     @Override
     public void reportMessage(String message) {
-        showSnackBar(message);
+        if (etUsername.hasFocus())
+            ViewUtils.showSoftKeyboardAndRequestFocus(etUsername);
+        if (etPassword.hasFocus())
+            ViewUtils.showSoftKeyboardAndRequestFocus(etPassword);
+        //Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_SHORT).show();
+        ViewUtils.showToast(this, message);
     }
 
     @Override

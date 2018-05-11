@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -28,8 +27,8 @@ import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.presenter.MatchPredictionPresenter;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
-import org.hugoandrade.euro2016.predictor.utils.SharedPreferencesUtils;
 import org.hugoandrade.euro2016.predictor.utils.TranslationUtils;
+import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
 import org.hugoandrade.euro2016.predictor.view.dialog.FilterPopup;
 import org.hugoandrade.euro2016.predictor.view.listadapter.MatchPredictionListAdapter;
 
@@ -288,12 +287,9 @@ public class MatchPredictionActivity extends MainActivityBase<MVP.RequiredMatchP
 
     }
 
-    public void showSnackBar(String message) {
-        Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_SHORT).show();
-    }
-
     @Override
     public void reportMessage(String message) {
-        showSnackBar(message);
+        //Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_SHORT).show();
+        ViewUtils.showToast(this, message);
     }
 }

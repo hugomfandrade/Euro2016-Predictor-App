@@ -21,8 +21,6 @@ import org.hugoandrade.euro2016.predictor.data.raw.LeagueUser;
 import org.hugoandrade.euro2016.predictor.model.IMobileClientService;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
 import org.hugoandrade.euro2016.predictor.utils.ErrorMessageUtils;
-import org.hugoandrade.euro2016.predictor.utils.NetworkUtils;
-import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
 import org.hugoandrade.euro2016.predictor.view.LeagueDetailsActivity;
 import org.hugoandrade.euro2016.predictor.view.dialog.CreateLeagueDialog;
 import org.hugoandrade.euro2016.predictor.view.dialog.JoinLeagueDialog;
@@ -165,7 +163,7 @@ public class LeaguesFragment extends FragmentBase<FragComm.RequiredActivityOps>
             GlobalData.getInstance().addLeague(leagueWrapper);
 
         } else {
-            showErrorMessage(errorMessage);
+            reportMessage(ErrorMessageUtils.handleErrorMessage(getActivity(), errorMessage));
         }
 
         getParentActivity().enableUI();
@@ -177,20 +175,10 @@ public class LeaguesFragment extends FragmentBase<FragComm.RequiredActivityOps>
             GlobalData.getInstance().addLeague(leagueWrapper);
 
         } else {
-            showErrorMessage(errorMessage);
+            reportMessage(ErrorMessageUtils.handleJoinLeagueErrorMessage(getActivity(), errorMessage));
         }
 
         getParentActivity().enableUI();
-    }
-
-    private void showErrorMessage(String message) {
-        if (NetworkUtils.isNetworkUnavailableError(getParentActivity().getActivityContext(), message)) {
-            ViewUtils.showToast(getParentActivity().getActivityContext(), message);
-            return;
-        }
-        // operation failed, show error message
-        if (message != null)
-            getParentActivity().showSnackBar(message);
     }
 
     @Override

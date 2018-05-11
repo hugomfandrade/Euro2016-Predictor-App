@@ -194,9 +194,12 @@ public final class MatchUtils {
             case "Semi Final":
             case "Final":
 
-                if (!MatchUtils.havePreviousMatchesBeenSetUp(matchSet, match)) {
+                if (!MatchUtils.havePreviousMatchesBeenSetUpStrict(matchSet, match)) {
                     return false;
                 }
+                /*if (!MatchUtils.havePreviousMatchesBeenSetUp(matchSet, match)) {
+                    return false;
+                }/**/
                 break;
             default:
                 return false;
@@ -335,6 +338,28 @@ public final class MatchUtils {
                 return hasAtLeastOneOfTheMatchupSetUp(matchSet.get(38)) || hasAtLeastOneOfTheMatchupSetUp(matchSet.get(42));
             case 45:
                 return hasAtLeastOneOfTheMatchupSetUp(matchSet.get(37)) || hasAtLeastOneOfTheMatchupSetUp(matchSet.get(39));
+
+        }
+        return false;
+    }
+
+    public static boolean havePreviousMatchesBeenSetUpStrict(SparseArray<Match> matchSet, Match match) {
+
+        switch (match.getMatchNumber()) {
+            case 51:
+                return isMatchupSetUp(matchSet.get(50)) && isMatchupSetUp(matchSet.get(49));
+            case 50:
+                return isMatchupSetUp(matchSet.get(47)) && isMatchupSetUp(matchSet.get(48));
+            case 49:
+                return isMatchupSetUp(matchSet.get(45)) && isMatchupSetUp(matchSet.get(46));
+            case 48:
+                return isMatchupSetUp(matchSet.get(40)) && isMatchupSetUp(matchSet.get(44));
+            case 47:
+                return isMatchupSetUp(matchSet.get(41)) && isMatchupSetUp(matchSet.get(43));
+            case 46:
+                return isMatchupSetUp(matchSet.get(38)) && isMatchupSetUp(matchSet.get(42));
+            case 45:
+                return isMatchupSetUp(matchSet.get(37)) && isMatchupSetUp(matchSet.get(39));
 
         }
         return false;

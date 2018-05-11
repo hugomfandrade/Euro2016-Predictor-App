@@ -22,9 +22,9 @@ public abstract class FragmentBase<RequiredParentActivityOps extends FragComm.Re
         return mCommChListener;
     }
 
-    protected void showSnackBar(String message) {
+    protected void reportMessage(String message) {
         if (mCommChListener != null)
-            mCommChListener.showSnackBar(message);
+            mCommChListener.reportMessage(message);
         else
             Log.e(TAG, "Error: communication channel not set. Message was: " + message);
     }

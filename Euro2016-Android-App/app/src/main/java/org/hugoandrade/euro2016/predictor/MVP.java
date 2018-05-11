@@ -92,13 +92,17 @@ public interface MVP {
          * Called after SystemData is fetched. Finish app when "AppState"
          * is false.
          */
-        void finishApp();
+        void showAppStateDisabledMessage();
+
+        void showAppStateErrorGettingSystemDataMessage();
 
         void stopHoldingSplashScreenAnimation();
     }
     interface ProvidedLoginPresenterOps extends PresenterOps<RequiredLoginViewOps> {
         void login(String username, String password);
         void notifyMovingToNextActivity();
+
+        void getSystemData();
     }
 
     /** For SIGN UP **/
@@ -121,6 +125,7 @@ public interface MVP {
      */
     interface RequiredMainViewOps extends RequiredMobileClientViewBaseOps, ServiceManagerOps {
 
+        void showGettingInfoErrorMessage();
     }
 
     /**
@@ -136,6 +141,8 @@ public interface MVP {
         ServiceManager getServiceManager();
 
         void logout();
+
+        void getInfo();
     }
 
 

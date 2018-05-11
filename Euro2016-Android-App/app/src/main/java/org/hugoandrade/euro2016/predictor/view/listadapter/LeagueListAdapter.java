@@ -48,7 +48,7 @@ public class LeagueListAdapter extends RecyclerView.Adapter<LeagueListAdapter.Vi
         holder.tvLeagueMembers.setText(TextUtils.concat("(",
                 String.valueOf(leagueWrapper.getLeague().getNumberOfMembers()),
                 " ",
-                context.getString(R.string.members),
+                context.getString(leagueWrapper.getLeague().getNumberOfMembers() == 1? R.string.member : R.string.members),
                 ")"));
 
     }

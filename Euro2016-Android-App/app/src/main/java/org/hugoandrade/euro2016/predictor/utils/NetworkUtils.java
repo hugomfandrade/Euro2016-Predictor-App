@@ -17,6 +17,8 @@ public final class NetworkUtils {
     }
 
     public static boolean isNetworkAvailable(Context context) {
+        if (context == null) return false;
+
         final ConnectivityManager connMgr = (ConnectivityManager) context
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
 

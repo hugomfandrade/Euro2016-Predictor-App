@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Editable;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -15,9 +16,11 @@ import android.widget.Toast;
 
 import org.hugoandrade.euro2016.predictor.MVP;
 import org.hugoandrade.euro2016.predictor.R;
+import org.hugoandrade.euro2016.predictor.common.TextWatcherAdapter;
 import org.hugoandrade.euro2016.predictor.customview.ImeEditText;
 import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
 import org.hugoandrade.euro2016.predictor.presenter.SignUpPresenter;
+import org.hugoandrade.euro2016.predictor.utils.LoginUtils;
 import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
 
 public class SignUpActivity extends ActivityBase<MVP.RequiredSignUpViewOps,
@@ -66,11 +69,20 @@ public class SignUpActivity extends ActivityBase<MVP.RequiredSignUpViewOps,
         etConfirmPassword.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+
                 if (id == EditorInfo.IME_ACTION_DONE) {
-                    getPresenter().registerUser(
-                            etUsername.getText().toString(),
-                            etPassword.getText().toString(),
-                            etConfirmPassword.getText().toString());
+
+                    String email = etUsername.getText().toString().trim();
+                    String password = etPassword.getText().toString().trim();
+                    String confirmPassword = etConfirmPassword.getText().toString().trim();
+
+                    if (LoginUtils.isValid(email, password) && password.equals(confirmPassword)) {
+
+                        getPresenter().registerUser(
+                                etUsername.getText().toString(),
+                                etPassword.getText().toString(),
+                                etConfirmPassword.getText().toString());
+                    }
                     return true;
                 }
                 return false;
@@ -94,6 +106,45 @@ public class SignUpActivity extends ActivityBase<MVP.RequiredSignUpViewOps,
         progressBar.setVisibility(ProgressBar.INVISIBLE);
 
         btSignUp.setOnClickListener(signUpClickListener);
+
+        etUsername.addTextChangedListener(new TextWatcherAdapter() {
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                areLoginInputFieldsValid();
+            }
+        });
+        etPassword.addTextChangedListener(new TextWatcherAdapter() {
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                areLoginInputFieldsValid();
+            }
+        });
+        etConfirmPassword.addTextChangedListener(new TextWatcherAdapter() {
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                areLoginInputFieldsValid();
+            }
+        });
+    }
+
+    private void areLoginInputFieldsValid() {
+
+        String email = etUsername.getText().toString().trim();
+        String password = etPassword.getText().toString().trim();
+        String confirmPassword = etConfirmPassword.getText().toString().trim();
+
+        if (!LoginUtils.isValid(email, password)
+                && !password.equals(confirmPassword)) {
+            btSignUp.setClickable(false);
+            btSignUp.setBackgroundColor(Color.parseColor("#3d000000"));
+        }
+        else {
+            btSignUp.setClickable(true);
+            btSignUp.setBackgroundColor(getResources().getColor(R.color.colorAccent));
+        }
     }
 
     @Override
@@ -135,10 +186,7 @@ public class SignUpActivity extends ActivityBase<MVP.RequiredSignUpViewOps,
 
     @Override
     public void reportMessage(String message) {
-        showToast(message);
-    }
-
-    private void showToast(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        //Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_SHORT).show();
+        ViewUtils.showToast(this, message);
     }
 }

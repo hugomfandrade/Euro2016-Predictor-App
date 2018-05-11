@@ -110,18 +110,8 @@ public class MatchPredictionPresenter extends MobileClientPresenterBase<MVP.Requ
             getView().setMatchPredictionList(matchNumber, userList);
         }
         else {
-            showErrorMessage(message);
+            getView().reportMessage(ErrorMessageUtils.handleErrorMessage(getActivityContext(), message));
         }
-    }
-
-    private void showErrorMessage(String message) {
-        if (NetworkUtils.isNetworkUnavailableError(getActivityContext(), message)) {
-            ViewUtils.showToast(getActivityContext(), message);
-            return;
-        }
-        // operation failed, show error message
-        if (message != null)
-            getView().reportMessage(message);
     }
 
     @Override

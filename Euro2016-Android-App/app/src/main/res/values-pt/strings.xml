@@ -5,6 +5,7 @@
     <string name="hint_confirm_password">Confirmar Password</string>
 
     <string name="league_details"><u>Ver Classificação</u></string>
+    <string name="member">Membro</string>
     <string name="members">Membros</string>
     <string name="in_group"> no Grupo </string>
 
@@ -124,5 +125,24 @@
     <string name="user_name">Nome</string>
     <string name="total">Total</string>
     <string name="no_network_connection">Sem ligação à Internet</string>
+
+
+    <string name="error_email_not_exists">Esse username não existe</string>
+    <string name="error_password_wrong">Password incorrecta</string>
+    <string name="error_login_failed">Tente novamente</string>
+    <string name="error_try_again">Tente novamente</string>
+    <string name="error_email_exists">Esse username já está a ser utilizado</string>
+    <string name="error_league_code">Não existe nenhuma liga com o código introduzido</string>
+    <string name="error_league_already_member">Já é membro desta liga</string>
+    <string name="error_too_many_leagues">Já atingiu o máximo de ligas a que pertence</string>
+    <string name="error_default">Ocorreu um erro</string>
+
+    <string name="app_state_unavailable">App não está disponível</string>
+    <string name="app_state_unavailable_details">Volte mais tarde</string>
+    <string name="app_state_unavailable_updating_scores" >Atualizando os resultados</string>
+    <string name="app_state_error" >Erro</string>
+    <string name="yes">Sim</string>
+    <string name="no">Não</string>
+    <string name="logout" >Sair</string>
 
 </resources>

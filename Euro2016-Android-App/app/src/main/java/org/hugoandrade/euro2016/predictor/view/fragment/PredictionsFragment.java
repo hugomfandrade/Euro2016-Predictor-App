@@ -1,6 +1,5 @@
 package org.hugoandrade.euro2016.predictor.view.fragment;
 
-import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
@@ -26,9 +25,7 @@ import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.model.IMobileClientService;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
 import org.hugoandrade.euro2016.predictor.utils.ErrorMessageUtils;
-import org.hugoandrade.euro2016.predictor.utils.NetworkUtils;
 import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils;
-import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
 import org.hugoandrade.euro2016.predictor.view.CountryDetailsActivity;
 import org.hugoandrade.euro2016.predictor.view.dialog.FilterPopup;
 import org.hugoandrade.euro2016.predictor.view.listadapter.PredictionListAdapter;
@@ -157,18 +154,8 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
 
             updateFailedPrediction(prediction);
 
-            showErrorMessage(message);
+            reportMessage(ErrorMessageUtils.handleErrorMessage(getActivity(), message));
         }
-    }
-
-    private void showErrorMessage(String message) {
-        if (NetworkUtils.isNetworkUnavailableError(getParentActivity().getActivityContext(), message)) {
-            ViewUtils.showToast(getParentActivity().getActivityContext(), message);
-            return;
-        }
-        // operation failed, show error message
-        if (message != null)
-            getParentActivity().showSnackBar(message);
     }
 
     @Override

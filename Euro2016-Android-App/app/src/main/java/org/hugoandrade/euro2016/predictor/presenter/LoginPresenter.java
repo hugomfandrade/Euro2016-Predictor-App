@@ -2,7 +2,6 @@ package org.hugoandrade.euro2016.predictor.presenter;
 
 import android.content.BroadcastReceiver;
 import android.os.RemoteException;
-import android.util.Log;
 
 import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.MVP;
@@ -56,12 +55,13 @@ public class LoginPresenter extends MobileClientPresenterBase<MVP.RequiredLoginV
 
     @Override
     public void onDestroy(boolean isChangingConfiguration) {
-        getModel().onDestroy(isChangingConfiguration);
 
         if (mNetworkBroadcastReceiver != null) {
             NetworkBroadcastReceiverUtils.unregister(getActivityContext(), mNetworkBroadcastReceiver);
             mNetworkBroadcastReceiver = null;
         }
+
+        getModel().onDestroy(isChangingConfiguration);
 
         if (!isChangingConfiguration && !isMovingToNextActivity)
             getApplicationContext().stopService(
@@ -99,40 +99,26 @@ public class LoginPresenter extends MobileClientPresenterBase<MVP.RequiredLoginV
 
     @Override
     public void login(String username, String password) {
-        if (username.equals("")) {
-            Log.w(TAG, "Username not entered");
-            getView().reportMessage("Empty Username field");
-            return;
-        }
-        if (password.equals("")) {
-            Log.w(TAG, "Password not entered");
-            getView().reportMessage("Empty Username field");
-            return;
-        }
 
         getView().disableUI();
 
-        doLogin(new LoginData(username, password));
-
-    }
-
-    private void doLogin(LoginData loginData) {
         if (getMobileClientService() == null) {
-            loginOperationResult(false, ErrorMessageUtils.genNotBoundMessage() + ": doLogin", null);
+            loginOperationResult(false, ErrorMessageUtils.genNotBoundMessage(), null);
             return;
         }
 
         try {
-            getMobileClientService().login(loginData);
+            getMobileClientService().login(new LoginData(username, password));
         } catch (RemoteException e) {
             e.printStackTrace();
             loginOperationResult(false, "Error sending message", null);
         }
     }
 
-    private void getSystemData() {
+    @Override
+    public void getSystemData() {
         if (getMobileClientService() == null) {
-            getSystemDataOperationResult(false, ErrorMessageUtils.genNotBoundMessage() + ": getSystemData", null);
+            getSystemDataOperationResult(false, ErrorMessageUtils.genNotBoundMessage(), null);
             return;
         }
 
@@ -183,13 +169,11 @@ public class LoginPresenter extends MobileClientPresenterBase<MVP.RequiredLoginV
             getView().successfulLogin();
         }
         else {
-            showErrorMessage(message);
+            getView().reportMessage(ErrorMessageUtils.handleLoginErrorMessage(getActivityContext(), message));
             finishSplashScreenAnimation();
         }
 
-
         getView().enableUI();
-
     }
 
     private void getSystemDataOperationResult(boolean wasOperationSuccessful, String message, SystemData systemData) {
@@ -200,7 +184,7 @@ public class LoginPresenter extends MobileClientPresenterBase<MVP.RequiredLoginV
             mSplashScreenEnabledBooleans[0] = true;
 
             if (!systemData.getAppState()) {
-                getView().finishApp();
+                getView().showAppStateDisabledMessage();
                 return;
             }
 
@@ -209,7 +193,7 @@ public class LoginPresenter extends MobileClientPresenterBase<MVP.RequiredLoginV
             LoginData loginData = SharedPreferencesUtils.getLastAuthenticatedLoginData(getActivityContext());
 
             if (loginData.getEmail() != null && loginData.getPassword() != null) {
-                doLogin(loginData);
+                login(loginData.getEmail(), loginData.getPassword());
             }
             else {
                 mSplashScreenEnabledBooleans[1] = true;
@@ -217,17 +201,12 @@ public class LoginPresenter extends MobileClientPresenterBase<MVP.RequiredLoginV
             }
         }
         else {
-            showErrorMessage(message);
-        }
-    }
+            android.util.Log.e(getClass().getSimpleName(), "system error::" + message);
+            getView().reportMessage(ErrorMessageUtils.handleErrorMessage(getActivityContext(), message));
 
-    private void showErrorMessage(String message) {
-        if (NetworkUtils.isNetworkUnavailableError(getActivityContext(), message)) {
-            //ViewUtils.showToast(getActivityContext(), message);
-            return;
+            if (!NetworkUtils.isNetworkUnavailableError(getActivityContext(), message)) {
+                getView().showAppStateErrorGettingSystemDataMessage();
+            }
         }
-        // operation failed, show error message
-        if (message != null)
-            getView().reportMessage(message);
     }
 }

@@ -47,6 +47,7 @@
     <string name="match_number" translatable="true">Match Number</string>
 
     <string name="league_details" translatable="true"><u>Full Standings</u></string>
+    <string name="member" translatable="true">Member</string>
     <string name="members" translatable="true">Members</string>
 
     <string name="matches" translatable="true">Matches</string>
@@ -54,7 +55,7 @@
     <string name="standings" translatable="true">Standings</string>
     <string name="leagues" translatable="true">Leagues</string>
     <string name="rules" translatable="true">Rules</string>
-    <string name="logout">Logout</string>
+    <string name="logout" translatable="true">Logout</string>
 
     <string name="create_league" translatable="true">Create League</string>
     <string name="join_league" translatable="true">Join League</string>
@@ -131,6 +132,23 @@
     <string name="user_name" translatable="true">Name</string>
     <string name="total" translatable="true">Total</string>
     <string name="no_network_connection" translatable="true">No Network Connection</string>
+
+    <string name="error_email_not_exists" translatable="true">Username is already in use</string>
+    <string name="error_password_wrong" translatable="true">Password is incorrect</string>
+    <string name="error_login_failed" translatable="true">Try again</string>
+    <string name="error_try_again" translatable="true">Try again</string>
+    <string name="error_email_exists" translatable="true">This username is already being used</string>
+    <string name="error_league_code" translatable="true">No league with such code</string>
+    <string name="error_league_already_member" translatable="true">You are a member of this league already</string>
+    <string name="error_too_many_leagues" translatable="true">You reached the maximum number of leagues</string>
+    <string name="error_default" translatable="true">An error occurred</string>
+
+    <string name="app_state_unavailable" translatable="true">App is not available</string>
+    <string name="app_state_unavailable_details" translatable="true">Come back at a later time</string>
+    <string name="app_state_unavailable_updating_scores" translatable="true">Updating score</string>
+    <string name="app_state_error" translatable="true">Error</string>
+    <string name="yes" translatable="true">Yes</string>
+    <string name="no" translatable="true">No</string>
 
 
 </resources>

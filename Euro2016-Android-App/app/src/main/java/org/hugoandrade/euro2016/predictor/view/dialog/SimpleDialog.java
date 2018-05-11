@@ -7,6 +7,8 @@ import android.support.annotation.IntDef;
 import android.view.KeyEvent;
 import android.view.View;
 
+import org.hugoandrade.euro2016.predictor.R;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -26,7 +28,6 @@ public class SimpleDialog {
     private Context context;
     private String title;
     private String message;
-    private View view;
     private AlertDialog alert;
 
 
@@ -36,53 +37,6 @@ public class SimpleDialog {
         this.message = message;
 
         buildPlan();
-    }
-
-    public SimpleDialog(Context context, View view) {
-        this.context = context;
-        this.view = view;
-
-        buildPlanWithView();
-    }
-
-    private void buildPlanWithView() {
-
-        // Initialize and build the AlertBuilderDialog
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setView(view)
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (mOnDialogResult != null)
-                            mOnDialogResult.onResult(dialog, YES);
-
-                    }
-                })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (mOnDialogResult != null)
-                            mOnDialogResult.onResult(dialog, NO);
-                    }
-                })
-                .setOnCancelListener(new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialog) {
-                        if (mOnDialogResult != null)
-                            mOnDialogResult.onResult(dialog, CANCEL);
-                    }
-                })
-                .setOnKeyListener(new DialogInterface.OnKeyListener() {
-                    @Override
-                    public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-                        if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
-                            if (mOnDialogResult != null)
-                                mOnDialogResult.onResult(dialog, BACK);
-                        }
-                        return false;
-                    }
-                });
-        alert = builder.create();
     }
 
     public boolean isShowing() {
@@ -95,7 +49,7 @@ public class SimpleDialog {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(title)
                 .setMessage(message)
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                .setPositiveButton(context.getString(R.string.yes), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if (mOnDialogResult != null)
@@ -103,7 +57,7 @@ public class SimpleDialog {
 
                     }
                 })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                .setNegativeButton(context.getString(R.string.no), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if (mOnDialogResult != null)

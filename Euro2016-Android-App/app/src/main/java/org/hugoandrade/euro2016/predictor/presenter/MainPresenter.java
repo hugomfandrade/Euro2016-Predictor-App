@@ -1,5 +1,6 @@
 package org.hugoandrade.euro2016.predictor.presenter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.RemoteException;
 
@@ -17,6 +18,7 @@ import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
 import org.hugoandrade.euro2016.predictor.utils.NetworkUtils;
 import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils.SStage;
 import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
+import org.hugoandrade.euro2016.predictor.view.LoginActivity;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -75,7 +77,7 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
         getView().notifyServiceIsBound();
         getView().disableUI();
 
-        getInfo(GlobalData.getInstance().user.getID());
+        getInfo();
     }
 
     public void onInfoFetched(boolean isOk, String message) {
@@ -147,9 +149,12 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
             int from = (to < 4) ? 0 : to - 4;
 
             // TODO getLatestPerformanceOfUsers(userList, from, to);
+            GlobalData.getInstance().setHasFetchedInfo(true);
 
         } else {
-            showErrorMessage(message);
+            //getView().reportMessage(ErrorMessageUtils.handleErrorMessage(getActivityContext(), message));
+
+            getView().showGettingInfoErrorMessage();
         }
 
         getView().enableUI();
@@ -167,16 +172,14 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
                     GlobalData.getInstance().getServerTime().getTime());
             to = to == 0? 0 : to - 1;
 
-            int from = (to < 4) ? 0 : to - 4;
+            int from = (to <= 4) ? 1 : to - 4;
 
-            for (int matchNumber = from ; matchNumber <= to ; matchNumber++) {
-                GlobalData.getInstance().setPredictionsOfUsers(matchNumber, userList, predictionList);
-            }
+            GlobalData.getInstance().setPredictionsOfUsers(userList, predictionList, from, to);
 
             GlobalData.getInstance().setLatestPerformanceOfUsers(predictionList);
 
         } else {
-            showErrorMessage(message);
+            getView().reportMessage(ErrorMessageUtils.handleErrorMessage(getActivityContext(), message));
         }
     }
 
@@ -230,14 +233,27 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
         return matchesMap;
     }
 
-    public void getInfo(String userID) {
+    public void getInfo() {
+        if (GlobalData.getInstance().user == null) {
+
+            if (getActivityContext() != null) {
+                logout();
+                getActivityContext().startActivity(LoginActivity.makeIntent(getActivityContext()));
+                ((Activity) getActivityContext()).finish();
+            }
+
+            return;
+        }
+
+        getView().disableUI();
+
         if (getMobileClientService() == null) {
             onInfoFetched(false, ErrorMessageUtils.genNotBoundMessage());
             return;
         }
 
         try {
-            getMobileClientService().getInfo(userID);
+            getMobileClientService().getInfo(GlobalData.getInstance().user.getID());
         } catch (RemoteException e) {
             e.printStackTrace();
             onInfoFetched(false, "Error sending message");
@@ -281,16 +297,6 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
                     data.getUserList(),
                     data.getPredictionList());
         }
-    }
-
-    private void showErrorMessage(String message) {
-        if (NetworkUtils.isNetworkUnavailableError(getActivityContext(), message)) {
-            ViewUtils.showToast(getActivityContext(), message);
-            return;
-        }
-        // operation failed, show error message
-        if (message != null)
-            getView().reportMessage(message);
     }
 
     /**

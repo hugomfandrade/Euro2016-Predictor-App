@@ -28,6 +28,7 @@ import android.widget.TextView;
 
 import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.R;
+import org.hugoandrade.euro2016.predictor.common.TextWatcherAdapter;
 import org.hugoandrade.euro2016.predictor.data.raw.Country;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
@@ -273,7 +274,7 @@ public class PredictionListAdapter extends RecyclerView.Adapter<PredictionListAd
                 }
             });
 
-            etHomeTeamGoals.addTextChangedListener(new SimpleTextWatcher() {
+            etHomeTeamGoals.addTextChangedListener(new TextWatcherAdapter() {
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
                     if (isBinding) return;
@@ -283,7 +284,7 @@ public class PredictionListAdapter extends RecyclerView.Adapter<PredictionListAd
                     onPredictionChanged();
                 }
             });
-            etAwayTeamGoals.addTextChangedListener(new SimpleTextWatcher() {
+            etAwayTeamGoals.addTextChangedListener(new TextWatcherAdapter() {
                 @Override
                 public void onTextChanged(CharSequence s, int start, int before, int count) {
                     if (isBinding) return;
@@ -404,24 +405,6 @@ public class PredictionListAdapter extends RecyclerView.Adapter<PredictionListAd
         }
         else {
             return "+" + String.valueOf(prediction.getScore()) + "pts";
-        }
-    }
-
-    static class SimpleTextWatcher implements TextWatcher {
-
-        @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            // No-ops
-        }
-
-        @Override
-        public void onTextChanged(CharSequence s, int start, int before, int count) {
-            // No-ops
-        }
-
-        @Override
-        public void afterTextChanged(Editable s) {
-            // No-ops
         }
     }
 

@@ -190,10 +190,16 @@ public abstract class ActivityBase<RequiredViewOps,
             = new NetworkBroadcastReceiverUtils.INetworkBroadcastReceiver() {
         @Override
         public void setNetworkAvailable(boolean isNetworkAvailable) {
+            if (isNetworkAvailable)
+                notifyNetworkIsAvailable();
             ViewUtils.setHeightDpAnim(getApplicationContext(), tvNoNetworkConnection,
                     NetworkUtils.isNetworkAvailable(getActivityContext())? 0 : 20);
         }
     };
+
+    protected void notifyNetworkIsAvailable() {
+
+    }
 
     /**
      * Return the Activity context.

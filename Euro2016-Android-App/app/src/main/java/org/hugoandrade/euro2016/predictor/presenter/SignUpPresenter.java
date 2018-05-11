@@ -1,14 +1,11 @@
 package org.hugoandrade.euro2016.predictor.presenter;
 
 import android.os.RemoteException;
-import android.util.Log;
 
 import org.hugoandrade.euro2016.predictor.MVP;
 import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
 import org.hugoandrade.euro2016.predictor.utils.ErrorMessageUtils;
-import org.hugoandrade.euro2016.predictor.utils.NetworkUtils;
-import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
 
 public class SignUpPresenter extends MobileClientPresenterBase<MVP.RequiredSignUpViewOps>
 
@@ -31,38 +28,16 @@ public class SignUpPresenter extends MobileClientPresenterBase<MVP.RequiredSignU
 
     @Override
     public void registerUser(String username, String password, String confirmPassword) {
-        if (username.equals("")) {
-            //We're just logging this here, we should show something to the user
-            getView().reportMessage("Username not entered");
-            Log.w(TAG, "Username not entered");
-            return;
-        }
-        if (password.equals("")) {
-            //We're just logging this here, we should show something to the user
-            getView().reportMessage("Password not entered");
-            Log.w(TAG, "Password not entered");
-            return;
-        }
-        if (!password.equals(confirmPassword)) {
-            //We're just logging this here, we should show something to the user
-            getView().reportMessage("Passwords do not match");
-            Log.w(TAG, "Passwords do not match");
-            return;
-        }
 
         getView().disableUI();
 
-        doRegisterUser(new LoginData(username, password));
-    }
-
-    private void doRegisterUser(LoginData loginData) {
         if (getMobileClientService() == null) {
             signUpOperationResult(false, ErrorMessageUtils.genNotBoundMessage(), null);
             return;
         }
 
         try {
-            getMobileClientService().signUp(loginData);
+            getMobileClientService().signUp(new LoginData(username, password));
         } catch (RemoteException e) {
             e.printStackTrace();
             signUpOperationResult(false, "Error sending message", null);
@@ -86,23 +61,12 @@ public class SignUpPresenter extends MobileClientPresenterBase<MVP.RequiredSignU
 
     private void signUpOperationResult(boolean wasOperationSuccessful, String message, LoginData loginData) {
         if (wasOperationSuccessful) {
-            Log.e(TAG, "successfulRegister::" + loginData.toString());
             getView().successfulRegister(loginData);
         }
         else {
-            showErrorMessage(message);
+            getView().reportMessage(ErrorMessageUtils.handleRegisterErrorMessage(getActivityContext(), message));
         }
 
         getView().enableUI();
-    }
-
-    private void showErrorMessage(String message) {
-        if (NetworkUtils.isNetworkUnavailableError(getActivityContext(), message)) {
-            ViewUtils.showToast(getActivityContext(), message);
-            return;
-        }
-        // operation failed, show error message
-        if (message != null)
-            getView().reportMessage(message);
     }
 }

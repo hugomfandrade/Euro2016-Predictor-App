@@ -186,14 +186,12 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
                     GlobalData.getInstance().getServerTime().getTime());
             to = to == 0? 0 : to - 1;
 
-            for (int matchNumber = from ; matchNumber <= to ; matchNumber++) {
-                GlobalData.getInstance().setPredictionsOfUser(matchNumber, user, predictionList);
-            }
+            GlobalData.getInstance().setPredictionsOfUser(user, predictionList, from, to);
 
             getView().startUserPredictionsActivity(user, GlobalData.getInstance().getPredictionsOfUser(user.getID()));
         }
         else {
-            showErrorMessage(errorMessage);
+            getView().reportMessage(ErrorMessageUtils.handleErrorMessage(getActivityContext(), errorMessage));
         }
 
         getView().enableUI();
@@ -204,7 +202,7 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
             getView().leagueLeft();
         }
         else {
-            showErrorMessage(errorMessage);
+            getView().reportMessage(ErrorMessageUtils.handleErrorMessage(getActivityContext(), errorMessage));
         }
 
         getView().enableUI();
@@ -215,7 +213,7 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
             getView().leagueLeft();
         }
         else {
-            showErrorMessage(errorMessage);
+            getView().reportMessage(ErrorMessageUtils.handleErrorMessage(getActivityContext(), errorMessage));
         }
 
         getView().enableUI();
@@ -229,19 +227,10 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
             //getView().leagueLeft();
         }
         else {
-            showErrorMessage(errorMessage);
+            getView().reportMessage(ErrorMessageUtils.handleErrorMessage(getActivityContext(), errorMessage));
         }
 
         getView().enableUI();
     }
 
-    private void showErrorMessage(String message) {
-        if (NetworkUtils.isNetworkUnavailableError(getActivityContext(), message)) {
-            ViewUtils.showToast(getActivityContext(), message);
-            return;
-        }
-        // operation failed, show error message
-        if (message != null)
-            getView().reportMessage(message);
-    }
 }

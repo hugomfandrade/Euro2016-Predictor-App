@@ -38,6 +38,6 @@ public interface FragComm {
          * @param message
          *      Message to be sent to the Parent Activity.
          */
-        void showSnackBar(String message);
+        void reportMessage(String message);
     }
 }

@@ -46,6 +46,7 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
 
     private static MobileServiceAdapter mInstance = null;
 
+    private Context mContext;
     private MobileServiceClient mClient = null;
 
     private MobileClientDataJsonParser parser = new MobileClientDataJsonParser();
@@ -79,6 +80,7 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
     }
 
     private MobileServiceAdapter(Context context) {
+        mContext = context;
         CloudDatabaseSimAdapter.Initialize(context);
 
         try {
@@ -805,7 +807,10 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
 
     private boolean isNetworkAvailable(final MobileServiceCallback callback, int requestCode) {
         if (!mIsNetworkAvailable) {
-            callback.set(buildNetworkFailureMessage(requestCode).create());
+            mIsNetworkAvailable = NetworkUtils.isNetworkAvailable(mContext);
+
+            if (!mIsNetworkAvailable)
+                callback.set(buildNetworkFailureMessage(requestCode).create());
         }
         return mIsNetworkAvailable;
     }

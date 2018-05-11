@@ -12,6 +12,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.MVP;
@@ -24,6 +25,7 @@ import org.hugoandrade.euro2016.predictor.presenter.LeagueDetailsPresenter;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
 import org.hugoandrade.euro2016.predictor.utils.SharedPreferencesUtils;
 import org.hugoandrade.euro2016.predictor.utils.StickyFooterUtils;
+import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
 import org.hugoandrade.euro2016.predictor.view.dialog.SimpleDialog;
 import org.hugoandrade.euro2016.predictor.view.listadapter.LeagueStandingFullListAdapter;
 
@@ -110,7 +112,7 @@ public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDe
         tvLeagueMembers.setText(TextUtils.concat("(",
                 String.valueOf(mLeagueWrapper.getLeague().getNumberOfMembers()),
                 " ",
-                getString(R.string.members),
+                getString(mLeagueWrapper.getLeague().getNumberOfMembers() == 1? R.string.member : R.string.members),
                 ")"));
 
 
@@ -260,7 +262,8 @@ public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDe
 
     @Override
     public void reportMessage(String message) {
-        Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_SHORT).show();
+        //Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_SHORT).show();
+        ViewUtils.showToast(this, message);
     }
 
     @Override

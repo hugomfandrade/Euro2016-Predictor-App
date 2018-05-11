@@ -19,6 +19,7 @@ public class SplashScreenAnimation {
     private OnSplashScreenAnimationEndListener mListener;
 
     private boolean hasSplashScreenDurationEnded = false;
+    private boolean hasSplashScreenAnimationEnded = false;
     private boolean isHolding = false;
 
     private SplashScreenAnimation(View initView, View finalView) {
@@ -82,6 +83,11 @@ public class SplashScreenAnimation {
         if (!hasSplashScreenDurationEnded || isHolding)
             return;
 
+        if (hasSplashScreenAnimationEnded)
+            return;
+
+        hasSplashScreenAnimationEnded = true;
+
         float toScaleX = getToScaleY();
         float toScaleY = getToScaleX();
 
@@ -135,6 +141,10 @@ public class SplashScreenAnimation {
                         .setDuration(mAnimationDuration)
                         .start();
             }
+    }
+
+    public boolean hasFinished() {
+        return hasSplashScreenAnimationEnded;
     }
 
     private int getTranslationY() {

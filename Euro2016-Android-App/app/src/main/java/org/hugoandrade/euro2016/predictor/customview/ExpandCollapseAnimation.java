@@ -54,7 +54,6 @@ public class ExpandCollapseAnimation extends Animation {
                 fromDimension + (int) ((toDimension - fromDimension) * interpolatedTime);
 
         //view.setLayoutParams(view.getLayoutParams());
-        android.util.Log.e(getClass().getSimpleName(), "apply:: " + view.getLayoutParams().height);
 
         // Ensure the views are measured appropriately
         view.requestLayout();
