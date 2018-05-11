@@ -9,7 +9,10 @@ import org.hugoandrade.euro2016.predictor.data.raw.LeagueUser;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
+import org.hugoandrade.euro2016.predictor.utils.ErrorMessageUtils;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
+import org.hugoandrade.euro2016.predictor.utils.NetworkUtils;
+import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,8 +67,7 @@ public class MatchPredictionPresenter extends MobileClientPresenterBase<MVP.Requ
         getView().disableUI();
 
         if (getMobileClientService() == null) {
-            Log.w(TAG, "Service is still not bound");
-            onGettingPredictionsOperationResult(false, "Not bound to the service");
+            onGettingPredictionsOperationResult(false, ErrorMessageUtils.genNotBoundMessage());
             return;
         }
 
@@ -74,6 +76,19 @@ public class MatchPredictionPresenter extends MobileClientPresenterBase<MVP.Requ
         } catch (RemoteException e) {
             e.printStackTrace();
             onGettingPredictionsOperationResult(false, "Error sending message");
+        }
+    }
+
+    @Override
+    public void logout() {
+        if (getMobileClientService() == null) {
+            return;
+        }
+
+        try {
+            getMobileClientService().logout();
+        } catch (RemoteException e) {
+            e.printStackTrace();
         }
     }
 
@@ -95,8 +110,18 @@ public class MatchPredictionPresenter extends MobileClientPresenterBase<MVP.Requ
             getView().setMatchPredictionList(matchNumber, userList);
         }
         else {
-            getView().reportMessage(message);
+            showErrorMessage(message);
         }
+    }
+
+    private void showErrorMessage(String message) {
+        if (NetworkUtils.isNetworkUnavailableError(getActivityContext(), message)) {
+            ViewUtils.showToast(getActivityContext(), message);
+            return;
+        }
+        // operation failed, show error message
+        if (message != null)
+            getView().reportMessage(message);
     }
 
     @Override

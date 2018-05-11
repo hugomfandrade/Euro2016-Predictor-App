@@ -9,11 +9,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 
-import org.hugoandrade.euro2016.predictor.view.fragment.FragComm;
 import org.hugoandrade.euro2016.predictor.MVP;
 import org.hugoandrade.euro2016.predictor.R;
 import org.hugoandrade.euro2016.predictor.common.ServiceManager;
@@ -21,6 +18,8 @@ import org.hugoandrade.euro2016.predictor.common.ServiceManagerOps;
 import org.hugoandrade.euro2016.predictor.customview.IconTabLayout;
 import org.hugoandrade.euro2016.predictor.customview.NonSwipeableViewPager;
 import org.hugoandrade.euro2016.predictor.presenter.MainPresenter;
+import org.hugoandrade.euro2016.predictor.utils.SharedPreferencesUtils;
+import org.hugoandrade.euro2016.predictor.view.fragment.FragComm;
 import org.hugoandrade.euro2016.predictor.view.fragment.LeaguesFragment;
 import org.hugoandrade.euro2016.predictor.view.fragment.PredictionsFragment;
 import org.hugoandrade.euro2016.predictor.view.fragment.RulesFragment;
@@ -173,7 +172,9 @@ public class MainActivity extends MainActivityBase<MVP.RequiredMainViewOps,
 
     @Override
     protected void logout() {
-        showSnackBar("Logout not implemented yet");
+        getPresenter().logout();
+
+        super.logout();
     }
 
     private class SectionsPagerAdapter extends FragmentPagerAdapter implements IconTabLayout.IconTabLayoutListener {

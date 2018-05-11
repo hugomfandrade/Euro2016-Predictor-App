@@ -209,6 +209,7 @@ public class PredictionListAdapter extends RecyclerView.Adapter<PredictionListAd
         for (int l = 0; l < mInputPredictionList.size() ; l++)
             if (mInputPredictionList.get(l).mMatch.getMatchNumber() == prediction.getMatchNumber()) {
                 mInputPredictionList.get(l).mIsEnabled = true;
+                mInputPredictionList.get(l).failed();
                 notifyItemChanged(l);
                 break;
             }
@@ -444,6 +445,17 @@ public class PredictionListAdapter extends RecyclerView.Adapter<PredictionListAd
             mPrediction = prediction;
             mHomeTeamGoals = MatchUtils.getAsString(prediction.getHomeTeamGoals());
             mAwayTeamGoals = MatchUtils.getAsString(prediction.getAwayTeamGoals());
+        }
+
+        public void failed() {
+            if (mPrediction == null) {
+                mHomeTeamGoals = "";
+                mAwayTeamGoals = "";
+            }
+            else {
+                mHomeTeamGoals = MatchUtils.getAsString(mPrediction.getHomeTeamGoals());
+                mAwayTeamGoals = MatchUtils.getAsString(mPrediction.getAwayTeamGoals());
+            }
         }
     }
 }

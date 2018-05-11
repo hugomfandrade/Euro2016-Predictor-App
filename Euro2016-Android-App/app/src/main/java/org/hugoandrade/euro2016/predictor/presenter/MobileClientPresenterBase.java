@@ -44,6 +44,10 @@ public abstract class MobileClientPresenterBase<RequiredMainOps extends ContextV
         getModel().onDestroy(isChangingConfiguration);
     }
 
+    protected boolean isServiceBound() {
+        return getModel() != null && getModel().isServiceBound();
+    }
+
     IMobileClientService getMobileClientService() {
         return getModel().getService();
     }

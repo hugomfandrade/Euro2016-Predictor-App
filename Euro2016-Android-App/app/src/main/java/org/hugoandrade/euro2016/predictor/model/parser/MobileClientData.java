@@ -54,6 +54,7 @@ public class MobileClientData implements Parcelable {
 
         GET_SYSTEM_DATA,
         LOGIN,
+        LOGOUT,
         REGISTER,
         GET_INFO,
         GET_PREDICTIONS,

@@ -12,8 +12,11 @@ import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
+import org.hugoandrade.euro2016.predictor.utils.ErrorMessageUtils;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
+import org.hugoandrade.euro2016.predictor.utils.NetworkUtils;
 import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils.SStage;
+import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -146,7 +149,7 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
             // TODO getLatestPerformanceOfUsers(userList, from, to);
 
         } else {
-            getView().reportMessage(message);
+            showErrorMessage(message);
         }
 
         getView().enableUI();
@@ -173,15 +176,26 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
             GlobalData.getInstance().setLatestPerformanceOfUsers(predictionList);
 
         } else {
-
-            if (message != null)
-                getView().reportMessage(message);
+            showErrorMessage(message);
         }
     }
 
     @Override
     public ServiceManager getServiceManager() {
         return mServiceManager;
+    }
+
+    @Override
+    public void logout() {
+        if (getMobileClientService() == null) {
+            return;
+        }
+
+        try {
+            getMobileClientService().logout();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -218,7 +232,7 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
 
     public void getInfo(String userID) {
         if (getMobileClientService() == null) {
-            onInfoFetched(false, "Not bound to the service");
+            onInfoFetched(false, ErrorMessageUtils.genNotBoundMessage());
             return;
         }
 
@@ -232,7 +246,7 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
 
     public void getLatestPerformanceOfUsers(List<User> userList, int firstMatchNumber, int lastMatchNumber) {
         if (getMobileClientService() == null) {
-            onLatestPerformanceFetched(false, "Not bound to the service", null, null);
+            onLatestPerformanceFetched(false, ErrorMessageUtils.genNotBoundMessage(), null, null);
             return;
         }
 
@@ -267,6 +281,16 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
                     data.getUserList(),
                     data.getPredictionList());
         }
+    }
+
+    private void showErrorMessage(String message) {
+        if (NetworkUtils.isNetworkUnavailableError(getActivityContext(), message)) {
+            ViewUtils.showToast(getActivityContext(), message);
+            return;
+        }
+        // operation failed, show error message
+        if (message != null)
+            getView().reportMessage(message);
     }
 
     /**

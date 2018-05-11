@@ -11,14 +11,18 @@ import android.support.v4.view.ViewCompat;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Display;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.Animation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import org.hugoandrade.euro2016.predictor.customview.ExpandCollapseAnimation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -285,7 +289,9 @@ public final class ViewUtils {
             window.setStatusBarColor(activity.getResources().getColor(colorRes, null));
         }
         else {
-            window.setStatusBarColor(activity.getResources().getColor(colorRes));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                window.setStatusBarColor(activity.getResources().getColor(colorRes));
+            }
         }
     }
 
@@ -293,6 +299,39 @@ public final class ViewUtils {
         return view.getHeight()
                 + ((ViewGroup.MarginLayoutParams) view.getLayoutParams()).topMargin +
                 + ((ViewGroup.MarginLayoutParams) view.getLayoutParams()).bottomMargin;
+    }
+
+    public static void setHeightDp(Context context, View view, int heightInDPs) {
+        if (view == null || context == null) return;
+
+        view.clearAnimation();
+
+        ViewGroup.LayoutParams params = view.getLayoutParams();
+        params.height = (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                heightInDPs,
+                context.getResources().getDisplayMetrics());
+        view.setLayoutParams(params);
+    }
+
+    public static void setHeightDpAnim(Context context, View view, int heightInDPs, long duration) {
+        if (view == null || context == null) return;
+
+        int height = (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                heightInDPs,
+                context.getResources().getDisplayMetrics());
+
+        view.clearAnimation();
+        view.requestLayout();
+        Animation anim = new ExpandCollapseAnimation(view, height);
+        anim.setDuration(duration);
+        view.startAnimation(anim);
+    }
+
+    public static void setHeightDpAnim(Context context, View view, int heightInDPs) {
+        //setHeightDp(context, view, heightInDPs);
+        setHeightDpAnim(context, view, heightInDPs, 500);
     }
 }
 

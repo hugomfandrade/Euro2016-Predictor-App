@@ -5,13 +5,13 @@ import android.view.MenuItem;
 
 import org.hugoandrade.euro2016.predictor.R;
 import org.hugoandrade.euro2016.predictor.common.PresenterOps;
+import org.hugoandrade.euro2016.predictor.utils.SharedPreferencesUtils;
 
 public abstract class MainActivityBase<RequiredViewOps,
                                        ProvidedPresenterOps,
                                        PresenterType extends PresenterOps<RequiredViewOps>>
 
         extends ActivityBase<RequiredViewOps, ProvidedPresenterOps, PresenterType> {
-
 
     private boolean isPauseCalled;
 
@@ -51,6 +51,10 @@ public abstract class MainActivityBase<RequiredViewOps,
         return super.onOptionsItemSelected(item);
     }
 
-    protected abstract void logout();
+    protected void logout() {
+        SharedPreferencesUtils.resetLastAuthenticatedLoginData(this);
+        startActivity(LoginActivity.makeIntent(this));
+        finish();
+    }
 
 }

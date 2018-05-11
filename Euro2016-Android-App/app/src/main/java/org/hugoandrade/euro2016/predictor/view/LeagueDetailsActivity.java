@@ -22,6 +22,7 @@ import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.presenter.LeagueDetailsPresenter;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
+import org.hugoandrade.euro2016.predictor.utils.SharedPreferencesUtils;
 import org.hugoandrade.euro2016.predictor.utils.StickyFooterUtils;
 import org.hugoandrade.euro2016.predictor.view.dialog.SimpleDialog;
 import org.hugoandrade.euro2016.predictor.view.listadapter.LeagueStandingFullListAdapter;
@@ -82,20 +83,20 @@ public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDe
 
         setSupportActionBar((Toolbar) findViewById(R.id.anim_toolbar));
 
+        boolean isOverall = mLeagueWrapper.getLeague().getID().equals(LeagueWrapper.OVERALL_ID);
+
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle(mLeagueWrapper.getLeague().getName());
+            getSupportActionBar().setTitle(isOverall? getString(R.string.app_name) : mLeagueWrapper.getLeague().getName());
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
         int currentMatchNumber = MatchUtils.getMatchNumberOfFirstNotPlayedMatched(
                 GlobalData.getInstance().getMatchList(),
                 GlobalData.getInstance().getServerTime().getTime());
-        boolean isOverall = mLeagueWrapper.getLeague().getID().equals(LeagueWrapper.OVERALL_ID);
 
         mScrollViewContainer = findViewById(R.id.nestedScrollView);
 
         View tvLatestMatch = findViewById(R.id.tv_latest_match);
-
 
         TextView tvLeagueName = findViewById(R.id.tv_league_name);
         TextView tvLeagueMembers = findViewById(R.id.tv_league_members);
@@ -301,6 +302,8 @@ public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDe
 
     @Override
     protected void logout() {
-        reportMessage("Logout not implemented yet");
+        getPresenter().logout();
+
+        super.logout();
     }
 }

@@ -16,6 +16,8 @@ interface IMobileClientService {
 
     void getSystemData();
 
+    void logout();
+
     void login(in LoginData loginData);
 
     void signUp(in LoginData loginData);

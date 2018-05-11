@@ -6,6 +6,9 @@ import android.util.Log;
 import org.hugoandrade.euro2016.predictor.MVP;
 import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
+import org.hugoandrade.euro2016.predictor.utils.ErrorMessageUtils;
+import org.hugoandrade.euro2016.predictor.utils.NetworkUtils;
+import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
 
 public class SignUpPresenter extends MobileClientPresenterBase<MVP.RequiredSignUpViewOps>
 
@@ -54,8 +57,7 @@ public class SignUpPresenter extends MobileClientPresenterBase<MVP.RequiredSignU
 
     private void doRegisterUser(LoginData loginData) {
         if (getMobileClientService() == null) {
-            Log.w(TAG, "Service is still not bound");
-            signUpOperationResult(false, "Not bound to the service", null);
+            signUpOperationResult(false, ErrorMessageUtils.genNotBoundMessage(), null);
             return;
         }
 
@@ -88,11 +90,19 @@ public class SignUpPresenter extends MobileClientPresenterBase<MVP.RequiredSignU
             getView().successfulRegister(loginData);
         }
         else {
-            // operation failed, show error message
-            if (message != null)
-                getView().reportMessage(message);
+            showErrorMessage(message);
         }
 
         getView().enableUI();
+    }
+
+    private void showErrorMessage(String message) {
+        if (NetworkUtils.isNetworkUnavailableError(getActivityContext(), message)) {
+            ViewUtils.showToast(getActivityContext(), message);
+            return;
+        }
+        // operation failed, show error message
+        if (message != null)
+            getView().reportMessage(message);
     }
 }

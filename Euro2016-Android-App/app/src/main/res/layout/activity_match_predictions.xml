@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/euro2016_background"
     android:fitsSystemWindows="true">
 
     <android.support.design.widget.CoordinatorLayout
+        android:layout_above="@id/tv_no_network_connection"
         android:fitsSystemWindows="true"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -265,8 +266,13 @@
 
     </android.support.design.widget.CoordinatorLayout>
 
+    <include
+        android:id="@+id/tv_no_network_connection"
+        layout="@layout/layout_no_network_connection" />
+
     <include layout="@layout/layout_waiting_progress_bar"
+        android:visibility="invisible"
         android:layout_height="match_parent"
         android:layout_width="match_parent" />
 
-</android.support.design.widget.CoordinatorLayout>
+</RelativeLayout>

@@ -123,5 +123,6 @@
 
     <string name="user_name">Nome</string>
     <string name="total">Total</string>
+    <string name="no_network_connection">Sem ligação à Internet</string>
 
 </resources>

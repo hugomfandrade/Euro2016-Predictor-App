@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class GlobalData {
 
@@ -32,22 +33,22 @@ public class GlobalData {
     public User user;
     public SystemData systemData;
 
-    private HashSet<OnMatchesChangedListener> mOnMatchesChangedListenerSet = new HashSet<>();
-    private HashSet<OnCountriesChangedListener> mOnCountriesChangedListenerSet = new HashSet<>();
-    private HashSet<OnPredictionsChangedListener> mOnPredictionsChangedListenerSet = new HashSet<>();
-    private HashSet<OnLatestPerformanceChangedListener> mOnLatestPerformanceChangedListenerSet = new HashSet<>();
-    private HashSet<OnLeaguesChangedListener> mOnLeaguesChangedListenerSet = new HashSet<>();
+    private Set<OnMatchesChangedListener> mOnMatchesChangedListenerSet = new HashSet<>();
+    private Set<OnCountriesChangedListener> mOnCountriesChangedListenerSet = new HashSet<>();
+    private Set<OnPredictionsChangedListener> mOnPredictionsChangedListenerSet = new HashSet<>();
+    private Set<OnLatestPerformanceChangedListener> mOnLatestPerformanceChangedListenerSet = new HashSet<>();
+    private Set<OnLeaguesChangedListener> mOnLeaguesChangedListenerSet = new HashSet<>();
 
     private List<Country> mCountryList = new ArrayList<>();
     private List<Match> mMatchList = new ArrayList<>();
     private List<Prediction> mPredictionList = new ArrayList<>();
     private List<LeagueWrapper> mLeagueWrapperList = new ArrayList<>();
-    private HashMap<String, List<Prediction>> mLatestPerformanceMap = new HashMap<>();
+    private Map<String, List<Prediction>> mLatestPerformanceMap = new HashMap<>();
 
     // UserID, list of matches whose predictions where fetched
     private Map<String, List<Integer>> mPredictionOfUserMap = new HashMap<>();
     // UserID, Map MatchNumber - predictions
-    private HashMap<String, SparseArray<Prediction>> mMatchPredictionMap = new HashMap<>();
+    private Map<String, SparseArray<Prediction>> mMatchPredictionMap = new HashMap<>();
 
     /*public static GlobalData getInstance() {
         if (mInstance == null) {
@@ -69,10 +70,28 @@ public class GlobalData {
         }
         try {
             mInstance.user = null;
+            mInstance.systemData = null;
+
+            clear(mInstance.mCountryList,
+                    mInstance.mMatchList,
+                    mInstance.mPredictionList,
+                    mInstance.mLeagueWrapperList);
+
+            clear(mInstance.mOnMatchesChangedListenerSet,
+                    mInstance.mOnCountriesChangedListenerSet,
+                    mInstance.mOnPredictionsChangedListenerSet,
+                    mInstance.mOnLatestPerformanceChangedListenerSet,
+                    mInstance.mOnLeaguesChangedListenerSet);
+
+            clear(mInstance.mLatestPerformanceMap,
+                    mInstance.mPredictionOfUserMap,
+                    mInstance.mMatchPredictionMap);
+
         } catch (IllegalStateException e) {
             Log.e(TAG, "unInitialize error: " + e.getMessage());
         }
     }
+
     public Calendar getServerTime() {
         return systemData.getDate();
     }
@@ -479,5 +498,23 @@ public class GlobalData {
 
     public void removeOnLeaguesChangedListener(OnLeaguesChangedListener listener) {
         mOnLeaguesChangedListenerSet.remove(listener);
+    }
+
+    private static void clear(List<?> ... lists) {
+        for (List<?> list : lists) {
+            list.clear();
+        }
+    }
+
+    private static void clear(Set<?> ... sets) {
+        for (Set<?> set : sets) {
+            set.clear();
+        }
+    }
+
+    private static void clear(Map<?,?> ... maps) {
+        for (Map<?,?> map : maps) {
+            map.clear();
+        }
     }
 }

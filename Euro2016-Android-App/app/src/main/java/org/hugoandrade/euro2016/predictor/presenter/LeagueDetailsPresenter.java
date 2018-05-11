@@ -8,7 +8,10 @@ import org.hugoandrade.euro2016.predictor.data.raw.LeagueUser;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
+import org.hugoandrade.euro2016.predictor.utils.ErrorMessageUtils;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
+import org.hugoandrade.euro2016.predictor.utils.NetworkUtils;
+import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,7 +99,7 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
         getView().disableUI();
 
         if (getMobileClientService() == null) {
-            onUsersFetched(false, "Not bound to the service", leagueID, null);
+            onUsersFetched(false, ErrorMessageUtils.genNotBoundMessage(), leagueID, null);
             return;
         }
 
@@ -109,12 +112,25 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
     }
 
     @Override
+    public void logout() {
+        if (getMobileClientService() == null) {
+            return;
+        }
+
+        try {
+            getMobileClientService().logout();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public void deleteLeague(String userID, String leagueID) {
 
         getView().disableUI();
 
         if (getMobileClientService() == null) {
-            onLeagueDeleted(false, "Not bound to the service");
+            onLeagueDeleted(false, ErrorMessageUtils.genNotBoundMessage());
             return;
         }
 
@@ -132,7 +148,7 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
         getView().disableUI();
 
         if (getMobileClientService() == null) {
-            onLeagueLeft(false, "Not bound to the service");
+            onLeagueLeft(false, ErrorMessageUtils.genNotBoundMessage());
             return;
         }
 
@@ -149,7 +165,7 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
         getView().disableUI();
 
         if (getMobileClientService() == null) {
-            onPredictionsFetched(false, "Not bound to the service", user, null);
+            onPredictionsFetched(false, ErrorMessageUtils.genNotBoundMessage(), user, null);
             return;
         }
 
@@ -177,7 +193,7 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
             getView().startUserPredictionsActivity(user, GlobalData.getInstance().getPredictionsOfUser(user.getID()));
         }
         else {
-            getView().reportMessage(errorMessage);
+            showErrorMessage(errorMessage);
         }
 
         getView().enableUI();
@@ -188,7 +204,7 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
             getView().leagueLeft();
         }
         else {
-            getView().reportMessage(errorMessage);
+            showErrorMessage(errorMessage);
         }
 
         getView().enableUI();
@@ -199,7 +215,7 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
             getView().leagueLeft();
         }
         else {
-            getView().reportMessage(errorMessage);
+            showErrorMessage(errorMessage);
         }
 
         getView().enableUI();
@@ -213,9 +229,19 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
             //getView().leagueLeft();
         }
         else {
-            getView().reportMessage(errorMessage);
+            showErrorMessage(errorMessage);
         }
 
         getView().enableUI();
+    }
+
+    private void showErrorMessage(String message) {
+        if (NetworkUtils.isNetworkUnavailableError(getActivityContext(), message)) {
+            ViewUtils.showToast(getActivityContext(), message);
+            return;
+        }
+        // operation failed, show error message
+        if (message != null)
+            getView().reportMessage(message);
     }
 }

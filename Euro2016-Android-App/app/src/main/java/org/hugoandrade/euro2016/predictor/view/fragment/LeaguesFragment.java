@@ -6,7 +6,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +20,9 @@ import org.hugoandrade.euro2016.predictor.data.raw.League;
 import org.hugoandrade.euro2016.predictor.data.raw.LeagueUser;
 import org.hugoandrade.euro2016.predictor.model.IMobileClientService;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
+import org.hugoandrade.euro2016.predictor.utils.ErrorMessageUtils;
+import org.hugoandrade.euro2016.predictor.utils.NetworkUtils;
+import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
 import org.hugoandrade.euro2016.predictor.view.LeagueDetailsActivity;
 import org.hugoandrade.euro2016.predictor.view.dialog.CreateLeagueDialog;
 import org.hugoandrade.euro2016.predictor.view.dialog.JoinLeagueDialog;
@@ -121,16 +123,12 @@ public class LeaguesFragment extends FragmentBase<FragComm.RequiredActivityOps>
 
         getParentActivity().disableUI();
 
-        if (mServiceManager == null) {
-            onLeagueCreated(false, "No Network Connection", null);
+        if (mServiceManager == null || mServiceManager.getService() == null) {
+            onLeagueCreated(false, ErrorMessageUtils.genNotBoundMessage(), null);
+            return;
         }
 
         IMobileClientService service = mServiceManager.getService();
-
-        if (service == null) {
-            onLeagueCreated(false, "Not bound to the service", null);
-            return;
-        }
 
         try {
             service.createLeague(GlobalData.getInstance().user.getID(), leagueName);
@@ -144,16 +142,12 @@ public class LeaguesFragment extends FragmentBase<FragComm.RequiredActivityOps>
 
         getParentActivity().disableUI();
 
-        if (mServiceManager == null) {
-            onLeagueJoined(false, "No Network Connection", null);
+        if (mServiceManager == null || mServiceManager.getService() == null) {
+            onLeagueCreated(false, ErrorMessageUtils.genNotBoundMessage(), null);
+            return;
         }
 
         IMobileClientService service = mServiceManager.getService();
-
-        if (service == null) {
-            onLeagueJoined(false, "Not bound to the service", null);
-            return;
-        }
 
         try {
             service.joinLeague(GlobalData.getInstance().user.getID(), leagueCode);
@@ -171,8 +165,7 @@ public class LeaguesFragment extends FragmentBase<FragComm.RequiredActivityOps>
             GlobalData.getInstance().addLeague(leagueWrapper);
 
         } else {
-
-            getParentActivity().showSnackBar(errorMessage);
+            showErrorMessage(errorMessage);
         }
 
         getParentActivity().enableUI();
@@ -180,16 +173,24 @@ public class LeaguesFragment extends FragmentBase<FragComm.RequiredActivityOps>
 
     public void onLeagueJoined(boolean isOperationSuccessful, String errorMessage, LeagueWrapper leagueWrapper) {
         if (isOperationSuccessful) {
-            Log.e(TAG, "onLeagueJoined(finally)::" + leagueWrapper.toString());
 
             GlobalData.getInstance().addLeague(leagueWrapper);
 
         } else {
-
-            getParentActivity().showSnackBar(errorMessage);
+            showErrorMessage(errorMessage);
         }
 
         getParentActivity().enableUI();
+    }
+
+    private void showErrorMessage(String message) {
+        if (NetworkUtils.isNetworkUnavailableError(getParentActivity().getActivityContext(), message)) {
+            ViewUtils.showToast(getParentActivity().getActivityContext(), message);
+            return;
+        }
+        // operation failed, show error message
+        if (message != null)
+            getParentActivity().showSnackBar(message);
     }
 
     @Override

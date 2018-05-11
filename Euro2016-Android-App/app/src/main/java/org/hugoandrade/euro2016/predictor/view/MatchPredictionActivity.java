@@ -28,6 +28,7 @@ import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.presenter.MatchPredictionPresenter;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
+import org.hugoandrade.euro2016.predictor.utils.SharedPreferencesUtils;
 import org.hugoandrade.euro2016.predictor.utils.TranslationUtils;
 import org.hugoandrade.euro2016.predictor.view.dialog.FilterPopup;
 import org.hugoandrade.euro2016.predictor.view.listadapter.MatchPredictionListAdapter;
@@ -100,24 +101,6 @@ public class MatchPredictionActivity extends MainActivityBase<MVP.RequiredMatchP
         initializeUI();
 
         super.onCreate(MatchPredictionPresenter.class, this);
-    }
-
-    private void buildMatchFilterList() {
-        mMatchFilterList = new ArrayList<>();
-
-        List<Match> matchList = GlobalData.getInstance().getMatchList();
-
-        for (int i = 0 ; i < matchList.size() && matchList.get(i).getMatchNumber() <= mMaxMatchNumber ; i++) {
-            mMatchFilterList.add(TextUtils.concat(
-                    String.valueOf(matchList.get(i).getMatchNumber()),
-                    ": ",
-                    MatchUtils.getShortMatchUp(this, matchList.get(i))).toString());
-        }
-    }
-
-    @Override
-    protected void logout() {
-        showSnackBar("Logout not implemented yet");
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -214,6 +197,26 @@ public class MatchPredictionActivity extends MainActivityBase<MVP.RequiredMatchP
     @Override
     public void enableUI() {
         progressBar.setVisibility(ProgressBar.INVISIBLE);
+    }
+
+    private void buildMatchFilterList() {
+        mMatchFilterList = new ArrayList<>();
+
+        List<Match> matchList = GlobalData.getInstance().getMatchList();
+
+        for (int i = 0 ; i < matchList.size() && matchList.get(i).getMatchNumber() <= mMaxMatchNumber ; i++) {
+            mMatchFilterList.add(TextUtils.concat(
+                    String.valueOf(matchList.get(i).getMatchNumber()),
+                    ": ",
+                    MatchUtils.getShortMatchUp(this, matchList.get(i))).toString());
+        }
+    }
+
+    @Override
+    protected void logout() {
+        getPresenter().logout();
+
+        super.logout();
     }
 
     private void filterNext() {

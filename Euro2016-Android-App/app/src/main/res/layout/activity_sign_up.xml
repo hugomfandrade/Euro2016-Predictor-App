@@ -1,104 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_signup"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:orientation="vertical"
-    android:focusableInTouchMode="true"
-    tools:context=".view.SignUpActivity"
     android:background="@drawable/euro2016_background"
-    android:paddingTop="64dp"
-    android:paddingStart="16dp"
-    android:paddingEnd="16dp"
-    >
+    android:focusableInTouchMode="true"
+    tools:context=".view.SignUpActivity">
 
-    <android.support.design.widget.TextInputLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/textInputLabelForLogin">
+        android:orientation="vertical"
+        android:paddingTop="64dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        >
 
-        <org.hugoandrade.euro2016.predictor.customview.ImeEditText
-            android:id="@+id/editext_new_username"
+        <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:theme="@style/textInputLabelForLogin">
 
-            android:hint="@string/hint_username"
-            android:textColor="@android:color/white"
-            android:inputType="text"
-            android:maxLines="1"
-            android:lines="1"
-            android:imeOptions="actionNext"
-            android:nextFocusForward="@+id/et_validate">
-            <requestFocus />
+            <org.hugoandrade.euro2016.predictor.customview.ImeEditText
+                android:id="@+id/editext_new_username"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
 
-        </org.hugoandrade.euro2016.predictor.customview.ImeEditText>
+                android:hint="@string/hint_username"
+                android:textColor="@android:color/white"
+                android:inputType="text"
+                android:maxLines="1"
+                android:lines="1"
+                android:imeOptions="actionNext"
+                android:nextFocusForward="@+id/et_validate">
+                <requestFocus />
 
-    </android.support.design.widget.TextInputLayout>
+            </org.hugoandrade.euro2016.predictor.customview.ImeEditText>
 
-    <android.support.design.widget.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/textInputLabelForLogin">
+        </android.support.design.widget.TextInputLayout>
 
-        <org.hugoandrade.euro2016.predictor.customview.ImeEditText
-            android:id="@+id/editext_new_password"
+        <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/hint_password"
-            android:imeOptions="actionNext"
-            android:nextFocusForward="@+id/et_password_confirm"
-            android:inputType="textPassword"
-            android:maxLines="1"
-            android:lines="1"
-            android:textColor="@android:color/white" />
+            android:theme="@style/textInputLabelForLogin">
 
-    </android.support.design.widget.TextInputLayout>
+            <org.hugoandrade.euro2016.predictor.customview.ImeEditText
+                android:id="@+id/editext_new_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/hint_password"
+                android:imeOptions="actionNext"
+                android:nextFocusForward="@+id/et_password_confirm"
+                android:inputType="textPassword"
+                android:maxLines="1"
+                android:lines="1"
+                android:textColor="@android:color/white" />
 
-    <android.support.design.widget.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/textInputLabelForLogin">
+        </android.support.design.widget.TextInputLayout>
 
-        <org.hugoandrade.euro2016.predictor.customview.ImeEditText
-            android:id="@+id/editext_confirm_password"
-            android:hint="@string/hint_confirm_password"
+        <android.support.design.widget.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:imeOptions="actionDone"
-            android:inputType="textPassword"
-            android:maxLines="1"
-            android:lines="1"
-            android:textColor="@android:color/white" />
+            android:theme="@style/textInputLabelForLogin">
 
-    </android.support.design.widget.TextInputLayout>
+            <org.hugoandrade.euro2016.predictor.customview.ImeEditText
+                android:id="@+id/editext_confirm_password"
+                android:hint="@string/hint_confirm_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:imeOptions="actionDone"
+                android:inputType="textPassword"
+                android:maxLines="1"
+                android:lines="1"
+                android:textColor="@android:color/white" />
 
-    <RelativeLayout
-        android:id="@+id/button_signup"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="?colorAccent">
+        </android.support.design.widget.TextInputLayout>
 
-        <TextView
-            android:id="@+id/tv_validate"
+        <RelativeLayout
+            android:id="@+id/button_signup"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="@string/sign_up"
-            android:textColor="#fff"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textAllCaps="true"
-            android:layout_centerInParent="true"
-            android:gravity="center"
-            android:background="?android:attr/selectableItemBackground"/>
+            android:layout_height="48dp"
+            android:background="?colorAccent">
 
-        <ProgressBar
-            android:id="@+id/progressBar_signup"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="2dp"
-            android:layout_centerVertical="true"/>
+            <TextView
+                android:id="@+id/tv_validate"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/sign_up"
+                android:textColor="#fff"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textAllCaps="true"
+                android:layout_centerInParent="true"
+                android:gravity="center"
+                android:background="?android:attr/selectableItemBackground"/>
 
-    </RelativeLayout>
+            <ProgressBar
+                android:id="@+id/progressBar_signup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="2dp"
+                android:layout_centerVertical="true"/>
 
-</LinearLayout>
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <include
+        android:id="@+id/tv_no_network_connection"
+        layout="@layout/layout_no_network_connection" />
+
+</RelativeLayout>

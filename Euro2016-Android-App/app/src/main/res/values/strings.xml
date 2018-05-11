@@ -130,6 +130,7 @@
 
     <string name="user_name" translatable="true">Name</string>
     <string name="total" translatable="true">Total</string>
+    <string name="no_network_connection" translatable="true">No Network Connection</string>
 
 
 </resources>

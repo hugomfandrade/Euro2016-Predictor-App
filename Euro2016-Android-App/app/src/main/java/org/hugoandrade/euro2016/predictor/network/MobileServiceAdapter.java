@@ -16,6 +16,7 @@ import com.microsoft.windowsazure.mobileservices.table.MobileServiceJsonTable;
 import com.microsoft.windowsazure.mobileservices.table.query.QueryOrder;
 
 import org.hugoandrade.euro2016.predictor.DevConstants;
+import org.hugoandrade.euro2016.predictor.R;
 import org.hugoandrade.euro2016.predictor.cloudsim.CloudDatabaseSimAdapter;
 import org.hugoandrade.euro2016.predictor.data.LeagueWrapper;
 import org.hugoandrade.euro2016.predictor.data.raw.Country;
@@ -27,6 +28,7 @@ import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.SystemData;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.model.helper.MobileServiceJsonTableHelper;
+import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientDataJsonFormatter;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientDataJsonParser;
 import org.hugoandrade.euro2016.predictor.utils.LeagueUtils;
@@ -103,6 +105,26 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
         mClient.setCurrentUser(mobileServiceUser);
     }
 
+    public MobileServiceCallback logOut() {
+
+        final MobileServiceCallback callback = new MobileServiceCallback();
+
+        if (CloudDatabaseSimAdapter.getInstance().logOut(callback)
+                //|| !isNetworkAvailable(callback, MobileServiceData.LOGOUT)
+                )
+            return callback;
+
+        if (mClient != null)
+            mClient.logout();
+
+        callback.set(MobileServiceData.Builder
+                .instance(MobileServiceData.LOGOUT, MobileServiceData.REQUEST_RESULT_SUCCESS)
+                .create());
+
+        return callback;
+
+    }
+
     public MobileServiceCallback login(final LoginData loginData) {
 
         final MobileServiceCallback callback = new MobileServiceCallback();
@@ -128,7 +150,7 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
 
             @Override
             public void onFailure(@NonNull Throwable t) {
-                sendErrorMessage(callback, MobileServiceData.LOGIN, t.getMessage());
+                sendErrorMessage(callback, MobileServiceData.LOGIN, t.getMessage() + ": Login");
             }
         });
         return callback;
@@ -190,7 +212,7 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
 
             @Override
             public void onFailure(@NonNull Throwable t) {
-                sendErrorMessage(callback, MobileServiceData.GET_SYSTEM_DATA, t.getMessage());
+                sendErrorMessage(callback, MobileServiceData.GET_SYSTEM_DATA, t.getMessage() + ": getSystemData");
             }
         });
         return callback;
@@ -385,9 +407,15 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
 
         final MobileServiceCallback callback = new MobileServiceCallback();
 
-        if (CloudDatabaseSimAdapter.getInstance().insertPrediction(callback, prediction) ||
-                !isNetworkAvailable(callback, MobileServiceData.INSERT_PREDICTION))
+        if (CloudDatabaseSimAdapter.getInstance().insertPrediction(callback, prediction))
             return callback;
+
+        if (!mIsNetworkAvailable) {
+            callback.set(buildNetworkFailureMessage(MobileServiceData.INSERT_PREDICTION)
+                    .setPrediction(prediction)
+                    .create());
+            return callback;
+        }
 
         ListenableFuture<JsonObject> future = new MobileServiceJsonTable(Prediction.Entry.TABLE_NAME, mClient)
                 .insert(formatter.getAsJsonObject(prediction, Prediction.Entry.Cols.ID));
@@ -402,6 +430,7 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
 
             @Override
             public void onFailure(@NonNull Throwable t) {
+                Log.e(TAG, "data.getPrediction::" + prediction);
                 callback.set(MobileServiceData.Builder
                         .instance(MobileServiceData.INSERT_PREDICTION, MobileServiceData.REQUEST_RESULT_FAILURE)
                         .setPrediction(prediction)
@@ -668,9 +697,16 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
     public MobileServiceCallback fetchMoreUsers(final String leagueID, int skip, int top) {
         final MobileServiceCallback callback = new MobileServiceCallback();
 
-        if (CloudDatabaseSimAdapter.getInstance().fetchMoreUsers(callback, leagueID, skip, top) ||
-                !isNetworkAvailable(callback, MobileServiceData.FETCH_MORE_USERS))
+        if (CloudDatabaseSimAdapter.getInstance().fetchMoreUsers(callback, leagueID, skip, top))
             return callback;
+
+        if (!mIsNetworkAvailable) {
+            callback.set(buildNetworkFailureMessage(MobileServiceData.INSERT_PREDICTION)
+                    .setLeagueUserList(new ArrayList<LeagueUser>())
+                    .setString(leagueID)
+                    .create());
+            return callback;
+        }
 
         MobileServiceJsonTableHelper t = MobileServiceJsonTableHelper
                 .instance(User.Entry.TABLE_NAME, mClient);
@@ -713,9 +749,16 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
     public MobileServiceCallback fetchRankOfUser(final String leagueID, String userID) {
         final MobileServiceCallback callback = new MobileServiceCallback();
 
-        if (CloudDatabaseSimAdapter.getInstance().fetchRankOfUser(callback, leagueID, userID) ||
-                !isNetworkAvailable(callback, MobileServiceData.FETCH_RANK_OF_USER))
+        if (CloudDatabaseSimAdapter.getInstance().fetchRankOfUser(callback, leagueID, userID))
             return callback;
+
+        if (!mIsNetworkAvailable) {
+            callback.set(buildNetworkFailureMessage(MobileServiceData.INSERT_PREDICTION)
+                    .setLeagueUserList(new ArrayList<LeagueUser>())
+                    .setString(leagueID)
+                    .create());
+            return callback;
+        }
 
         MobileServiceJsonTableHelper t = MobileServiceJsonTableHelper
                 .instance(User.Entry.TABLE_NAME, mClient);
@@ -762,11 +805,20 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
 
     private boolean isNetworkAvailable(final MobileServiceCallback callback, int requestCode) {
         if (!mIsNetworkAvailable) {
-            callback.set(MobileServiceData.Builder.instance(requestCode, MobileServiceData.REQUEST_RESULT_FAILURE)
-                    .setMessage("No Network Connection")
-                    .create());
+            callback.set(buildNetworkFailureMessage(requestCode).create());
         }
         return mIsNetworkAvailable;
+    }
+
+    private MobileServiceData.Builder buildNetworkFailureMessage(int operationType) {
+
+        String message = "No Network Connection";
+        if (mClient != null && mClient.getContext() != null) {
+            message = mClient.getContext().getString(R.string.no_network_connection);
+        }
+
+        return MobileServiceData.Builder.instance(operationType, MobileServiceData.REQUEST_RESULT_FAILURE)
+                .setMessage(message);
     }
 
     @Override

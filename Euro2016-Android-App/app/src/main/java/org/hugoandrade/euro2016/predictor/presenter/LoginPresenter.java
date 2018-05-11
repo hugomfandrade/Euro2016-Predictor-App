@@ -1,5 +1,6 @@
 package org.hugoandrade.euro2016.predictor.presenter;
 
+import android.content.BroadcastReceiver;
 import android.os.RemoteException;
 import android.util.Log;
 
@@ -10,6 +11,9 @@ import org.hugoandrade.euro2016.predictor.data.raw.SystemData;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
 import org.hugoandrade.euro2016.predictor.model.service.MobileService;
+import org.hugoandrade.euro2016.predictor.utils.ErrorMessageUtils;
+import org.hugoandrade.euro2016.predictor.utils.NetworkBroadcastReceiverUtils;
+import org.hugoandrade.euro2016.predictor.utils.NetworkUtils;
 import org.hugoandrade.euro2016.predictor.utils.SharedPreferencesUtils;
 
 public class LoginPresenter extends MobileClientPresenterBase<MVP.RequiredLoginViewOps>
@@ -17,6 +21,11 @@ public class LoginPresenter extends MobileClientPresenterBase<MVP.RequiredLoginV
         implements MVP.ProvidedLoginPresenterOps {
 
     private boolean isMovingToNextActivity = false;
+    private boolean[] mSplashScreenEnabledBooleans = new boolean[2];
+    // (0) Get SystemData
+    // (1) Do Login (with Stored Credentials)
+
+    private BroadcastReceiver mNetworkBroadcastReceiver;
 
     @Override
     public void onCreate(MVP.RequiredLoginViewOps view) {
@@ -30,6 +39,14 @@ public class LoginPresenter extends MobileClientPresenterBase<MVP.RequiredLoginV
         // "this" to provide ImageModel with this MVP.RequiredModelOps
         // instance.
         super.onCreate(view);
+
+        mNetworkBroadcastReceiver = NetworkBroadcastReceiverUtils.register(getActivityContext(), iNetworkListener);
+    }
+
+    private void finishSplashScreenAnimation() {
+        if (mSplashScreenEnabledBooleans[0] && mSplashScreenEnabledBooleans[1]) {
+            getView().stopHoldingSplashScreenAnimation();
+        }
     }
 
     @Override
@@ -41,10 +58,44 @@ public class LoginPresenter extends MobileClientPresenterBase<MVP.RequiredLoginV
     public void onDestroy(boolean isChangingConfiguration) {
         getModel().onDestroy(isChangingConfiguration);
 
+        if (mNetworkBroadcastReceiver != null) {
+            NetworkBroadcastReceiverUtils.unregister(getActivityContext(), mNetworkBroadcastReceiver);
+            mNetworkBroadcastReceiver = null;
+        }
+
         if (!isChangingConfiguration && !isMovingToNextActivity)
             getApplicationContext().stopService(
                     MobileService.makeIntent(getActivityContext()));
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (NetworkUtils.isNetworkAvailable(getActivityContext()) && isServiceBound() ) {
+            if (GlobalData.getInstance().systemData == null) {
+                getSystemData();
+            }
+            else {
+                finishSplashScreenAnimation();
+            }
+        }
+    }
+
+    private NetworkBroadcastReceiverUtils.INetworkBroadcastReceiver iNetworkListener
+            = new NetworkBroadcastReceiverUtils.INetworkBroadcastReceiver() {
+        @Override
+        public void setNetworkAvailable(boolean isNetworkAvailable) {
+            if (isNetworkAvailable && isServiceBound() ) {
+                if (GlobalData.getInstance().systemData == null) {
+                    getSystemData();
+                }
+                else {
+                    finishSplashScreenAnimation();
+                }
+            }
+        }
+    };
 
     @Override
     public void login(String username, String password) {
@@ -67,8 +118,7 @@ public class LoginPresenter extends MobileClientPresenterBase<MVP.RequiredLoginV
 
     private void doLogin(LoginData loginData) {
         if (getMobileClientService() == null) {
-            Log.w(TAG, "Service is still not bound");
-            loginOperationResult(false, "Not bound to the service", null);
+            loginOperationResult(false, ErrorMessageUtils.genNotBoundMessage() + ": doLogin", null);
             return;
         }
 
@@ -82,8 +132,7 @@ public class LoginPresenter extends MobileClientPresenterBase<MVP.RequiredLoginV
 
     private void getSystemData() {
         if (getMobileClientService() == null) {
-            Log.w(TAG, "Service is still not bound");
-            getSystemDataOperationResult(false, "Not bound to the service", null);
+            getSystemDataOperationResult(false, ErrorMessageUtils.genNotBoundMessage() + ": getSystemData", null);
             return;
         }
 
@@ -122,20 +171,22 @@ public class LoginPresenter extends MobileClientPresenterBase<MVP.RequiredLoginV
     }
 
     private void loginOperationResult(boolean wasOperationSuccessful, String message, LoginData loginData) {
+        mSplashScreenEnabledBooleans[1] = true;
+
         if (wasOperationSuccessful) {
-            Log.e(TAG, "loginOperationResult: " + loginData.toString());
 
             SharedPreferencesUtils.putLoginData(getActivityContext(), loginData);
+            SharedPreferencesUtils.putLastAuthenticatedLoginData(getActivityContext(), loginData);
 
             GlobalData.getInstance().setUser(new User(loginData.getUserID(), loginData.getEmail()));
 
             getView().successfulLogin();
         }
         else {
-            // operation failed, show error message
-            if (message != null)
-                getView().reportMessage(message);
+            showErrorMessage(message);
+            finishSplashScreenAnimation();
         }
+
 
         getView().enableUI();
 
@@ -143,6 +194,10 @@ public class LoginPresenter extends MobileClientPresenterBase<MVP.RequiredLoginV
 
     private void getSystemDataOperationResult(boolean wasOperationSuccessful, String message, SystemData systemData) {
         if (wasOperationSuccessful) {
+            // avoid fetching twice
+            if (mSplashScreenEnabledBooleans[0]) return;
+
+            mSplashScreenEnabledBooleans[0] = true;
 
             if (!systemData.getAppState()) {
                 getView().finishApp();
@@ -150,12 +205,29 @@ public class LoginPresenter extends MobileClientPresenterBase<MVP.RequiredLoginV
             }
 
             GlobalData.getInstance().setSystemData(systemData);
+
+            LoginData loginData = SharedPreferencesUtils.getLastAuthenticatedLoginData(getActivityContext());
+
+            if (loginData.getEmail() != null && loginData.getPassword() != null) {
+                doLogin(loginData);
+            }
+            else {
+                mSplashScreenEnabledBooleans[1] = true;
+                finishSplashScreenAnimation();
+            }
         }
         else {
-            // operation failed, show error message
-            if (message != null)
-                getView().reportMessage(message);
+            showErrorMessage(message);
         }
+    }
 
+    private void showErrorMessage(String message) {
+        if (NetworkUtils.isNetworkUnavailableError(getActivityContext(), message)) {
+            //ViewUtils.showToast(getActivityContext(), message);
+            return;
+        }
+        // operation failed, show error message
+        if (message != null)
+            getView().reportMessage(message);
     }
 }

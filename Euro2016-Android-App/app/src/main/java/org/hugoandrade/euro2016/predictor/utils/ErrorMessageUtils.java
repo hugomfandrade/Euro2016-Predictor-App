@@ -7,12 +7,12 @@ import android.net.NetworkInfo;
 
 import org.hugoandrade.euro2016.predictor.R;
 
-public final class NetworkUtils {
+public final class ErrorMessageUtils {
 
     /**
      * Ensure this class is only used as a utility.
      */
-    private NetworkUtils() {
+    private ErrorMessageUtils() {
         throw new AssertionError();
     }
 
@@ -31,13 +31,13 @@ public final class NetworkUtils {
             boolean mobileAvailability = false;
 
             for (Network network : networks) {
-                if (connMgr.getNetworkInfo(network) != null &&
-                        connMgr.getNetworkInfo(network).getType() == ConnectivityManager.TYPE_WIFI &&
+                if (connMgr.getNetworkInfo(network).getType() == ConnectivityManager.TYPE_WIFI &&
+                        connMgr.getNetworkInfo(network) != null &&
                         connMgr.getNetworkInfo(network).isAvailable()) {
                     wifiAvailability = true;
                 }
-                else if (connMgr.getNetworkInfo(network) != null &&
-                        connMgr.getNetworkInfo(network).getType() == ConnectivityManager.TYPE_MOBILE &&
+                else if (connMgr.getNetworkInfo(network).getType() == ConnectivityManager.TYPE_MOBILE &&
+                        connMgr.getNetworkInfo(network) != null &&
                         connMgr.getNetworkInfo(network).isAvailable()) {
                     mobileAvailability = true;
                 }
@@ -68,5 +68,11 @@ public final class NetworkUtils {
                 && context != null
                 && message.equals(context.getString(R.string.no_network_connection));
 
+    }
+
+    private static final String sNotBoundErrorMessage = "Not bound to the service";
+
+    public static String genNotBoundMessage() {
+        return sNotBoundErrorMessage;
     }
 }

@@ -21,6 +21,7 @@ import org.hugoandrade.euro2016.predictor.network.MobileServiceCallback;
 import org.hugoandrade.euro2016.predictor.network.MobileServiceData;
 import org.hugoandrade.euro2016.predictor.network.MultipleCloudStatus;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -104,6 +105,29 @@ public class MobileService extends LifecycleLoggingService {
                             MobileClientData.OperationType.GET_SYSTEM_DATA.ordinal(),
                             requestResult);
                     m.setSystemData(data.getSystemData());
+                    m.setErrorMessage(data.getMessage());
+
+                    sendMobileDataMessage(m);
+                }
+            });
+        }
+
+        @Override
+        public void logout() {
+
+            MobileServiceCallback i = MobileServiceAdapter.getInstance().logOut();
+            MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
+
+                @Override
+                public void onResult(MobileServiceData data) {
+
+                    int requestResult = data.wasSuccessful() ?
+                            MobileClientData.REQUEST_RESULT_SUCCESS :
+                            MobileClientData.REQUEST_RESULT_FAILURE;
+
+                    MobileClientData m = MobileClientData.makeMessage(
+                            MobileClientData.OperationType.LOGOUT.ordinal(),
+                            requestResult);
                     m.setErrorMessage(data.getMessage());
 
                     sendMobileDataMessage(m);
@@ -314,6 +338,7 @@ public class MobileService extends LifecycleLoggingService {
                             MobileClientData.OperationType.PUT_PREDICTION.ordinal(),
                             requestResult);
 
+                    Log.e(TAG, "data.getPrediction::" + data.getPrediction());
                     m.setPrediction(data.getPrediction());
                     m.setErrorMessage(data.getMessage());
 

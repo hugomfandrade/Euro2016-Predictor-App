@@ -19,6 +19,7 @@ public final class SharedPreferencesUtils {
         throw new AssertionError();
     }
 
+    private static final String AUTHENTICATED_SHARED_PREFERENCES_NAME = "authenticated_shared_preferences_name";
     private final static String LOGIN_DATA_SHARED_PREFERENCES_NAME = "login_data_shared_preferences_name";
     private final static String LOGIN_DATA_KEY_EMAIL = "login_data_key_email";
     private final static String LOGIN_DATA_KEY_PASSWORD = "login_data_key_password";
@@ -35,9 +36,41 @@ public final class SharedPreferencesUtils {
 
         SharedPreferences settings = context.getSharedPreferences(LOGIN_DATA_SHARED_PREFERENCES_NAME, 0);
 
-        SharedPreferences.Editor preferencesEditor = settings.edit();
-        preferencesEditor.putString(LOGIN_DATA_KEY_EMAIL, loginData.getEmail());
-        preferencesEditor.putString(LOGIN_DATA_KEY_PASSWORD, loginData.getPassword());
-        preferencesEditor.apply();
+        settings.edit()
+                .putString(LOGIN_DATA_KEY_EMAIL, loginData.getEmail())
+                .putString(LOGIN_DATA_KEY_PASSWORD, loginData.getPassword())
+                .apply();
+    }
+
+    public static void resetLoginData(Context context) {
+        context.getSharedPreferences(LOGIN_DATA_SHARED_PREFERENCES_NAME, 0)
+                .edit()
+                .clear()
+                .apply();
+    }
+
+    public static void putLastAuthenticatedLoginData(Context context, LoginData loginData) {
+
+        context.getSharedPreferences(AUTHENTICATED_SHARED_PREFERENCES_NAME, 0)
+                .edit()
+                .putString(LOGIN_DATA_KEY_EMAIL, loginData.getEmail())
+                .putString(LOGIN_DATA_KEY_PASSWORD, loginData.getPassword())
+                .apply();
+    }
+
+    public static LoginData getLastAuthenticatedLoginData(Context applicationContext) {
+        SharedPreferences settings = applicationContext
+                .getSharedPreferences(AUTHENTICATED_SHARED_PREFERENCES_NAME, 0);
+
+        return new LoginData(
+                settings.getString(LOGIN_DATA_KEY_EMAIL, null),
+                settings.getString(LOGIN_DATA_KEY_PASSWORD, null));
+    }
+
+    public static void resetLastAuthenticatedLoginData(Context context) {
+        context.getSharedPreferences(AUTHENTICATED_SHARED_PREFERENCES_NAME, 0)
+                .edit()
+                .clear()
+                .apply();
     }
 }

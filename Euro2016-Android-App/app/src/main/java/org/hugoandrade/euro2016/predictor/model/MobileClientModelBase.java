@@ -78,6 +78,11 @@ public abstract class MobileClientModelBase<RequiredPresenterOps extends MVP.Req
         }
     }
 
+    @Override
+    public boolean isServiceBound() {
+        return isServiceBound && mService != null;
+    }
+
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder binder) {

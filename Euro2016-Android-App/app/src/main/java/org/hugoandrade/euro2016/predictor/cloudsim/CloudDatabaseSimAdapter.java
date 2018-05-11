@@ -70,6 +70,17 @@ public class CloudDatabaseSimAdapter {
         mContentProviderClient = context.getContentResolver().acquireContentProviderClient(url);
     }
 
+    public boolean logOut(MobileServiceCallback callback) {
+        if (!DevConstants.CLOUD_DATABASE_SIM)
+            return false;
+
+        callback.set(MobileServiceData.Builder
+                .instance(MobileServiceData.LOGOUT, MobileServiceData.REQUEST_RESULT_SUCCESS)
+                .create());
+
+        return true;
+    }
+
     public boolean login(final MobileServiceCallback callback, final LoginData loginData) {
         if (!DevConstants.CLOUD_DATABASE_SIM)
             return false;

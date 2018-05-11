@@ -54,7 +54,6 @@ public class SignUpActivity extends ActivityBase<MVP.RequiredSignUpViewOps,
     public void onBackPressed() {
         super.onBackPressed();
 
-        ViewUtils.showToast(this, "BackPRessed");
         finish();
     }
 

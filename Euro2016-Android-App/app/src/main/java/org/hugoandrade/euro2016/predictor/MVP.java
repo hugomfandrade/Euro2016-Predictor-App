@@ -80,6 +80,8 @@ public interface MVP {
          * Tells "Model" to listen to callbacks from the Service
          */
         void registerCallback();
+
+        boolean isServiceBound();
     }
 
     /** For LOGIN **/
@@ -91,6 +93,8 @@ public interface MVP {
          * is false.
          */
         void finishApp();
+
+        void stopHoldingSplashScreenAnimation();
     }
     interface ProvidedLoginPresenterOps extends PresenterOps<RequiredLoginViewOps> {
         void login(String username, String password);
@@ -130,6 +134,8 @@ public interface MVP {
     interface ProvidedMainPresenterOps extends PresenterOps<RequiredMainViewOps> {
 
         ServiceManager getServiceManager();
+
+        void logout();
     }
 
 
@@ -141,6 +147,8 @@ public interface MVP {
     }
     interface ProvidedMatchPredictionPresenterOps extends PresenterOps<RequiredMatchPredictionViewOps> {
         void getPredictions(List<LeagueUser> userList, int matchNumber);
+
+        void logout();
     }
 
 
@@ -160,5 +168,7 @@ public interface MVP {
         void fetchRemainingPredictions(User user);
 
         void fetchMoreUsers(String leagueID, int numberOfMembers);
+
+        void logout();
     }
 }

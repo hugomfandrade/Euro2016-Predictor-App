@@ -1,197 +1,209 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:background="@drawable/euro2016_background">
 
-    <android.support.design.widget.AppBarLayout
-        android:id="@+id/tabanim_appbar"
+    <android.support.design.widget.CoordinatorLayout
+        android:layout_above="@id/tv_no_network_connection"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        android:background="?colorPrimaryDark">
+        android:layout_height="match_parent">
 
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/anim_toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            >
-        </android.support.v7.widget.Toolbar>
-
-    </android.support.design.widget.AppBarLayout>
-
-    <android.support.v4.widget.NestedScrollView
-        android:id="@+id/nestedScrollView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#ddffffff"
-        app:layout_anchorGravity="left|top"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-        <LinearLayout
+        <android.support.design.widget.AppBarLayout
+            android:id="@+id/tabanim_appbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            android:background="?colorPrimaryDark">
+
+
+            <android.support.v7.widget.Toolbar
+                android:id="@+id/anim_toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                >
+            </android.support.v7.widget.Toolbar>
+
+        </android.support.design.widget.AppBarLayout>
+
+        <android.support.v4.widget.NestedScrollView
+            android:id="@+id/nestedScrollView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#ddffffff"
+            app:layout_anchorGravity="left|top"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:orientation="vertical">
 
                 <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center_vertical"
-                    android:padding="10dp">
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
 
-                    <TextView
-                        android:id="@+id/tv_league_name"
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center_vertical"
+                        android:padding="10dp">
+
+                        <TextView
+                            android:id="@+id/tv_league_name"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:lines="1"
+                            android:ellipsize="end"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:textColor="#000"
+                            tools:text="Liga do Admin"
+                            android:layout_marginEnd="6dp"/>
+
+                        <TextView
+                            android:id="@+id/tv_league_members"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:lines="1"
+                            android:ellipsize="end"
+                            android:textSize="14sp"
+                            android:textColor="@android:color/darker_gray"
+                            tools:text="(10 membros)" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:lines="1"
-                        android:ellipsize="end"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:textColor="#000"
-                        tools:text="Liga do Admin"
-                        android:layout_marginEnd="6dp"/>
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="10dp">
 
-                    <TextView
-                        android:id="@+id/tv_league_members"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:lines="1"
-                        android:ellipsize="end"
-                        android:textSize="14sp"
-                        android:textColor="@android:color/darker_gray"
-                        tools:text="(10 membros)" />
+                        <TextView
+                            android:id="@+id/tv_league_code_header"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="@android:color/darker_gray"
+                            android:text="@string/league_code"/>
+
+                        <TextView
+                            android:id="@+id/tv_league_code"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:lines="1"
+                            android:ellipsize="end"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#000"
+                            android:textIsSelectable="true"
+                            tools:text="af14vb6" />
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
+                <TextView
+                    android:id="@+id/tv_latest_match"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_margin="16dp"
+                    android:background="@color/colorMain"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textAllCaps="true"
+                    android:textColor="#ddffffff"
+                    android:fontFamily="sans-serif-condensed"
                     android:gravity="center"
-                    android:padding="10dp">
+                    android:text="@string/latest_match"/>
 
-                    <TextView
-                        android:id="@+id/tv_league_code_header"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="@android:color/darker_gray"
-                        android:text="@string/league_code"/>
+                <include
+                    layout="@layout/list_item_league_standings_header" />
 
-                    <TextView
-                        android:id="@+id/tv_league_code"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:lines="1"
-                        android:ellipsize="end"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="#000"
-                        android:textIsSelectable="true"
-                        tools:text="af14vb6" />
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/rv_league_standings"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
 
-                </LinearLayout>
+                <TextView
+                    android:id="@+id/tv_leave_league"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_margin="16dp"
+                    android:background="@color/colorMain"
+                    android:textSize="18sp"
+                    android:textAllCaps="true"
+                    android:textColor="#ddffffff"
+                    android:fontFamily="sans-serif-condensed"
+                    android:gravity="center"
+                    android:text="@string/leave_this_league"/>
+
+                <TextView
+                    android:id="@+id/tv_delete_league"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_margin="16dp"
+                    android:background="@color/colorMain"
+                    android:fontFamily="sans-serif-condensed"
+                    android:gravity="center"
+                    android:layout_gravity="bottom|center"
+                    android:text="@string/delete_this_league"
+                    android:textAllCaps="true"
+                    android:textColor="#ddffffff"
+                    android:textSize="18sp" />
 
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/tv_latest_match"
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:layout_margin="16dp"
-                android:background="@color/colorMain"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textAllCaps="true"
-                android:textColor="#ddffffff"
-                android:fontFamily="sans-serif-condensed"
-                android:gravity="center"
-                android:text="@string/latest_match"/>
+        </android.support.v4.widget.NestedScrollView>
 
-            <include
-                layout="@layout/list_item_league_standings_header" />
+        <TextView
+            android:id="@+id/tv_leave_league_fixed"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_margin="16dp"
+            android:background="@color/colorMain"
+            android:fontFamily="sans-serif-condensed"
+            android:gravity="center"
+            android:layout_gravity="bottom|center"
+            android:text="@string/leave_this_league"
+            android:textAllCaps="true"
+            android:textColor="#ddffffff"
+            android:textSize="18sp" />
 
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/rv_league_standings"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <TextView
-                android:id="@+id/tv_leave_league"
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:layout_margin="16dp"
-                android:background="@color/colorMain"
-                android:textSize="18sp"
-                android:textAllCaps="true"
-                android:textColor="#ddffffff"
-                android:fontFamily="sans-serif-condensed"
-                android:gravity="center"
-                android:text="@string/leave_this_league"/>
-
-            <TextView
-                android:id="@+id/tv_delete_league"
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:layout_margin="16dp"
-                android:background="@color/colorMain"
-                android:fontFamily="sans-serif-condensed"
-                android:gravity="center"
-                android:layout_gravity="bottom|center"
-                android:text="@string/delete_this_league"
-                android:textAllCaps="true"
-                android:textColor="#ddffffff"
-                android:textSize="18sp" />
-
-        </LinearLayout>
-
-    </android.support.v4.widget.NestedScrollView>
+        <TextView
+            android:id="@+id/tv_delete_league_fixed"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_margin="16dp"
+            android:background="@color/colorMain"
+            android:fontFamily="sans-serif-condensed"
+            android:gravity="center"
+            android:layout_gravity="bottom|center"
+            android:text="@string/delete_this_league"
+            android:textAllCaps="true"
+            android:textColor="#ddffffff"
+            android:textSize="18sp" />
 
 
-    <TextView
-        android:id="@+id/tv_leave_league_fixed"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:layout_margin="16dp"
-        android:background="@color/colorMain"
-        android:fontFamily="sans-serif-condensed"
-        android:gravity="center"
-        android:layout_gravity="bottom|center"
-        android:text="@string/leave_this_league"
-        android:textAllCaps="true"
-        android:textColor="#ddffffff"
-        android:textSize="18sp" />
+    </android.support.design.widget.CoordinatorLayout>
 
-    <TextView
-        android:id="@+id/tv_delete_league_fixed"
-        android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:layout_margin="16dp"
-        android:background="@color/colorMain"
-        android:fontFamily="sans-serif-condensed"
-        android:gravity="center"
-        android:layout_gravity="bottom|center"
-        android:text="@string/delete_this_league"
-        android:textAllCaps="true"
-        android:textColor="#ddffffff"
-        android:textSize="18sp" />
+    <include
+        android:id="@+id/tv_no_network_connection"
+        layout="@layout/layout_no_network_connection" />
 
     <include layout="@layout/layout_waiting_progress_bar"
         android:visibility="invisible"
         android:layout_height="match_parent"
         android:layout_width="match_parent" />
 
-</android.support.design.widget.CoordinatorLayout>
+</RelativeLayout>

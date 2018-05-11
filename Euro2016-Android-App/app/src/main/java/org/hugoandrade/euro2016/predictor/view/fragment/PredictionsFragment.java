@@ -25,7 +25,10 @@ import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.model.IMobileClientService;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
+import org.hugoandrade.euro2016.predictor.utils.ErrorMessageUtils;
+import org.hugoandrade.euro2016.predictor.utils.NetworkUtils;
 import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils;
+import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
 import org.hugoandrade.euro2016.predictor.view.CountryDetailsActivity;
 import org.hugoandrade.euro2016.predictor.view.dialog.FilterPopup;
 import org.hugoandrade.euro2016.predictor.view.listadapter.PredictionListAdapter;
@@ -132,16 +135,12 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
 
     private void putPrediction(Prediction prediction) {
 
-        if (mServiceManager == null) {
-            onPredictionUpdated(false, "No Network Connection", prediction);
+        if (mServiceManager == null || mServiceManager.getService() == null) {
+            onPredictionUpdated(false, ErrorMessageUtils.genNotBoundMessage(), prediction);
+            return;
         }
 
         IMobileClientService service = mServiceManager.getService();
-
-        if (service == null) {
-            onPredictionUpdated(false, "Not bound to the service", prediction);
-            return;
-        }
 
         try {
             service.putPrediction(prediction);
@@ -158,8 +157,18 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
 
             updateFailedPrediction(prediction);
 
-            getParentActivity().showSnackBar(message);
+            showErrorMessage(message);
         }
+    }
+
+    private void showErrorMessage(String message) {
+        if (NetworkUtils.isNetworkUnavailableError(getParentActivity().getActivityContext(), message)) {
+            ViewUtils.showToast(getParentActivity().getActivityContext(), message);
+            return;
+        }
+        // operation failed, show error message
+        if (message != null)
+            getParentActivity().showSnackBar(message);
     }
 
     @Override

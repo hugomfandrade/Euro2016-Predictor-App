@@ -1,12 +1,18 @@
 package org.hugoandrade.euro2016.predictor.view;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 
+import org.hugoandrade.euro2016.predictor.R;
 import org.hugoandrade.euro2016.predictor.common.ContextView;
 import org.hugoandrade.euro2016.predictor.common.PresenterOps;
 import org.hugoandrade.euro2016.predictor.common.RetainedFragmentManager;
+import org.hugoandrade.euro2016.predictor.utils.NetworkBroadcastReceiverUtils;
+import org.hugoandrade.euro2016.predictor.utils.NetworkUtils;
+import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
 
 public abstract class ActivityBase<RequiredViewOps,
                                    ProvidedPresenterOps,
@@ -28,6 +34,9 @@ public abstract class ActivityBase<RequiredViewOps,
             TAG);
 
     private PresenterType mPresenterInstance;
+
+    private BroadcastReceiver mNetworkBroadcastReceiver;
+    private View tvNoNetworkConnection;
 
     /**
      * Initialize or reinitialize the Presenter layer.  This must be
@@ -70,6 +79,8 @@ public abstract class ActivityBase<RequiredViewOps,
             // Propagate this as a runtime exception.
             throw new RuntimeException(e);
         }
+
+        setupNoNetworkUtility();
     }
 
     /**
@@ -157,8 +168,32 @@ public abstract class ActivityBase<RequiredViewOps,
     protected void onDestroy() {
         mPresenterInstance.onDestroy(isChangingConfigurations());
 
+        if (mNetworkBroadcastReceiver != null) {
+            NetworkBroadcastReceiverUtils.unregister(getActivityContext(), mNetworkBroadcastReceiver);
+            mNetworkBroadcastReceiver = null;
+        }
+
         super.onDestroy();
     }
+
+    private void setupNoNetworkUtility() {
+
+        mNetworkBroadcastReceiver = NetworkBroadcastReceiverUtils.register(getActivityContext(), iNetworkListener);
+
+        tvNoNetworkConnection = findViewById(R.id.tv_no_network_connection);
+
+        ViewUtils.setHeightDp(this, tvNoNetworkConnection,
+                NetworkUtils.isNetworkAvailable(this)? 0 : 20);
+    }
+
+    private NetworkBroadcastReceiverUtils.INetworkBroadcastReceiver iNetworkListener
+            = new NetworkBroadcastReceiverUtils.INetworkBroadcastReceiver() {
+        @Override
+        public void setNetworkAvailable(boolean isNetworkAvailable) {
+            ViewUtils.setHeightDpAnim(getApplicationContext(), tvNoNetworkConnection,
+                    NetworkUtils.isNetworkAvailable(getActivityContext())? 0 : 20);
+        }
+    };
 
     /**
      * Return the Activity context.

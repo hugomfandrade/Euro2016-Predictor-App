@@ -41,6 +41,7 @@ public class MobileServiceData implements Parcelable {
     public static final int LEAVE_LEAGUE = 22;
     public static final int FETCH_MORE_USERS = 23;
     public static final int FETCH_RANK_OF_USER = 24;
+    public static final int LOGOUT = 25;
 
     public static final int REQUEST_RESULT_FAILURE = 0;
     public static final int REQUEST_RESULT_SUCCESS = 1;

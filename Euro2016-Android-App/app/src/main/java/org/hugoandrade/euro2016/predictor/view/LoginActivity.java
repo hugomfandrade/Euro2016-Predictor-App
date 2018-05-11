@@ -1,10 +1,10 @@
 package org.hugoandrade.euro2016.predictor.view;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.design.widget.Snackbar;
 import android.view.View;
 import android.widget.EditText;
@@ -18,7 +18,10 @@ import org.hugoandrade.euro2016.predictor.R;
 import org.hugoandrade.euro2016.predictor.common.SplashScreenAnimation;
 import org.hugoandrade.euro2016.predictor.data.raw.LoginData;
 import org.hugoandrade.euro2016.predictor.presenter.LoginPresenter;
+import org.hugoandrade.euro2016.predictor.utils.NetworkBroadcastReceiverUtils;
+import org.hugoandrade.euro2016.predictor.utils.NetworkUtils;
 import org.hugoandrade.euro2016.predictor.utils.SharedPreferencesUtils;
+import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
 
 public class LoginActivity extends ActivityBase<MVP.RequiredLoginViewOps,
                                                 MVP.ProvidedLoginPresenterOps,
@@ -53,14 +56,6 @@ public class LoginActivity extends ActivityBase<MVP.RequiredLoginViewOps,
 
         initializeUI();
 
-        // run a thread after SPLASH_DURATION seconds to start the home screen
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mSplashScreenAnimation.stopHold();
-            }
-        }, SPLASH_DURATION);// run a thread after SPLASH_DURATION seconds to start the home screen
-
         super.onCreate(LoginPresenter.class, this);
     }
 
@@ -92,11 +87,6 @@ public class LoginActivity extends ActivityBase<MVP.RequiredLoginViewOps,
                 .withEndAction(this)
                 .start(true);
 
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
     }
 
     @Override
@@ -144,6 +134,13 @@ public class LoginActivity extends ActivityBase<MVP.RequiredLoginViewOps,
     @Override
     public void finishApp() {
         finish();
+    }
+
+    @Override
+    public void stopHoldingSplashScreenAnimation() {
+        if (mSplashScreenAnimation != null) {
+            mSplashScreenAnimation.stopHold();
+        }
     }
 
     private View.OnClickListener loginClickListener = new View.OnClickListener() {

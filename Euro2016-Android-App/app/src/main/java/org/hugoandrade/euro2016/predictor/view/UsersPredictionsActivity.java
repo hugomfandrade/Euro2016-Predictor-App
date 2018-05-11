@@ -2,6 +2,8 @@ package org.hugoandrade.euro2016.predictor.view;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -9,6 +11,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -21,12 +24,10 @@ import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
 import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils;
+import org.hugoandrade.euro2016.predictor.view.dialog.FilterPopup;
 import org.hugoandrade.euro2016.predictor.view.listadapter.PredictionListAdapter;
 
-public class UsersPredictionsActivity extends AppCompatActivity {
-
-    @SuppressWarnings("unused")
-    private final String TAG = getClass().getSimpleName();
+public class UsersPredictionsActivity extends SimpleActivityBase {
 
     private static final String INTENT_EXTRA_USER = "intent_extra_user";
     private static final String INTENT_EXTRA_PREDICTION_LIST = "intent_extra_prediction_list";
@@ -40,6 +41,8 @@ public class UsersPredictionsActivity extends AppCompatActivity {
     private TextView tvFilterText;
     private RecyclerView rvPredictions;
     private PredictionListAdapter mPredictionsAdapter;
+    private ImageView ivFilterPrevious;
+    private ImageView ivFilterNext;
 
     public static Intent makeIntent(Context context,
                                     User selectedUser,
@@ -68,17 +71,6 @@ public class UsersPredictionsActivity extends AppCompatActivity {
         initializeUI();
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-                return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
     private void initializeUI() {
 
         setContentView(R.layout.activity_user_predictions);
@@ -91,14 +83,27 @@ public class UsersPredictionsActivity extends AppCompatActivity {
         }
 
         tvFilterText = findViewById(R.id.tv_filter_title);
-        View ivFilterNext = findViewById(R.id.iv_filter_next);
+        View filterTextHeader = findViewById(R.id.viewGroup_prediction_header);
+        filterTextHeader.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FilterPopup popup = new FilterPopup(v, mPredictionFilter, currentFilter);
+                popup.setOnFilterItemClickedListener(new FilterPopup.OnFilterItemClickedListener() {
+                    @Override
+                    public void onFilterItemClicked(int position) {
+                        setupFilter(position);
+                    }
+                });
+            }
+        });
+        ivFilterNext = findViewById(R.id.iv_filter_next);
         ivFilterNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 filterNext();
             }
         });
-        View ivFilterPrevious = findViewById(R.id.iv_filter_previous);
+        ivFilterPrevious = findViewById(R.id.iv_filter_previous);
         ivFilterPrevious.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -114,7 +119,7 @@ public class UsersPredictionsActivity extends AppCompatActivity {
         rvPredictions.setAdapter(mPredictionsAdapter);
         rvPredictions.scrollToPosition(getStartingItemPosition());
 
-        setupFilter();
+        setupFilterUI();
     }
 
     private List<String> buildPredictionFilter() {
@@ -130,36 +135,57 @@ public class UsersPredictionsActivity extends AppCompatActivity {
         return predictionFilter;
     }
 
-    private void setupFilter() {
-        List<Match> mMatchList = GlobalData.getInstance().getMatchList();
+    private void setupFilter(int position) {
+        currentFilter = position;
+        setupFilterUI();
+    }
+
+    private void filterNext() {
+        if ((currentFilter + 1) < mPredictionFilter.size()) {
+            setupFilter(currentFilter + 1);
+        }
+    }
+
+    private void filterPrevious() {
+        if (currentFilter != 0) {
+            setupFilter(currentFilter - 1);
+        }
+    }
+
+    private void setupFilterUI() {
+        int colorMain = getResources().getColor(R.color.colorMain);
+        ivFilterPrevious.getDrawable().setColorFilter(colorMain, PorterDuff.Mode.SRC_ATOP);
+        ivFilterNext.getDrawable().setColorFilter(colorMain, PorterDuff.Mode.SRC_ATOP);
         tvFilterText.setText(mPredictionFilter.get(currentFilter));
         List<Match> matchList = new ArrayList<>();
         int startingPosition = 0;
         switch (currentFilter) {
             case 0:
-                matchList = mMatchList;
+                ivFilterPrevious.getDrawable().setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_ATOP);
+                matchList = GlobalData.getInstance().getMatchList();
                 startingPosition = getStartingItemPosition();
                 break;
             case 1:
-                matchList = MatchUtils.getMatchList(mMatchList, StaticVariableUtils.SStage.groupStage, 1);
+                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.groupStage, 1);
                 break;
             case 2:
-                matchList = MatchUtils.getMatchList(mMatchList, StaticVariableUtils.SStage.groupStage, 2);
+                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.groupStage, 2);
                 break;
             case 3:
-                matchList = MatchUtils.getMatchList(mMatchList, StaticVariableUtils.SStage.groupStage, 3);
+                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.groupStage, 3);
                 break;
             case 4:
-                matchList = MatchUtils.getMatchList(mMatchList, StaticVariableUtils.SStage.roundOf16);
+                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.roundOf16);
                 break;
             case 5:
-                matchList = MatchUtils.getMatchList(mMatchList, StaticVariableUtils.SStage.quarterFinals);
+                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.quarterFinals);
                 break;
             case 6:
-                matchList = MatchUtils.getMatchList(mMatchList, StaticVariableUtils.SStage.semiFinals);
+                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.semiFinals);
                 break;
             case 7:
-                matchList = MatchUtils.getMatchList(mMatchList, StaticVariableUtils.SStage.finals);
+                ivFilterNext.getDrawable().setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_ATOP);
+                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.finals);
                 break;
         }
 
@@ -173,20 +199,6 @@ public class UsersPredictionsActivity extends AppCompatActivity {
                         new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
             }
             rvPredictions.scrollToPosition(startingPosition);
-        }
-    }
-
-    private void filterNext() {
-        if ((currentFilter + 1) < mPredictionFilter.size()) {
-            currentFilter = currentFilter + 1;
-            setupFilter();
-        }
-    }
-
-    private void filterPrevious() {
-        if (currentFilter != 0) {
-            currentFilter = currentFilter - 1;
-            setupFilter();
         }
     }
 

@@ -32,7 +32,7 @@
         <activity
             android:name=".view.SignUpActivity"
             android:configChanges="orientation|screenSize"
-            android:windowSoftInputMode="stateAlwaysVisible"/>
+            android:windowSoftInputMode="stateAlwaysVisible|adjustResize"/>
         <activity
             android:name=".view.LoginActivity"
             android:configChanges="orientation|screenSize"

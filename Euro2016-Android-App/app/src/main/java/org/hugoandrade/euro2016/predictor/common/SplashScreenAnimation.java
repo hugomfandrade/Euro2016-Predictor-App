@@ -47,7 +47,7 @@ public class SplashScreenAnimation {
     }
 
     private void start(boolean hold) {
-        isHolding = !hold;
+        isHolding = hold;
 
         start();
     }

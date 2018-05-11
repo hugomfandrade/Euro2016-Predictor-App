@@ -25,7 +25,7 @@ import org.hugoandrade.euro2016.predictor.view.listadapter.KnockoutListAdapter;
 import java.util.List;
 import java.util.Locale;
 
-public class CountryDetailsActivity extends AppCompatActivity {
+public class CountryDetailsActivity extends SimpleActivityBase {
 
     @SuppressWarnings("unused")
     private final String TAG = CountryDetailsActivity.class.getSimpleName();
@@ -46,8 +46,6 @@ public class CountryDetailsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_country_details);
-
         if (getIntent() != null && getIntent().getExtras() != null) {
 
             Country country = getIntent().getParcelableExtra(INTENT_EXTRA_COUNTRY);
@@ -63,18 +61,9 @@ public class CountryDetailsActivity extends AppCompatActivity {
         initializeUI();
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-                return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
     private void initializeUI() {
+
+        setContentView(R.layout.activity_country_details);
 
         setSupportActionBar((Toolbar) findViewById(R.id.anim_toolbar));
 
