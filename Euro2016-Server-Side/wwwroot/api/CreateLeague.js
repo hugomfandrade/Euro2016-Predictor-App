@@ -18,7 +18,7 @@ module.exports = {
             return res.status(400).send('You do not have permission to create League with such AdminID');
         }
 		
-		return doesLeagueExist(azureMobile, item).then(function () {
+		//return doesLeagueExist(azureMobile, item).then(function () {
             
             return isInLessThanMaxNumberOfLeagues(azureMobile, item).then(function () {
             
@@ -40,14 +40,14 @@ module.exports = {
         			    });
     			    });
                 });
-            });
+            //});
         }).catch(function(error) {
             return res.status(400).send(error.message);
 		});
     }]
 }
 
-function doesLeagueExist(azureMobile, item) {
+/*function doesLeagueExist(azureMobile, item) {
     
     var query = 'SELECT * FROM League l'
                 + ' WHERE l.Name = \'' + item.Name + '\''
@@ -61,7 +61,7 @@ function doesLeagueExist(azureMobile, item) {
             throw new Error("League with name \'" + item.Name + "\' already exists.");
         }
     });
-};
+};/**/
 
 function isInLessThanMaxNumberOfLeagues(azureMobile, item) {
     

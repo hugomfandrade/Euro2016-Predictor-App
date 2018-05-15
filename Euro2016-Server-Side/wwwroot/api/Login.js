@@ -24,8 +24,8 @@ module.exports = {
 				
 				var userID = account.id;
 				var expiry = new Date(new Date().setTime(new Date().getTime() + 1000 * 60 *
-					10
-				));// 10minute
+					60
+				));// 60minute
 				var mKey = process.env['MS_MasterKey'];
 				var token = zumoJwt(expiry, aud, userID, mKey);
 		

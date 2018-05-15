@@ -27,8 +27,10 @@ function buildReadQuery(query) {
 	var mainQuery =
           'SELECT DISTINCT l.id, l.Name, l.AdminID, l.Code, t.NumberOfMembers'
 		+ ' FROM League l'
-		+ ' INNER JOIN (SELECT LeagueID, COUNT(*) AS NumberOfMembers FROM LeagueUser WHERE LeagueUser.deleted = \'false\' GROUP BY LeagueID) AS t'
-		+ ' ON l.id = t.LeagueID AND l.deleted = \'false\''
+		+ ' INNER JOIN (SELECT LeagueID AS lLeagueID, COUNT(*) AS NumberOfMembers FROM LeagueUser WHERE LeagueUser.deleted = \'false\' GROUP BY LeagueID) AS t'
+		+ ' ON l.id = t.lLeagueID AND l.deleted = \'false\''
+		//+ ' INNER JOIN (SELECT LeagueID, COUNT(*) AS NumberOfMembers FROM LeagueUser WHERE LeagueUser.deleted = \'false\' GROUP BY LeagueID) AS t'
+		//+ ' ON l.id = t.LeagueID AND l.deleted = \'false\''
 		+ ' INNER JOIN LeagueUser lu ON l.id = lu.LeagueID AND lu.deleted = \'false\''
 		+ ' ' + BuildQuery.getFullWhere(query.$filter, null)
         + ' GROUP BY l.id, l.Name, l.AdminID, l.Code, t.NumberOfMembers'

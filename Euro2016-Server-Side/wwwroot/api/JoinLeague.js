@@ -48,7 +48,7 @@ function doesLeagueExist(azureMobile, item) {
             return leagues[0];
         }
         else {
-            throw new Error("League with code \'" + item.Code + "\' does not exists.");
+            throw new Error("League with code \'" + item.Code + "\' does not exist.");
         }
     });
 };
