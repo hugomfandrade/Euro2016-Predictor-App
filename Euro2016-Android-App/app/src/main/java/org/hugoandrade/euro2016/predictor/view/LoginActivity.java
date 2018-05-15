@@ -67,6 +67,7 @@ public class LoginActivity extends ActivityBase<MVP.RequiredLoginViewOps,
     }
 
     private void initializeUI() {
+
         setContentView(R.layout.activity_login);
 
         tryAgainContainer = findViewById(R.id.try_again_container);
@@ -128,7 +129,7 @@ public class LoginActivity extends ActivityBase<MVP.RequiredLoginViewOps,
             }
         });
 
-        mSplashScreenAnimation = SplashScreenAnimation.Builder.instance(ivLogoSplash, ivLogo)
+        mSplashScreenAnimation =SplashScreenAnimation.Builder.instance(ivLogoSplash, ivLogo)
                 .setAppearingViews(tvSignUp, etUsername, etPassword, btLogin, llInputFields)
                 .setSplashDuration(SPLASH_DURATION)
                 .setAnimationDuration(ANIMATION_DURATION)
@@ -165,6 +166,8 @@ public class LoginActivity extends ActivityBase<MVP.RequiredLoginViewOps,
 
         etUsername.setText(data.getEmail());
         etPassword.setText(data.getPassword());
+
+        areLoginInputFieldsValid();
     }
 
     @Override
@@ -198,7 +201,7 @@ public class LoginActivity extends ActivityBase<MVP.RequiredLoginViewOps,
     public void showAppStateDisabledMessage() {
         appStateContainer.setVisibility(View.VISIBLE);
         tvAppStateMessage.setText(getString(R.string.app_state_unavailable_updating_scores));
-        tvAppStateMessageDetails.setText(getString(R.string.app_state_unavailable_details));
+        tvAppStateMessageDetails.setText(getString(R.string.app_state_unavailable_come_back_later));
         tvAppStateMessageDetails.setVisibility(View.VISIBLE);
         tryAgainContainer.setVisibility(View.GONE);
     }
@@ -208,7 +211,6 @@ public class LoginActivity extends ActivityBase<MVP.RequiredLoginViewOps,
         appStateContainer.setVisibility(View.VISIBLE);
         tvAppStateMessage.setText(getString(R.string.app_state_error));
         tvAppStateMessageDetails.setText(getString(R.string.app_state_unavailable_details));
-        tvAppStateMessageDetails.setVisibility(View.GONE);
         tryAgainContainer.setVisibility(View.VISIBLE);
         tvTryAgain.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -262,6 +264,9 @@ public class LoginActivity extends ActivityBase<MVP.RequiredLoginViewOps,
                         etUsername.getText().toString(),
                         etPassword.getText().toString());
             }
+
+            ViewUtils.hideSoftKeyboardAndClearFocus(etUsername);
+            ViewUtils.hideSoftKeyboardAndClearFocus(etPassword);
             return;
         }
 

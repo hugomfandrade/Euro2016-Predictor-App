@@ -703,7 +703,7 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
             return callback;
 
         if (!mIsNetworkAvailable) {
-            callback.set(buildNetworkFailureMessage(MobileServiceData.INSERT_PREDICTION)
+            callback.set(buildNetworkFailureMessage(MobileServiceData.FETCH_MORE_USERS)
                     .setLeagueUserList(new ArrayList<LeagueUser>())
                     .setString(leagueID)
                     .create());
@@ -748,6 +748,158 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
         return callback;
     }
 
+    public MobileServiceCallback fetchMoreUsers(final String leagueID, int skip, int top,
+                                                int minMatchNumber, int maxMatchNumber) {
+        final MobileServiceCallback callback = new MobileServiceCallback();
+
+        if (CloudDatabaseSimAdapter.getInstance().fetchMoreUsers(callback, leagueID, skip, top))
+            return callback;
+
+        if (!mIsNetworkAvailable) {
+            callback.set(buildNetworkFailureMessage(MobileServiceData.FETCH_MORE_USERS_BY_STAGE)
+                    .setLeagueUserList(new ArrayList<LeagueUser>())
+                    .setString(leagueID)
+                    .create());
+            return callback;
+        }
+
+        MobileServiceJsonTableHelper t = MobileServiceJsonTableHelper
+                .instance(User.Entry.TABLE_NAME, mClient);
+
+        if (!LeagueWrapper.OVERALL_ID.equals(leagueID))
+            t.parameters(LeagueUser.Entry.Cols.LEAGUE_ID, leagueID);
+
+        t.parameters(League.Entry.Cols.MIN_MATCH_NUMBER, String.valueOf(minMatchNumber));
+        t.parameters(League.Entry.Cols.MAX_MATCH_NUMBER, String.valueOf(maxMatchNumber));
+
+        ListenableFuture<JsonElement> i = t
+                .top(top)
+                .skip(skip)
+                .orderBy(User.Entry.Cols.SCORE, QueryOrder.Descending)
+                .execute();
+        Futures.addCallback(i, new FutureCallback<JsonElement>() {
+            @Override
+            public void onSuccess(JsonElement jsonElement) {
+
+                Log.e(TAG, "fetchMoreUsersByStage::" + jsonElement.toString());
+                callback.set(MobileServiceData.Builder
+                        .instance(MobileServiceData.FETCH_MORE_USERS_BY_STAGE, MobileServiceData.REQUEST_RESULT_SUCCESS)
+                        .setLeagueUserList(parser.parseLeagueUserList(jsonElement))
+                        .setString(leagueID)
+                        .create());
+            }
+
+            @Override
+            public void onFailure(@NonNull Throwable throwable) {
+                Log.e(TAG, "fetchMoreUsersByStage::error::" + throwable.toString());
+                callback.set(MobileServiceData.Builder
+                        .instance(MobileServiceData.FETCH_MORE_USERS_BY_STAGE, MobileServiceData.REQUEST_RESULT_FAILURE)
+                        .setLeagueUserList(new ArrayList<LeagueUser>())
+                        .setString(leagueID)
+                        .setMessage(throwable.getMessage())
+                        .create());
+            }
+        });
+
+        return callback;
+    }
+
+    public MobileServiceCallback fetchUsers(final String leagueID, final String userID, int skip, int top,
+                                            final int minMatchNumber, final int maxMatchNumber) {
+        final MobileServiceCallback callback = new MobileServiceCallback();
+
+        if (CloudDatabaseSimAdapter.getInstance().fetchMoreUsers(callback, leagueID, skip, top))
+            return callback;
+
+        if (!mIsNetworkAvailable) {
+            callback.set(buildNetworkFailureMessage(MobileServiceData.FETCH_USERS_BY_STAGE)
+                    .setLeagueUserList(new ArrayList<LeagueUser>())
+                    .setString(leagueID)
+                    .create());
+            return callback;
+        }
+
+        ListenableFuture<JsonElement> i = MobileServiceJsonTableHelper
+                .instance(League.Entry.TABLE_NAME, mClient)
+                .where().field(LeagueUser.Entry.Cols.USER_ID).eq(userID)
+                .and().field(LeagueUser.Entry.Cols.LEAGUE_ID).eq(leagueID)
+                .execute();
+        Futures.addCallback(i, new FutureCallback<JsonElement>() {
+
+            private LeagueWrapper leagueWrapper;
+
+            @Override
+            public void onSuccess(JsonElement jsonElement) {
+                Log.e(TAG, "getLeague::" + jsonElement.toString());
+
+                List<League> leagueList = parser.parseLeagueList(jsonElement);
+
+                if (leagueList == null || leagueList.size() == 0) {
+                    sendErrorMessage(callback, MobileServiceData.FETCH_USERS_BY_STAGE, "No League found!!!");
+                    return;
+                }
+                League league = leagueList.get(0);
+
+                final MultipleCloudStatus n = new MultipleCloudStatus(2);
+                final Object syncObj = new Object();
+
+                leagueWrapper = new LeagueWrapper(league);
+
+                MobileServiceCallback c = fetchMoreUsers(league.getID(), 0, 5, minMatchNumber, maxMatchNumber);
+                MobileServiceCallback.addCallback(c, new MobileServiceCallback.OnResult() {
+                    @Override
+                    public void onResult(MobileServiceData data) {
+                        synchronized (syncObj) {
+                            Log.e(TAG, "iCountries finished");
+
+                            if (n.isAborted()) return; // An error occurred
+                            n.operationCompleted();
+
+                            leagueWrapper.setLeagueUserList(data.getLeagueUserList());
+
+                            if (n.isFinished())
+                                tryOnFinished();
+                        }
+                    }
+                });
+
+                MobileServiceCallback i = fetchRankOfUser(leagueWrapper.getLeague().getID(), userID, minMatchNumber, maxMatchNumber);
+                MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
+                    @Override
+                    public void onResult(MobileServiceData data) {
+                        synchronized (syncObj) {
+
+                            if (n.isAborted()) return; // An error occurred
+                            n.operationCompleted();
+
+                            List<LeagueUser> leagueUserList = data.getLeagueUserList();
+                            if (leagueUserList.size() == 1)
+                                leagueWrapper.setMainUser(leagueUserList.get(0));
+
+                            if (n.isFinished())
+                                tryOnFinished();
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(@NonNull Throwable throwable) {
+                Log.e(TAG, "getLeague::" + throwable.getMessage());
+                sendErrorMessage(callback, MobileServiceData.FETCH_USERS_BY_STAGE, throwable.getMessage());
+            }
+
+            private void tryOnFinished() {
+                callback.set(MobileServiceData.Builder
+                        .instance(MobileServiceData.FETCH_USERS_BY_STAGE, MobileServiceData.REQUEST_RESULT_SUCCESS)
+                        .setLeagueWrapper(leagueWrapper)
+                        .create());
+            }
+        });
+
+        return callback;
+    }
+
     public MobileServiceCallback fetchRankOfUser(final String leagueID, String userID) {
         final MobileServiceCallback callback = new MobileServiceCallback();
 
@@ -767,6 +919,60 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
 
         if (!LeagueWrapper.OVERALL_ID.equals(leagueID))
             t.parameters(LeagueUser.Entry.Cols.LEAGUE_ID, leagueID);
+
+        ListenableFuture<JsonElement> i = t
+                //.orderBy(User.Entry.Cols.SCORE, QueryOrder.Descending)
+                .where().field(User.Entry.Cols.ID).eq(userID)
+                .execute();
+        Futures.addCallback(i, new FutureCallback<JsonElement>() {
+            @Override
+            public void onSuccess(JsonElement jsonElement) {
+                Log.e(TAG, "fetchRankOfUser::" + jsonElement.toString());
+                callback.set(MobileServiceData.Builder
+                        .instance(MobileServiceData.FETCH_RANK_OF_USER, MobileServiceData.REQUEST_RESULT_SUCCESS)
+                        .setLeagueUserList(parser.parseLeagueUserList(jsonElement))
+                        .setString(leagueID)
+                        .create());
+            }
+
+            @Override
+            public void onFailure(@NonNull Throwable throwable) {
+                Log.e(TAG, "fetchRankOfUser::error::" + throwable.toString());
+                callback.set(MobileServiceData.Builder
+                        .instance(MobileServiceData.FETCH_RANK_OF_USER, MobileServiceData.REQUEST_RESULT_FAILURE)
+                        .setLeagueUserList(new ArrayList<LeagueUser>())
+                        .setString(leagueID)
+                        .setMessage(throwable.getMessage())
+                        .create());
+            }
+        });
+
+        return callback;
+    }
+
+    public MobileServiceCallback fetchRankOfUser(final String leagueID, String userID,
+                                                 int minMatchNumber, int maxMatchNumber) {
+        final MobileServiceCallback callback = new MobileServiceCallback();
+
+        if (CloudDatabaseSimAdapter.getInstance().fetchRankOfUser(callback, leagueID, userID))
+            return callback;
+
+        if (!mIsNetworkAvailable) {
+            callback.set(buildNetworkFailureMessage(MobileServiceData.INSERT_PREDICTION)
+                    .setLeagueUserList(new ArrayList<LeagueUser>())
+                    .setString(leagueID)
+                    .create());
+            return callback;
+        }
+
+        MobileServiceJsonTableHelper t = MobileServiceJsonTableHelper
+                .instance(User.Entry.TABLE_NAME, mClient);
+
+        if (!LeagueWrapper.OVERALL_ID.equals(leagueID))
+            t.parameters(LeagueUser.Entry.Cols.LEAGUE_ID, leagueID);
+
+        t.parameters(League.Entry.Cols.MIN_MATCH_NUMBER, String.valueOf(minMatchNumber));
+        t.parameters(League.Entry.Cols.MAX_MATCH_NUMBER, String.valueOf(maxMatchNumber));
 
         ListenableFuture<JsonElement> i = t
                 //.orderBy(User.Entry.Cols.SCORE, QueryOrder.Descending)

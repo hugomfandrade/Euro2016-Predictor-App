@@ -66,6 +66,8 @@ public class MobileClientData implements Parcelable {
         DELETE_LEAGUE,
         LEAVE_LEAGUE,
         FETCH_MORE_USERS,
+        FETCH_USERS_BY_STAGE,
+        FETCH_MORE_USERS_BY_STAGE,
     }
 
     /**

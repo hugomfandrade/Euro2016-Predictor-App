@@ -75,21 +75,20 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
     public void notifyServiceIsBound() {
         mServiceManager = new ServiceManager(getModel().getService());
         getView().notifyServiceIsBound();
-        getView().disableUI();
 
         getInfo();
     }
 
-    public void onInfoFetched(boolean isOk, String message) {
+    private void onInfoFetched(boolean isOk, String message) {
         onInfoFetched(isOk, message, null, null, null, null);
     }
 
-    public void onInfoFetched(boolean isOk,
-                              String message,
-                              List<Country> countryList,
-                              List<Match> matchList,
-                              List<Prediction> predictionList,
-                              List<LeagueWrapper> leagueWrapperList) {
+    private void onInfoFetched(boolean isOk,
+                               String message,
+                               List<Country> countryList,
+                               List<Match> matchList,
+                               List<Prediction> predictionList,
+                               List<LeagueWrapper> leagueWrapperList) {
 
         if (isOk) {
 
@@ -160,7 +159,7 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
         getView().enableUI();
     }
 
-    public void onLatestPerformanceFetched(boolean operationResult,
+    private void onLatestPerformanceFetched(boolean operationResult,
                                            String message,
                                            List<User> userList,
                                            List<Prediction> predictionList) {
@@ -245,8 +244,6 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
             return;
         }
 
-        getView().disableUI();
-
         if (getMobileClientService() == null) {
             onInfoFetched(false, ErrorMessageUtils.genNotBoundMessage());
             return;
@@ -254,9 +251,11 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
 
         try {
             getMobileClientService().getInfo(GlobalData.getInstance().user.getID());
+
+            getView().disableUI();
         } catch (RemoteException e) {
             e.printStackTrace();
-            onInfoFetched(false, "Error sending message");
+            onInfoFetched(false, ErrorMessageUtils.genErrorSendingMessage());
         }
     }
 
@@ -270,7 +269,7 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
             getMobileClientService().getLatestPerformanceOfUsers(userList, firstMatchNumber, lastMatchNumber);
         } catch (RemoteException e) {
             e.printStackTrace();
-            onLatestPerformanceFetched(false, "Error sending message", null, null);
+            onLatestPerformanceFetched(false, ErrorMessageUtils.genErrorSendingMessage(), null, null);
         }
     }
 
@@ -297,21 +296,5 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
                     data.getUserList(),
                     data.getPredictionList());
         }
-    }
-
-    /**
-     * Return the Activity context.
-     */
-    @Override
-    public Context getActivityContext() {
-        return getView().getActivityContext();
-    }
-
-    /**
-     * Return the Application context.
-     */
-    @Override
-    public Context getApplicationContext() {
-        return getView().getApplicationContext();
     }
 }

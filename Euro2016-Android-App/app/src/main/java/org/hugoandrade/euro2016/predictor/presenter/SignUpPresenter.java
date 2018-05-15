@@ -29,8 +29,6 @@ public class SignUpPresenter extends MobileClientPresenterBase<MVP.RequiredSignU
     @Override
     public void registerUser(String username, String password, String confirmPassword) {
 
-        getView().disableUI();
-
         if (getMobileClientService() == null) {
             signUpOperationResult(false, ErrorMessageUtils.genNotBoundMessage(), null);
             return;
@@ -38,9 +36,11 @@ public class SignUpPresenter extends MobileClientPresenterBase<MVP.RequiredSignU
 
         try {
             getMobileClientService().signUp(new LoginData(username, password));
+
+            getView().disableUI();
         } catch (RemoteException e) {
             e.printStackTrace();
-            signUpOperationResult(false, "Error sending message", null);
+            signUpOperationResult(false, ErrorMessageUtils.genErrorSendingMessage(), null);
         }
     }
 

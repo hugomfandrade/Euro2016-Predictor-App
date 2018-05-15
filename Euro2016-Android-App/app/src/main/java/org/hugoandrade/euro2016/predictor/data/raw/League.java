@@ -25,6 +25,8 @@ public class League implements Parcelable {
             public static final String ADMIN_ID = "AdminID";
             public static final String CODE = "Code";
             public static final String NUMBER_OF_MEMBERS = "NumberOfMembers";
+            public static final String MIN_MATCH_NUMBER = "MinMatchNumber";
+            public static final String MAX_MATCH_NUMBER = "MaxMatchNumber";
 
             public static final String USER_ID = "UserID";
         }

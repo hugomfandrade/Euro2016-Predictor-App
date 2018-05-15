@@ -41,4 +41,8 @@ interface IMobileClientService {
     void deleteLeague(in String userID, in String leagueID);
 
     void fetchMoreUsers(in String leagueID, int skip, int top);
+
+    void fetchUsersByStage(in String leagueID, String userID, int skip, int top, int stage, int minMatchNumber, int maxMatchNumber);
+
+    void fetchMoreUsersByStage(in String leagueID, int skip, int top, int stage, int minMatchNumber, int maxMatchNumber);
 }

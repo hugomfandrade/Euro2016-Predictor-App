@@ -46,6 +46,8 @@ public class GlobalData {
     private List<LeagueWrapper> mLeagueWrapperList = new ArrayList<>();
     private Map<String, List<Prediction>> mLatestPerformanceMap = new HashMap<>();
 
+    // LeagueID, Map Stage - LeagueWrapper
+    private Map<String, SparseArray<LeagueWrapper>> mLeagueWrapperMap = new HashMap<>();
     // UserID, list of matches whose predictions where fetched
     //private Map<String, SparseIntArray> mPredictionOfUserMap = new HashMap<>();
     // UserID, Map MatchNumber - predictions
@@ -78,7 +80,8 @@ public class GlobalData {
             clear(mInstance.mCountryList,
                     mInstance.mMatchList,
                     mInstance.mPredictionList,
-                    mInstance.mLeagueWrapperList);
+                    mInstance.mLeagueWrapperList
+            );
 
             clear(mInstance.mOnMatchesChangedListenerSet,
                     mInstance.mOnCountriesChangedListenerSet,
@@ -88,6 +91,7 @@ public class GlobalData {
 
             clear(mInstance.mLatestPerformanceMap,
                     //mInstance.mPredictionOfUserMap,
+                    mInstance.mLeagueWrapperMap,
                     mInstance.mMatchPredictionMap);
 
         } catch (IllegalStateException e) {
@@ -112,10 +116,21 @@ public class GlobalData {
     }
 
     public void setLeagues(List<LeagueWrapper> leagueWrapperList) {
+
         mLeagueWrapperList = leagueWrapperList;
+
         if (mLeagueWrapperList == null)
             mLeagueWrapperList = new ArrayList<>();
-        //mLeagueWrapperList.add(LeagueWrapper.createOverall(mUserList));
+        else {
+            for (LeagueWrapper leagueWrapper : leagueWrapperList) {
+
+                if (!mLeagueWrapperMap.containsKey(leagueWrapper.getLeague().getID())) {
+                    mLeagueWrapperMap.put(leagueWrapper.getLeague().getID(), new SparseArray<LeagueWrapper>());
+                }
+                mLeagueWrapperMap.get(leagueWrapper.getLeague().getID()).put(0, leagueWrapper);
+            }/**/
+            //mLeagueWrapperList.add(LeagueWrapper.createOverall(mUserList));
+        }
 
         for (OnLeaguesChangedListener listener : mOnLeaguesChangedListenerSet) {
             listener.onLeaguesChanged();
@@ -438,6 +453,61 @@ public class GlobalData {
 
     public boolean hasFetchedInfo() {
         return mHasFetchedInfo;
+    }
+
+    public void setLeagueWrapperByStage(LeagueWrapper leagueWrapper, int stage) {
+        if (leagueWrapper == null
+                || leagueWrapper.getLeague() == null
+                || leagueWrapper.getLeague().getID() == null) {
+            return;
+        }
+        String leagueID = leagueWrapper.getLeague().getID();
+        if (!mLeagueWrapperMap.containsKey(leagueID)) {
+            mLeagueWrapperMap.put(leagueID, new SparseArray<LeagueWrapper>());
+        }
+        mLeagueWrapperMap.get(leagueID).put(stage, leagueWrapper);
+    }
+
+    public void addUsersToLeagueByStage(String leagueID, List<LeagueUser> userList, int stage) {
+
+        if (!mLeagueWrapperMap.containsKey(leagueID) ||
+                mLeagueWrapperMap.get(leagueID).get(stage) == null) {
+            return;
+        }
+        LeagueWrapper leagueWrapper = mLeagueWrapperMap.get(leagueID).get(stage);
+
+        for (LeagueUser newUser : userList) {
+
+            boolean isUserOnList = false;
+            for (LeagueUser user : leagueWrapper.getLeagueUserList()) {
+                if (user.getUser().getID().equals(newUser.getUser().getID())) {
+                    isUserOnList = true;
+                    break;
+                }
+            }
+
+            if (!isUserOnList) {
+                leagueWrapper.getLeagueUserList().add(newUser);
+            }
+
+        }
+
+        Collections.sort(leagueWrapper.getLeagueUserList(), new Comparator<LeagueUser>() {
+            @Override
+            public int compare(LeagueUser o1, LeagueUser o2) {
+                return o1.getRank() - o2.getRank();
+            }
+        });
+    }
+
+    public LeagueWrapper getLeagueByStage(String leagueID, int stage) {
+
+        if (!mLeagueWrapperMap.containsKey(leagueID) ||
+                mLeagueWrapperMap.get(leagueID).get(stage) == null) {
+            return null;
+        }
+
+        return mLeagueWrapperMap.get(leagueID).get(stage);
     }
 
     public interface OnLatestPerformanceChangedListener {

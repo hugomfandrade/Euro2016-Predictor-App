@@ -111,7 +111,7 @@ public class LoginPresenter extends MobileClientPresenterBase<MVP.RequiredLoginV
             getMobileClientService().login(new LoginData(username, password));
         } catch (RemoteException e) {
             e.printStackTrace();
-            loginOperationResult(false, "Error sending message", null);
+            loginOperationResult(false, ErrorMessageUtils.genErrorSendingMessage(), null);
         }
     }
 
@@ -126,7 +126,7 @@ public class LoginPresenter extends MobileClientPresenterBase<MVP.RequiredLoginV
             getMobileClientService().getSystemData();
         } catch (RemoteException e) {
             e.printStackTrace();
-            getSystemDataOperationResult(false, "Error sending message", null);
+            getSystemDataOperationResult(false, ErrorMessageUtils.genErrorSendingMessage(), null);
         }
     }
 
@@ -201,12 +201,14 @@ public class LoginPresenter extends MobileClientPresenterBase<MVP.RequiredLoginV
             }
         }
         else {
-            android.util.Log.e(getClass().getSimpleName(), "system error::" + message);
-            getView().reportMessage(ErrorMessageUtils.handleErrorMessage(getActivityContext(), message));
 
             if (!NetworkUtils.isNetworkUnavailableError(getActivityContext(), message)) {
                 getView().showAppStateErrorGettingSystemDataMessage();
             }
+            /*else {
+                android.util.Log.e(getClass().getSimpleName(), "system error::" + message);
+                getView().reportMessage(ErrorMessageUtils.handleErrorMessage(getActivityContext(), message));
+            }/**/
         }
     }
 }

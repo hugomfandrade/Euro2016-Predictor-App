@@ -137,7 +137,7 @@ public class SignUpActivity extends ActivityBase<MVP.RequiredSignUpViewOps,
         String confirmPassword = etConfirmPassword.getText().toString().trim();
 
         if (!LoginUtils.isValid(email, password)
-                && !password.equals(confirmPassword)) {
+                || !password.equals(confirmPassword)) {
             btSignUp.setClickable(false);
             btSignUp.setBackgroundColor(Color.parseColor("#3d000000"));
         }

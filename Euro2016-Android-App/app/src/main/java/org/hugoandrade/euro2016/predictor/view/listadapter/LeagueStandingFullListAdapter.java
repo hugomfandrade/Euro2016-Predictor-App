@@ -44,6 +44,7 @@ public class LeagueStandingFullListAdapter extends RecyclerView.Adapter<LeagueSt
         else {
             user = mLeagueWrapper.getMainUser();
             if (user == null) user = new LeagueUser(GlobalData.getInstance().user, position + 1);
+            else android.util.Log.e(getClass().getSimpleName(), "FAILED MAIN USER!!");
         }
 
         holder.tvPosition.setText(String.valueOf(user.getRank()));
@@ -64,7 +65,6 @@ public class LeagueStandingFullListAdapter extends RecyclerView.Adapter<LeagueSt
             holder.ivMore.setVisibility(position == (getItemCount() - 1) ? View.VISIBLE : View.GONE);
         }
     }
-
 
     @Override
     public int getItemViewType(int position) {
@@ -96,6 +96,10 @@ public class LeagueStandingFullListAdapter extends RecyclerView.Adapter<LeagueSt
     public void set(LeagueWrapper leagueWrapper) {
         mLeagueWrapper = leagueWrapper;
         containsSelf = doesItContainSelf();
+    }
+
+    public LeagueWrapper get() {
+        return mLeagueWrapper ;
     }
 
     public void updateMoreButton() {

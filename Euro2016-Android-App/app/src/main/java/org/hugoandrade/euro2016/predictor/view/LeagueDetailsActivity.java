@@ -4,15 +4,15 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.MVP;
@@ -23,10 +23,10 @@ import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.presenter.LeagueDetailsPresenter;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
-import org.hugoandrade.euro2016.predictor.utils.SharedPreferencesUtils;
 import org.hugoandrade.euro2016.predictor.utils.StickyFooterUtils;
 import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
 import org.hugoandrade.euro2016.predictor.view.dialog.SimpleDialog;
+import org.hugoandrade.euro2016.predictor.view.helper.FilterWrapper;
 import org.hugoandrade.euro2016.predictor.view.listadapter.LeagueStandingFullListAdapter;
 
 import java.util.Collections;
@@ -39,9 +39,6 @@ public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDe
 
         implements MVP.RequiredLeagueDetailsViewOps {
 
-    @SuppressWarnings("unused")
-    private final String TAG = LeagueDetailsActivity.class.getSimpleName();
-
     private static final String INTENT_EXTRA_LEAGUE = "intent_extra_league";
 
     private LeagueWrapper mLeagueWrapper;
@@ -49,12 +46,11 @@ public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDe
     private NestedScrollView mScrollViewContainer;
     private LeagueStandingFullListAdapter leagueStandingListAdapter;
 
-    private TextView tvLeaveLeague;
-    private TextView tvLeaveLeagueFixed;
-    private TextView tvDeleteLeague;
-    private TextView tvDeleteLeagueFixed;
+    private TextView tvLatestMatch;
+    private TextView tvLatestMatchFixed;
 
     private View progressBar;
+    private int mSelectedStage = 0;
 
     public static Intent makeIntent(Context context, LeagueWrapper leagueWrapper) {
 
@@ -67,7 +63,6 @@ public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDe
         super.onCreate(savedInstanceState);
 
         if (getIntent() != null && getIntent().getExtras() != null) {
-
             mLeagueWrapper = getIntent().getParcelableExtra(INTENT_EXTRA_LEAGUE);
 
             initializeUI();
@@ -79,6 +74,35 @@ public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDe
         super.onCreate(LeagueDetailsPresenter.class, this);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_league_details, menu);
+
+
+        boolean isAdmin = GlobalData.getInstance().user.getID()
+                .equals(mLeagueWrapper.getLeague().getAdminID());
+
+        menu.findItem(R.id.action_delete_league).setVisible(isAdmin);
+        menu.findItem(R.id.action_leave_league).setVisible(!isAdmin);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_leave_league:
+                leaveLeague();
+                return true;
+            case R.id.action_delete_league:
+                deleteLeague();
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+
     private void initializeUI() {
 
         setContentView(R.layout.activity_league_details);
@@ -88,17 +112,28 @@ public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDe
         boolean isOverall = mLeagueWrapper.getLeague().getID().equals(LeagueWrapper.OVERALL_ID);
 
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle(isOverall? getString(R.string.app_name) : mLeagueWrapper.getLeague().getName());
+            getSupportActionBar().setTitle(getString(R.string.league));
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        int currentMatchNumber = MatchUtils.getMatchNumberOfFirstNotPlayedMatched(
-                GlobalData.getInstance().getMatchList(),
-                GlobalData.getInstance().getServerTime().getTime());
+        FilterWrapper.Builder.instance(this)
+                .setTheme(FilterWrapper.DARK)
+                .setFilterText(findViewById(R.id.tv_filter_title))
+                .setPreviousButton(findViewById(R.id.iv_filter_previous))
+                .setNextButton(findViewById(R.id.iv_filter_next))
+                .setListener(new FilterWrapper.OnFilterSelectedListener() {
+                    @Override
+                    public void onFilterSelected(int stage) {
+                        mSelectedStage = stage;
+                        getLeagueTopFive();
+                    }
+                })
+                .create();
 
         mScrollViewContainer = findViewById(R.id.nestedScrollView);
 
-        View tvLatestMatch = findViewById(R.id.tv_latest_match);
+        tvLatestMatch = findViewById(R.id.tv_latest_match);
+        tvLatestMatchFixed = findViewById(R.id.tv_latest_match_fixed);
 
         TextView tvLeagueName = findViewById(R.id.tv_league_name);
         TextView tvLeagueMembers = findViewById(R.id.tv_league_members);
@@ -125,8 +160,18 @@ public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDe
 
             @Override
             public void onMoreClicked() {
-                getPresenter().fetchMoreUsers(mLeagueWrapper.getLeague().getID(), mLeagueWrapper.getLeagueUserList().size());
+                if (mSelectedStage == 0) {
+                    getPresenter().fetchMoreUsers(mLeagueWrapper.getLeague().getID(), mLeagueWrapper.getLeagueUserList().size());
+                }
+                else {
 
+                    getPresenter().fetchMoreUsers(
+                            mLeagueWrapper.getLeague().getID(),
+                            leagueStandingListAdapter.get().getLeagueUserList().size(),
+                            mSelectedStage,
+                            getMinMatchNumber(mSelectedStage),
+                            getMaxMatchNumber(mSelectedStage));
+                }
             }
         });
 
@@ -136,29 +181,7 @@ public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDe
         rvLeagueStandings.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
         rvLeagueStandings.setAdapter(leagueStandingListAdapter);
 
-        tvLeaveLeague = findViewById(R.id.tv_leave_league);
-        tvLeaveLeagueFixed = findViewById(R.id.tv_leave_league_fixed);
-        tvDeleteLeague = findViewById(R.id.tv_delete_league);
-        tvDeleteLeagueFixed = findViewById(R.id.tv_delete_league_fixed);
-
         progressBar = findViewById(R.id.progressBar_waiting);
-
-        if (isOverall) {
-            tvLatestMatch.setVisibility(View.GONE);
-        }
-        else {
-            tvLatestMatch.setVisibility(currentMatchNumber <= 1 ? View.GONE : View.VISIBLE);
-            tvLatestMatch.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-
-                    startActivity(MatchPredictionActivity.makeIntent(
-                            LeagueDetailsActivity.this,
-                            mLeagueWrapper.getLeagueUserList(),
-                            mLeagueWrapper.getLeague().getName()));
-                }
-            });
-        }
 
         setupFooter();
     }
@@ -172,43 +195,33 @@ public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDe
 
     private void setupFooter() {
 
-        boolean isAdmin = GlobalData.getInstance().user.getID().equals(mLeagueWrapper.getLeague().getAdminID());
+        int currentMatchNumber = MatchUtils.getMatchNumberOfFirstNotPlayedMatched(
+                GlobalData.getInstance().getMatchList(),
+                GlobalData.getInstance().getServerTime().getTime());
+
         boolean isOverall = mLeagueWrapper.getLeague().getID().equals(LeagueWrapper.OVERALL_ID);
 
         if (isOverall) {
-            tvLeaveLeague.setVisibility(View.GONE);
-            tvLeaveLeagueFixed.setVisibility(View.GONE);
-            tvDeleteLeague.setVisibility(View.GONE);
-            tvDeleteLeagueFixed.setVisibility(View.GONE);
+            tvLatestMatch.setVisibility(View.GONE);
+            tvLatestMatchFixed.setVisibility(View.GONE);
         }
         else {
+            tvLatestMatch.setVisibility(currentMatchNumber <= 1 ? View.GONE : View.VISIBLE);
+            tvLatestMatchFixed.setVisibility(currentMatchNumber <= 1 ? View.GONE : View.VISIBLE);
+            View.OnClickListener listener = new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
 
-            if (isAdmin) {
-                View.OnClickListener mOnClickListener = new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        deleteLeague();
-                    }
-                };
-                StickyFooterUtils.initialize(mScrollViewContainer, tvDeleteLeague, tvDeleteLeagueFixed);
-                tvDeleteLeague.setOnClickListener(mOnClickListener);
-                tvDeleteLeagueFixed.setOnClickListener(mOnClickListener);
-                tvLeaveLeague.setVisibility(View.GONE);
-                tvLeaveLeagueFixed.setVisibility(View.GONE);
-            }
-            else {
-                View.OnClickListener mOnClickListener = new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        leaveLeague();
-                    }
-                };
-                StickyFooterUtils.initialize(mScrollViewContainer, tvLeaveLeague, tvLeaveLeagueFixed);
-                tvLeaveLeague.setOnClickListener(mOnClickListener);
-                tvLeaveLeagueFixed.setOnClickListener(mOnClickListener);
-                tvDeleteLeague.setVisibility(View.GONE);
-                tvDeleteLeagueFixed.setVisibility(View.GONE);
-            }
+                    startActivity(MatchPredictionActivity.makeIntent(
+                            LeagueDetailsActivity.this,
+                            mLeagueWrapper.getLeagueUserList(),
+                            mLeagueWrapper.getLeague().getName()));
+                }
+            };
+            tvLatestMatch.setOnClickListener(listener);
+            tvLatestMatchFixed.setOnClickListener(listener);
+            StickyFooterUtils.initialize(mScrollViewContainer, tvLatestMatch, tvLatestMatchFixed);
+            StickyFooterUtils.initialize(mScrollViewContainer, tvLatestMatch, tvLatestMatchFixed);
         }
     }
 
@@ -250,6 +263,24 @@ public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDe
         mLeaveLeagueDialog.show();
     }
 
+    private void getLeagueTopFive() {
+
+        LeagueWrapper leagueWrapper = GlobalData.getInstance()
+                .getLeagueByStage(mLeagueWrapper.getLeague().getID(), mSelectedStage);
+
+        if (leagueWrapper != null) {
+            leagueStandingListAdapter.set(leagueWrapper);
+            leagueStandingListAdapter.notifyDataSetChanged();
+            return;
+        }
+
+        getPresenter().fetchUsers(
+                mLeagueWrapper.getLeague().getID(),
+                mSelectedStage,
+                getMinMatchNumber(mSelectedStage),
+                getMaxMatchNumber(mSelectedStage));
+    }
+
     @Override
     public void disableUI() {
         progressBar.setVisibility(View.VISIBLE);
@@ -262,7 +293,6 @@ public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDe
 
     @Override
     public void reportMessage(String message) {
-        //Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_SHORT).show();
         ViewUtils.showToast(this, message);
     }
 
@@ -304,9 +334,66 @@ public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDe
     }
 
     @Override
+    public void updateListOfUsersByStage(int stage) {
+        LeagueWrapper leagueWrapper = GlobalData.getInstance()
+                .getLeagueByStage(mLeagueWrapper.getLeague().getID(), stage);
+        if (leagueWrapper == null)
+            leagueWrapper = new LeagueWrapper(null);
+        leagueStandingListAdapter.set(leagueWrapper);
+        leagueStandingListAdapter.notifyDataSetChanged();
+    }
+
+    @Override
     protected void logout() {
         getPresenter().logout();
 
         super.logout();
+    }
+
+    private int getMinMatchNumber(int stage) {
+
+        switch (stage) {
+            case 0:
+            case 1: // Matchday 1
+                return 1;
+            case 2: // Matchday 2
+                return 13;
+            case 3: // Matchday 3
+                return 25;
+            case 4: // Round of 16
+                return 37;
+            case 5: // QuarterFinals
+                return 45;
+            case 6: // SemiFinal
+                return 49;
+            case 7: // Final
+                return 51;
+            default:
+                return 1;
+        }
+    }
+
+    private int getMaxMatchNumber(int stage) {
+
+        switch (stage) {
+            case 0:
+                return 51;
+            case 1: // Matchday 1
+                return 12;
+            case 2: // Matchday 2
+                return 24;
+            case 3: // Matchday 3
+                return 36;
+            case 4: // Round of 16
+                return 44;
+            case 5: // QuarterFinals
+                return 48;
+            case 6: // SemiFinal
+                return 50;
+            case 7: // Final
+                return 51;
+            default:
+                return 51;
+        }
     }
 }

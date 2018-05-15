@@ -539,6 +539,59 @@ public class MobileService extends LifecycleLoggingService {
                 }
             });
         }
+
+        @Override
+        public void fetchMoreUsersByStage(String leagueID, int skip, int top, final int stage,
+                                          int minMatchNumber, int maxMatchNumber) {
+
+            MobileServiceCallback i = MobileServiceAdapter.getInstance().fetchMoreUsers(leagueID, skip, top, minMatchNumber, maxMatchNumber);
+            MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
+
+                @Override
+                public void onResult(MobileServiceData data) {
+
+                    int requestResult = data.wasSuccessful() ?
+                            MobileClientData.REQUEST_RESULT_SUCCESS:
+                            MobileClientData.REQUEST_RESULT_FAILURE;
+
+                    MobileClientData m = MobileClientData.makeMessage(
+                            MobileClientData.OperationType.FETCH_MORE_USERS_BY_STAGE.ordinal(),
+                            requestResult);
+                    m.setLeagueUserList(data.getLeagueUserList());
+                    m.setString(data.getString());
+                    m.setInteger(stage);
+                    m.setErrorMessage(data.getMessage());
+
+                    sendMobileDataMessage(m);
+                }
+            });
+        }
+
+        @Override
+        public void fetchUsersByStage(String leagueID, String userID, int skip, int top, final int stage,
+                                      int minMatchNumber, int maxMatchNumber) {
+
+            MobileServiceCallback i = MobileServiceAdapter.getInstance().fetchUsers(leagueID, userID, skip, top, minMatchNumber, maxMatchNumber);
+            MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
+
+                @Override
+                public void onResult(MobileServiceData data) {
+
+                    int requestResult = data.wasSuccessful() ?
+                            MobileClientData.REQUEST_RESULT_SUCCESS:
+                            MobileClientData.REQUEST_RESULT_FAILURE;
+
+                    MobileClientData m = MobileClientData.makeMessage(
+                            MobileClientData.OperationType.FETCH_USERS_BY_STAGE.ordinal(),
+                            requestResult);
+                    m.setLeagueWrapper(data.getLeagueWrapper());
+                    m.setInteger(stage);
+                    m.setErrorMessage(data.getMessage());
+
+                    sendMobileDataMessage(m);
+                }
+            });
+        }
     };
 
     /**

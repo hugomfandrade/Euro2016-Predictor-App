@@ -165,6 +165,8 @@ public interface MVP {
 
         void updateListOfUsers(List<LeagueUser> userList);
 
+        void updateListOfUsersByStage(int stage);
+
         void startUserPredictionsActivity(User user, List<Prediction> predictionList);
     }
     interface ProvidedLeagueDetailsPresenterOps extends PresenterOps<RequiredLeagueDetailsViewOps> {
@@ -174,8 +176,12 @@ public interface MVP {
 
         void fetchRemainingPredictions(User user);
 
+        void logout();
+
         void fetchMoreUsers(String leagueID, int numberOfMembers);
 
-        void logout();
+        void fetchUsers(String leagueID, int stage, int minMatchNumber, int maxMatchNumber);
+
+        void fetchMoreUsers(String leagueID, int numberOfMembers, int stage, int minMatchNumber, int maxMatchNumber);
     }
 }

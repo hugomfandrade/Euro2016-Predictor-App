@@ -23,6 +23,7 @@
 
             <android.support.v7.widget.Toolbar
                 android:id="@+id/anim_toolbar"
+                app:popupTheme="@style/ActionBarThemeOverlay.Popup"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 >
@@ -47,7 +48,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:gravity="center_vertical"
+                    android:baselineAligned="false">
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -113,6 +115,20 @@
 
                 </LinearLayout>
 
+                <include
+                    layout="@layout/layout_filter_stage"
+                    android:layout_height="40dp"
+                    android:layout_width="match_parent"
+                    android:layout_margin="16dp" />
+
+                <include
+                    layout="@layout/list_item_league_standings_header" />
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/rv_league_standings"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
                 <TextView
                     android:id="@+id/tv_latest_match"
                     android:layout_width="match_parent"
@@ -127,73 +143,24 @@
                     android:gravity="center"
                     android:text="@string/latest_match"/>
 
-                <include
-                    layout="@layout/list_item_league_standings_header" />
-
-                <android.support.v7.widget.RecyclerView
-                    android:id="@+id/rv_league_standings"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-                <TextView
-                    android:id="@+id/tv_leave_league"
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:layout_margin="16dp"
-                    android:background="@color/colorMain"
-                    android:textSize="18sp"
-                    android:textAllCaps="true"
-                    android:textColor="#ddffffff"
-                    android:fontFamily="sans-serif-condensed"
-                    android:gravity="center"
-                    android:text="@string/leave_this_league"/>
-
-                <TextView
-                    android:id="@+id/tv_delete_league"
-                    android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:layout_margin="16dp"
-                    android:background="@color/colorMain"
-                    android:fontFamily="sans-serif-condensed"
-                    android:gravity="center"
-                    android:layout_gravity="bottom|center"
-                    android:text="@string/delete_this_league"
-                    android:textAllCaps="true"
-                    android:textColor="#ddffffff"
-                    android:textSize="18sp" />
-
             </LinearLayout>
 
         </android.support.v4.widget.NestedScrollView>
 
         <TextView
-            android:id="@+id/tv_leave_league_fixed"
+            android:id="@+id/tv_latest_match_fixed"
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:layout_margin="16dp"
             android:background="@color/colorMain"
-            android:fontFamily="sans-serif-condensed"
-            android:gravity="center"
-            android:layout_gravity="bottom|center"
-            android:text="@string/leave_this_league"
+            android:textSize="18sp"
+            android:textStyle="bold"
             android:textAllCaps="true"
             android:textColor="#ddffffff"
-            android:textSize="18sp" />
-
-        <TextView
-            android:id="@+id/tv_delete_league_fixed"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_margin="16dp"
-            android:background="@color/colorMain"
             android:fontFamily="sans-serif-condensed"
-            android:gravity="center"
             android:layout_gravity="bottom|center"
-            android:text="@string/delete_this_league"
-            android:textAllCaps="true"
-            android:textColor="#ddffffff"
-            android:textSize="18sp" />
-
+            android:gravity="center"
+            android:text="@string/latest_match"/>
 
     </android.support.design.widget.CoordinatorLayout>
 

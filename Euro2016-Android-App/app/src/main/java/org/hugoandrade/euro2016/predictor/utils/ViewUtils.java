@@ -2,6 +2,7 @@ package org.hugoandrade.euro2016.predictor.utils;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Build;
 import android.support.annotation.ColorRes;
 import android.support.annotation.StringRes;
@@ -332,6 +333,10 @@ public final class ViewUtils {
     public static void setHeightDpAnim(Context context, View view, int heightInDPs) {
         //setHeightDp(context, view, heightInDPs);
         setHeightDpAnim(context, view, heightInDPs, 500);
+    }
+
+    public static int setAlpha(int color, int alpha) {
+        return Color.argb(alpha, Color.red(color), Color.green(color), Color.blue(color));
     }
 }
 

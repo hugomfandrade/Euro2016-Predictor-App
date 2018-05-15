@@ -53,6 +53,7 @@
     <string name="matches" translatable="true">Matches</string>
     <string name="predictions" translatable="true">Predictions</string>
     <string name="standings" translatable="true">Standings</string>
+    <string name="league" translatable="true">League</string>
     <string name="leagues" translatable="true">Leagues</string>
     <string name="rules" translatable="true">Rules</string>
     <string name="logout" translatable="true">Logout</string>
@@ -144,8 +145,9 @@
     <string name="error_default" translatable="true">An error occurred</string>
 
     <string name="app_state_unavailable" translatable="true">App is not available</string>
-    <string name="app_state_unavailable_details" translatable="true">Come back at a later time</string>
+    <string name="app_state_unavailable_come_back_later" translatable="true">Come back at a later time</string>
     <string name="app_state_unavailable_updating_scores" translatable="true">Updating score</string>
+    <string name="app_state_unavailable_details" translatable="true">Failed to get state of the app</string>
     <string name="app_state_error" translatable="true">Error</string>
     <string name="yes" translatable="true">Yes</string>
     <string name="no" translatable="true">No</string>

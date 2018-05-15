@@ -4,6 +4,16 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/action_leave_league"
+        android:title="@string/leave_league"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_delete_league"
+        android:title="@string/delete_league"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_logout"
         android:title="@string/logout"
         app:showAsAction="never" />

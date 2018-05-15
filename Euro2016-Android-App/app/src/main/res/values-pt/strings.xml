@@ -48,6 +48,7 @@
     <string name="final_result">Resultado Final</string>
     <string name="predictions">Prognósticos</string>
     <string name="standings">Classificações</string>
+    <string name="league">Liga</string>
     <string name="leagues">Ligas</string>
     <string name="rules">Regras</string>
 
@@ -138,8 +139,9 @@
     <string name="error_default">Ocorreu um erro</string>
 
     <string name="app_state_unavailable">App não está disponível</string>
-    <string name="app_state_unavailable_details">Volte mais tarde</string>
+    <string name="app_state_unavailable_come_back_later">Volte mais tarde</string>
     <string name="app_state_unavailable_updating_scores" >Atualizando os resultados</string>
+    <string name="app_state_unavailable_details" >Falha ao obter o estado da aplicação</string>
     <string name="app_state_error" >Erro</string>
     <string name="yes">Sim</string>
     <string name="no">Não</string>

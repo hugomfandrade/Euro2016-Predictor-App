@@ -29,8 +29,6 @@ public class MatchPredictionPresenter extends MobileClientPresenterBase<MVP.Requ
         // "this" to provide ImageModel with this MVP.RequiredModelOps
         // instance.
         super.onCreate(view);
-
-        getView().disableUI();
     }
 
     @Override
@@ -64,8 +62,6 @@ public class MatchPredictionPresenter extends MobileClientPresenterBase<MVP.Requ
             return;
         }
 
-        getView().disableUI();
-
         if (getMobileClientService() == null) {
             onGettingPredictionsOperationResult(false, ErrorMessageUtils.genNotBoundMessage());
             return;
@@ -73,9 +69,12 @@ public class MatchPredictionPresenter extends MobileClientPresenterBase<MVP.Requ
 
         try {
             getMobileClientService().getPredictionsOfUsers(uList, matchNumber);
+
+            getView().disableUI();
+
         } catch (RemoteException e) {
             e.printStackTrace();
-            onGettingPredictionsOperationResult(false, "Error sending message");
+            onGettingPredictionsOperationResult(false, ErrorMessageUtils.genErrorSendingMessage());
         }
     }
 

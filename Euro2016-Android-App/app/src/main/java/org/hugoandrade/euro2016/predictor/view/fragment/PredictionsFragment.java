@@ -1,7 +1,5 @@
 package org.hugoandrade.euro2016.predictor.view.fragment;
 
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.support.annotation.NonNull;
@@ -12,8 +10,6 @@ import android.support.v7.widget.SimpleItemAnimator;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.R;
@@ -27,7 +23,7 @@ import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
 import org.hugoandrade.euro2016.predictor.utils.ErrorMessageUtils;
 import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils;
 import org.hugoandrade.euro2016.predictor.view.CountryDetailsActivity;
-import org.hugoandrade.euro2016.predictor.view.dialog.FilterPopup;
+import org.hugoandrade.euro2016.predictor.view.helper.FilterWrapper;
 import org.hugoandrade.euro2016.predictor.view.listadapter.PredictionListAdapter;
 
 import java.util.ArrayList;
@@ -35,25 +31,17 @@ import java.util.List;
 
 public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityOps>
 
-        implements ServiceManagerOps {
-
-    private List<String> mPredictionFilter;
-    private int currentFilter = 0;
-
-    private TextView tvFilterText;
-    private ImageView ivFilterNext;
-    private ImageView ivFilterPrevious;
+        implements ServiceManagerOps, FilterWrapper.OnFilterSelectedListener {
 
     private RecyclerView rvPredictions;
     private PredictionListAdapter mPredictionsAdapter;
 
     private ServiceManager mServiceManager;
+    private FilterWrapper mFilterWrapper;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
-        mPredictionFilter = buildPredictionFilter();
 
         if (getParentActivity().getServiceManager() != null) {
             mServiceManager = getParentActivity().getServiceManager();
@@ -69,35 +57,13 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 
-        tvFilterText = view.findViewById(R.id.tv_filter_title);
-        View filterTextHeader = view.findViewById(R.id.viewGroup_prediction_header);
-        filterTextHeader.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                FilterPopup popup = new FilterPopup(v, mPredictionFilter, currentFilter);
-                popup.setOnFilterItemClickedListener(new FilterPopup.OnFilterItemClickedListener() {
-                    @Override
-                    public void onFilterItemClicked(int position) {
-                        setupFilter(position);
-                    }
-                });
-            }
-        });
-        ivFilterNext = view.findViewById(R.id.iv_filter_next);
-        ivFilterNext.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                filterNext();
-            }
-        });
-        ivFilterPrevious = view.findViewById(R.id.iv_filter_previous);
-        ivFilterPrevious.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                filterPrevious();
-            }
-        });
-
+        mFilterWrapper = FilterWrapper.Builder.instance(getActivity())
+                .setTheme(FilterWrapper.LIGHT)
+                .setFilterText(view.findViewById(R.id.tv_filter_title))
+                .setPreviousButton(view.findViewById(R.id.iv_filter_previous))
+                .setNextButton(view.findViewById(R.id.iv_filter_next))
+                .setListener(this)
+                .create();
 
         rvPredictions = view.findViewById(R.id.rv_predictions);
         rvPredictions.setLayoutManager(
@@ -126,8 +92,6 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
         rvPredictions.setAdapter(mPredictionsAdapter);
         rvPredictions.scrollToPosition(getStartingItemPosition());
         ((SimpleItemAnimator) rvPredictions.getItemAnimator()).setSupportsChangeAnimations(false);
-
-        setupFilterUI();
     }
 
     private void putPrediction(Prediction prediction) {
@@ -143,7 +107,7 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
             service.putPrediction(prediction);
         } catch (RemoteException e) {
             e.printStackTrace();
-            onPredictionUpdated(false, "Error sending message", prediction);
+            onPredictionUpdated(false, ErrorMessageUtils.genErrorSendingMessage(), prediction);
         }
     }
 
@@ -170,93 +134,12 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
         GlobalData.getInstance().removeOnPredictionsChangedListener(mOnPredictionsChangedListener);
     }
 
-    private void setupFilter(int position) {
-        currentFilter = position;
-        setupFilterUI();
-    }
-
-    private void filterNext() {
-        if ((currentFilter + 1) < mPredictionFilter.size()) {
-            setupFilter(currentFilter + 1);
-        }
-    }
-
-    private void filterPrevious() {
-        if (currentFilter != 0) {
-            setupFilter(currentFilter - 1);
-        }
-    }
-
-    private void setupFilterUI() {
-        int colorMain = getResources().getColor(R.color.colorMain);
-        ivFilterPrevious.getDrawable().setColorFilter(colorMain, PorterDuff.Mode.SRC_ATOP);
-        ivFilterNext.getDrawable().setColorFilter(colorMain, PorterDuff.Mode.SRC_ATOP);
-        tvFilterText.setText(mPredictionFilter.get(currentFilter));
-        List<Match> matchList = new ArrayList<>();
-        int startingPosition = 0;
-        switch (currentFilter) {
-            case 0:
-                ivFilterPrevious.getDrawable().setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_ATOP);
-                matchList = GlobalData.getInstance().getMatchList();
-                startingPosition = getStartingItemPosition();
-                break;
-            case 1:
-                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.groupStage, 1);
-                break;
-            case 2:
-                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.groupStage, 2);
-                break;
-            case 3:
-                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.groupStage, 3);
-                break;
-            case 4:
-                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.roundOf16);
-                break;
-            case 5:
-                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.quarterFinals);
-                break;
-            case 6:
-                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.semiFinals);
-                break;
-            case 7:
-                ivFilterNext.getDrawable().setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_ATOP);
-                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.finals);
-                break;
-        }
-
-        if (mPredictionsAdapter != null) {
-            mPredictionsAdapter.setMatchList(matchList);
-            mPredictionsAdapter.notifyDataSetChanged();
-        }
-        if (rvPredictions != null) {
-            if (currentFilter == 0) {
-                rvPredictions.setLayoutManager(
-                        new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
-            }
-            rvPredictions.scrollToPosition(startingPosition);
-        }
-    }
-
-    private List<String> buildPredictionFilter() {
-        List<String> predictionFilter = new ArrayList<>();
-        predictionFilter.add(getString(R.string.prediction_filter_all));
-        predictionFilter.add(getString(R.string.prediction_matchday_1));
-        predictionFilter.add(getString(R.string.prediction_matchday_2));
-        predictionFilter.add(getString(R.string.prediction_matchday_3));
-        predictionFilter.add(getString(R.string.prediction_round_of_16));
-        predictionFilter.add(getString(R.string.prediction_quarter_finals));
-        predictionFilter.add(getString(R.string.prediction_semi_finals));
-        predictionFilter.add(getString(R.string.prediction_final));
-        return predictionFilter;
-    }
-
     private GlobalData.OnMatchesChangedListener mOnMatchesChangedListener
             = new GlobalData.OnMatchesChangedListener() {
 
         @Override
         public void onMatchesChanged() {
-
-            setupFilterUI();
+            onFilterSelected(mFilterWrapper.getSelectedFilter());
         }
     };
 
@@ -266,7 +149,8 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
         @Override
         public void onPredictionsChanged() {
 
-            setupFilterUI();
+            onFilterSelected(mFilterWrapper.getSelectedFilter());
+
             if (mPredictionsAdapter != null) {
                 mPredictionsAdapter.setPredictionList(GlobalData.getInstance().getPredictionList());
                 mPredictionsAdapter.notifyDataSetChanged();
@@ -346,4 +230,50 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
         return selection;
     }
 
+    @Override
+    public void onFilterSelected(int stage) {
+
+        List<Match> matchList = new ArrayList<>();
+        int startingPosition = 0;
+
+        switch (stage) {
+            case 0:
+                matchList = GlobalData.getInstance().getMatchList();
+                startingPosition = getStartingItemPosition();
+                break;
+            case 1:
+                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.groupStage, 1);
+                break;
+            case 2:
+                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.groupStage, 2);
+                break;
+            case 3:
+                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.groupStage, 3);
+                break;
+            case 4:
+                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.roundOf16);
+                break;
+            case 5:
+                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.quarterFinals);
+                break;
+            case 6:
+                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.semiFinals);
+                break;
+            case 7:
+                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.finals);
+                break;
+        }
+
+        if (mPredictionsAdapter != null) {
+            mPredictionsAdapter.setMatchList(matchList);
+            mPredictionsAdapter.notifyDataSetChanged();
+        }
+        if (rvPredictions != null) {
+            if (stage == 0) {
+                rvPredictions.setLayoutManager(
+                        new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+            }
+            rvPredictions.scrollToPosition(startingPosition);
+        }
+    }
 }

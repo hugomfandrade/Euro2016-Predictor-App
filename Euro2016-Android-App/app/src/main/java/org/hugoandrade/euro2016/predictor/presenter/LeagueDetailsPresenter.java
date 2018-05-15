@@ -4,14 +4,14 @@ import android.os.RemoteException;
 
 import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.MVP;
+import org.hugoandrade.euro2016.predictor.data.LeagueWrapper;
 import org.hugoandrade.euro2016.predictor.data.raw.LeagueUser;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
 import org.hugoandrade.euro2016.predictor.utils.ErrorMessageUtils;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
-import org.hugoandrade.euro2016.predictor.utils.NetworkUtils;
-import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
+import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,6 +67,19 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
                     data.getString(),
                     data.getLeagueUserList());
         }
+        else if (operationType == MobileClientData.OperationType.FETCH_USERS_BY_STAGE.ordinal()) {
+            onLeagueByStageFetched(isOperationSuccessful,
+                    data.getErrorMessage(),
+                    data.getInteger(),
+                    data.getLeagueWrapper());
+        }
+        else if (operationType == MobileClientData.OperationType.FETCH_MORE_USERS_BY_STAGE.ordinal()) {
+            onUsersByStageFetched(isOperationSuccessful,
+                    data.getErrorMessage(),
+                    data.getInteger(),
+                    data.getString(),
+                    data.getLeagueUserList());
+        }
     }
 
     @Override
@@ -96,8 +109,6 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
     @Override
     public void fetchMoreUsers(String leagueID, int numberOfMembers) {
 
-        getView().disableUI();
-
         if (getMobileClientService() == null) {
             onUsersFetched(false, ErrorMessageUtils.genNotBoundMessage(), leagueID, null);
             return;
@@ -105,9 +116,50 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
 
         try {
             getMobileClientService().fetchMoreUsers(leagueID, numberOfMembers, 10);
+
+            getView().disableUI();
         } catch (RemoteException e) {
             e.printStackTrace();
-            onUsersFetched(false, "Error sending message", leagueID, null);
+            onUsersFetched(false, ErrorMessageUtils.genErrorSendingMessage(), leagueID, null);
+        }
+    }
+
+    @Override
+    public void fetchUsers(String leagueID, int stage, int minMatchNumber, int maxMatchNumber) {
+
+
+        if (getMobileClientService() == null) {
+            onUsersFetched(false, ErrorMessageUtils.genNotBoundMessage(), leagueID, null);
+            return;
+        }
+
+        try {
+            getMobileClientService().fetchUsersByStage(leagueID, GlobalData.getInstance().user.getID(),
+                    0, 5, stage, minMatchNumber, maxMatchNumber);
+
+            getView().disableUI();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            onUsersFetched(false, ErrorMessageUtils.genErrorSendingMessage(), leagueID, null);
+        }
+    }
+
+    @Override
+    public void fetchMoreUsers(String leagueID, int numberOfMembers, int stage, int minMatchNumber, int maxMatchNumber) {
+
+
+        if (getMobileClientService() == null) {
+            onUsersFetched(false, ErrorMessageUtils.genNotBoundMessage(), leagueID, null);
+            return;
+        }
+
+        try {
+            getMobileClientService().fetchMoreUsersByStage(leagueID, numberOfMembers, 10, stage, minMatchNumber, maxMatchNumber);
+
+            getView().disableUI();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            onUsersFetched(false, ErrorMessageUtils.genErrorSendingMessage(), leagueID, null);
         }
     }
 
@@ -127,8 +179,6 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
     @Override
     public void deleteLeague(String userID, String leagueID) {
 
-        getView().disableUI();
-
         if (getMobileClientService() == null) {
             onLeagueDeleted(false, ErrorMessageUtils.genNotBoundMessage());
             return;
@@ -136,16 +186,16 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
 
         try {
             getMobileClientService().deleteLeague(userID, leagueID);
+
+            getView().disableUI();
         } catch (RemoteException e) {
             e.printStackTrace();
-            onLeagueDeleted(false, "Error sending message");
+            onLeagueDeleted(false, ErrorMessageUtils.genErrorSendingMessage());
         }
     }
 
     @Override
     public void leaveLeague(String userID, String leagueID) {
-
-        getView().disableUI();
 
         if (getMobileClientService() == null) {
             onLeagueLeft(false, ErrorMessageUtils.genNotBoundMessage());
@@ -154,15 +204,15 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
 
         try {
             getMobileClientService().leaveLeague(userID, leagueID);
+
+            getView().disableUI();
         } catch (RemoteException e) {
             e.printStackTrace();
-            onLeagueLeft(false, "Error sending message");
+            onLeagueLeft(false, ErrorMessageUtils.genErrorSendingMessage());
         }
     }
 
     private void getPredictionsOfSelectedUser(User user) {
-
-        getView().disableUI();
 
         if (getMobileClientService() == null) {
             onPredictionsFetched(false, ErrorMessageUtils.genNotBoundMessage(), user, null);
@@ -171,9 +221,11 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
 
         try {
             getMobileClientService().getPredictions(user);
+
+            getView().disableUI();
         } catch (RemoteException e) {
             e.printStackTrace();
-            onPredictionsFetched(false, "Error sending message", user, null);
+            onPredictionsFetched(false, ErrorMessageUtils.genErrorSendingMessage(), user, null);
         }
     }
 
@@ -224,6 +276,36 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
             GlobalData.getInstance().addUsersToLeague(leagueID, userList);
 
             getView().updateListOfUsers(userList);
+            //getView().leagueLeft();
+        }
+        else {
+            getView().reportMessage(ErrorMessageUtils.handleErrorMessage(getActivityContext(), errorMessage));
+        }
+
+        getView().enableUI();
+    }
+
+    private void onLeagueByStageFetched(boolean isOk, String errorMessage, int stage, LeagueWrapper leagueWrapper) {
+        if (isOk) {
+            GlobalData.getInstance().setLeagueWrapperByStage(leagueWrapper, stage);
+
+            getView().updateListOfUsersByStage(stage);
+            // TODO getView().updateListOfUsers(userList);
+            //getView().leagueLeft();
+        }
+        else {
+            getView().reportMessage(ErrorMessageUtils.handleErrorMessage(getActivityContext(), errorMessage));
+        }
+
+        getView().enableUI();
+    }
+
+    private void onUsersByStageFetched(boolean isOk, String errorMessage, int stage, String leagueID, List<LeagueUser> userList) {
+        if (isOk) {
+            GlobalData.getInstance().addUsersToLeagueByStage(leagueID, userList, stage);
+
+            getView().updateListOfUsersByStage(stage);
+            // TODO getView().updateListOfUsers(userList);
             //getView().leagueLeft();
         }
         else {

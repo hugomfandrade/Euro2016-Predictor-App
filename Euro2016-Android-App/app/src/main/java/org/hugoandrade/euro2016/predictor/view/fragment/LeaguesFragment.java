@@ -119,8 +119,6 @@ public class LeaguesFragment extends FragmentBase<FragComm.RequiredActivityOps>
 
     private void generateLeague(String leagueName) {
 
-        getParentActivity().disableUI();
-
         if (mServiceManager == null || mServiceManager.getService() == null) {
             onLeagueCreated(false, ErrorMessageUtils.genNotBoundMessage(), null);
             return;
@@ -130,15 +128,15 @@ public class LeaguesFragment extends FragmentBase<FragComm.RequiredActivityOps>
 
         try {
             service.createLeague(GlobalData.getInstance().user.getID(), leagueName);
+
+            getParentActivity().disableUI();
         } catch (RemoteException e) {
             e.printStackTrace();
-            onLeagueCreated(false, "Error sending message", null);
+            onLeagueCreated(false, ErrorMessageUtils.genErrorSendingMessage(), null);
         }
     }
 
     private void joinLeague(String leagueCode) {
-
-        getParentActivity().disableUI();
 
         if (mServiceManager == null || mServiceManager.getService() == null) {
             onLeagueCreated(false, ErrorMessageUtils.genNotBoundMessage(), null);
@@ -149,9 +147,11 @@ public class LeaguesFragment extends FragmentBase<FragComm.RequiredActivityOps>
 
         try {
             service.joinLeague(GlobalData.getInstance().user.getID(), leagueCode);
+
+            getParentActivity().disableUI();
         } catch (RemoteException e) {
             e.printStackTrace();
-            onLeagueJoined(false, "Error sending message", null);
+            onLeagueJoined(false, ErrorMessageUtils.genErrorSendingMessage(), null);
         }/**/
     }
 

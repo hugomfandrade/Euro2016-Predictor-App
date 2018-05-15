@@ -108,4 +108,9 @@ public final class ErrorMessageUtils {
     public static String genNotBoundMessage() {
         return sNotBoundErrorMessage;
     }
+    private static final String sErrorSendingMessage = "Error sending message";
+
+    public static String genErrorSendingMessage() {
+        return sErrorSendingMessage;
+    }
 }

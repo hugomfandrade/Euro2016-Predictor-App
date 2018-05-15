@@ -6,6 +6,9 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+
+        <item name="android:itemBackground">#fff</item>
+        <item name="android:actionMenuTextColor">?colorPrimary</item>
     </style>
 
     <!-- Base application theme. -->
@@ -16,6 +19,16 @@
         <item name="android:windowFullscreen">true</item>
     </style>
 
+    <style name="ActionBarThemeOverlay" >
+        <!--item name="actionMenuTextColor">#fff</item>
+        <item name="android:actionMenuTextColor">#fff</item>
+        <item name="colorControlNormal">#fff</item>
+        <item name="colorControlHighlight">#3fff</item-->
+    </style>
+    <style name="ActionBarThemeOverlay.Popup" >
+        <item name="android:background">#fff</item>
+        <item name="android:textColor">?colorPrimary</item>
+    </style>
 
     <style name="Prediction">
 
