@@ -162,15 +162,8 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
      * Prediction updated in cloud. Update the old prediction.
      */
     public void updatePrediction(Prediction prediction) {
-        /*boolean isUpdated = false;
-        for (int i = 0; i < mPredictionList.size(); i++)
-            if (mPredictionList.get(i).getMatchNumber() == prediction.getMatchNumber()) {
-                mPredictionList.set(i, prediction);
-                isUpdated = true;
-            }
 
-        if (!isUpdated)
-            mPredictionList.add(prediction);/**/
+        GlobalData.getInstance().updatePrediction(prediction);
 
         if (mPredictionsAdapter != null)
             mPredictionsAdapter.updatePrediction(prediction);

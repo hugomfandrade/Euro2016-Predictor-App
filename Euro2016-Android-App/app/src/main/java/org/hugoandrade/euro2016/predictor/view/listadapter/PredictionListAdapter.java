@@ -10,9 +10,7 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.text.Editable;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.text.format.DateFormat;
 import android.util.SparseArray;
 import android.view.Gravity;
@@ -137,6 +135,8 @@ public class PredictionListAdapter extends RecyclerView.Adapter<PredictionListAd
 
         holder.tvDayMonth.setText(DateFormat.format(DAY_MONTH_TEMPLATE, match.getDateAndTime()).toString());
         holder.tvDayMonth.setVisibility(isSameDayAsPrevious? View.GONE : View.VISIBLE);
+        holder.tvTime.setText(DateFormat.format(TIME_TEMPLATE, match.getDateAndTime()).toString());
+        holder.tvTime.setTextColor(isPast ? TEXT_COLOR_DEFAULT : TEXT_COLOR);
         holder.tvMatchUpResult.setText(MatchUtils.getShortDescription(match));
 
         holder.detailsContainer.setVisibility(isPast ? View.VISIBLE: View.GONE);
@@ -226,6 +226,7 @@ public class PredictionListAdapter extends RecyclerView.Adapter<PredictionListAd
 
         CardView cardView;
         TextView tvDayMonth;
+        TextView tvTime;
         TextView tvHomeTeam;
         TextView tvAwayTeam;
         TextView tvMatchUpResult;
@@ -242,6 +243,7 @@ public class PredictionListAdapter extends RecyclerView.Adapter<PredictionListAd
             super(itemView);
 
             tvDayMonth = itemView.findViewById(R.id.tv_month);
+            tvTime = itemView.findViewById(R.id.tv_time);
             cardView = itemView.findViewById(R.id.cardView_container);
             tvHomeTeam = itemView.findViewById(R.id.tv_match_home_team);
             tvAwayTeam = itemView.findViewById(R.id.tv_match_away_team);

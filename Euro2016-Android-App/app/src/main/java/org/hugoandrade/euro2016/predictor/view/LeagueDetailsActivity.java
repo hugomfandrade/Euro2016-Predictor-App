@@ -79,11 +79,13 @@ public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDe
         getMenuInflater().inflate(R.menu.menu_league_details, menu);
 
 
+        boolean isOverall = mLeagueWrapper.getLeague().getID()
+                .equals(LeagueWrapper.OVERALL_ID);
         boolean isAdmin = GlobalData.getInstance().user.getID()
                 .equals(mLeagueWrapper.getLeague().getAdminID());
 
-        menu.findItem(R.id.action_delete_league).setVisible(isAdmin);
-        menu.findItem(R.id.action_leave_league).setVisible(!isAdmin);
+        menu.findItem(R.id.action_delete_league).setVisible(!isOverall && isAdmin);
+        menu.findItem(R.id.action_leave_league).setVisible(!isOverall && !isAdmin);
 
         return true;
     }

@@ -78,6 +78,7 @@ public class FilterWrapper {
                 }
             });
         }
+        setupUI();
     }
 
     private void setListener(OnFilterSelectedListener listener) {

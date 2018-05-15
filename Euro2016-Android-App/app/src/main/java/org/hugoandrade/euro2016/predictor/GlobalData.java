@@ -3,7 +3,6 @@ package org.hugoandrade.euro2016.predictor;
 import android.support.v4.util.Pair;
 import android.util.Log;
 import android.util.SparseArray;
-import android.util.SparseIntArray;
 
 import org.hugoandrade.euro2016.predictor.data.LeagueWrapper;
 import org.hugoandrade.euro2016.predictor.data.raw.Country;
@@ -155,6 +154,21 @@ public class GlobalData {
         }
     }
 
+    public void updatePrediction(Prediction prediction) {
+
+        for (int l = 0; l < mPredictionList.size() ; l++) {
+            if (mPredictionList.get(l).getMatchNumber() == prediction.getMatchNumber()) {
+                mPredictionList.set(l, prediction);
+            }
+        }
+
+        updatePredictionOfUser(user, prediction);
+
+        /*for (OnPredictionsChangedListener listener : mOnPredictionsChangedListenerSet) {
+            listener.onPredictionsChanged();
+        }/**/
+    }
+
     public List<Country> getCountryList() {
         return mCountryList;
     }
@@ -292,8 +306,8 @@ public class GlobalData {
                                       List<Prediction> predictionList,
                                       int fromMatchNumber,
                                       int toMatchNumber) {
-        for (User u : userList) {
-            setPredictionsOfUser(u, predictionList, fromMatchNumber, toMatchNumber);
+        for (User user : userList) {
+            setPredictionsOfUser(user, predictionList, fromMatchNumber, toMatchNumber);
         }
     }
 
@@ -302,17 +316,18 @@ public class GlobalData {
                                      int fromMatchNumber,
                                      int toMatchNumber) {
         for (int matchNumber = fromMatchNumber ; matchNumber <= toMatchNumber ; matchNumber++) {
-            GlobalData.getInstance().setPredictionsOfUser(matchNumber, user, predictionList);
+            setPredictionsOfUser(matchNumber, user, predictionList);
         }
     }
 
     public void setPredictionsOfUsers(int matchNumber, List<User> userList, List<Prediction> predictionList) {
-        for (User u : userList) {
-            setPredictionsOfUser(matchNumber, u, predictionList);
+        for (User user : userList) {
+            setPredictionsOfUser(matchNumber, user, predictionList);
         }
     }
 
     public void setPredictionsOfUser(int matchNumber, User user, List<Prediction> predictionList) {
+        if (user == null) return;
         String userID = user.getID();
 
         Prediction prediction = null;
@@ -330,6 +345,19 @@ public class GlobalData {
         } else {
             mMatchPredictionMap.put(userID, new SparseArray<Prediction>());
             mMatchPredictionMap.get(userID).put(matchNumber, prediction);
+        }
+    }
+
+    public void updatePredictionOfUser(User user, Prediction prediction) {
+        if (user == null || prediction == null || !user.getID().equals(prediction.getUserID())) return;
+
+        String userID = user.getID();
+
+        if (mMatchPredictionMap.containsKey(userID)) {
+            mMatchPredictionMap.get(userID).put(prediction.getMatchNumber(), prediction);
+        } else {
+            mMatchPredictionMap.put(userID, new SparseArray<Prediction>());
+            mMatchPredictionMap.get(userID).put(prediction.getMatchNumber(), prediction);
         }
     }
 
