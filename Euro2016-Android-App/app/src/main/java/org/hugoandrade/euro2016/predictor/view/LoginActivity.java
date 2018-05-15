@@ -118,7 +118,8 @@ public class LoginActivity extends ActivityBase<MVP.RequiredLoginViewOps,
                     String email = etUsername.getText().toString().trim();
                     String password = etPassword.getText().toString().trim();
 
-                    if (LoginUtils.isValid(email, password)) {
+                    if (LoginUtils.isPasswordNotAllSpaces(email) &&
+                            LoginUtils.isPasswordNotAllSpaces(password)) {
                         getPresenter().login(
                                 etUsername.getText().toString(),
                                 etPassword.getText().toString());
@@ -136,6 +137,8 @@ public class LoginActivity extends ActivityBase<MVP.RequiredLoginViewOps,
                 .withEndAction(this)
                 .start(true);
 
+        areLoginInputFieldsValid();
+
     }
 
     private void areLoginInputFieldsValid() {
@@ -143,13 +146,14 @@ public class LoginActivity extends ActivityBase<MVP.RequiredLoginViewOps,
         String email = etUsername.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
 
-        if (!LoginUtils.isValid(email, password)) {
-            btLogin.setClickable(false);
-            btLogin.setBackgroundColor(Color.parseColor("#3d000000"));
-        }
-        else {
+        if (LoginUtils.isPasswordNotAllSpaces(email) &&
+                LoginUtils.isPasswordNotAllSpaces(password)) {
             btLogin.setClickable(true);
             btLogin.setBackgroundColor(getResources().getColor(R.color.colorAccent));
+        }
+        else {
+            btLogin.setClickable(false);
+            btLogin.setBackgroundColor(Color.parseColor("#3d000000"));
         }
     }
 
@@ -261,8 +265,8 @@ public class LoginActivity extends ActivityBase<MVP.RequiredLoginViewOps,
                 etUsername.setText(loginData.getEmail());
                 etPassword.setText(loginData.getPassword());
                 getPresenter().login(
-                        etUsername.getText().toString(),
-                        etPassword.getText().toString());
+                        etUsername.getText().toString().trim(),
+                        etPassword.getText().toString().trim());
             }
 
             ViewUtils.hideSoftKeyboardAndClearFocus(etUsername);

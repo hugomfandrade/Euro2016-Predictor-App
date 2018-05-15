@@ -76,7 +76,9 @@ public class SignUpActivity extends ActivityBase<MVP.RequiredSignUpViewOps,
                     String password = etPassword.getText().toString().trim();
                     String confirmPassword = etConfirmPassword.getText().toString().trim();
 
-                    if (LoginUtils.isValid(email, password) && password.equals(confirmPassword)) {
+                    if (LoginUtils.isPasswordNotAllSpaces(email) &&
+                            LoginUtils.isPasswordNotAllSpaces(password) &&
+                            password.equals(confirmPassword)) {
 
                         getPresenter().registerUser(
                                 etUsername.getText().toString(),
@@ -128,6 +130,7 @@ public class SignUpActivity extends ActivityBase<MVP.RequiredSignUpViewOps,
                 areLoginInputFieldsValid();
             }
         });
+        areLoginInputFieldsValid();
     }
 
     private void areLoginInputFieldsValid() {
@@ -136,14 +139,15 @@ public class SignUpActivity extends ActivityBase<MVP.RequiredSignUpViewOps,
         String password = etPassword.getText().toString().trim();
         String confirmPassword = etConfirmPassword.getText().toString().trim();
 
-        if (!LoginUtils.isValid(email, password)
-                || !password.equals(confirmPassword)) {
-            btSignUp.setClickable(false);
-            btSignUp.setBackgroundColor(Color.parseColor("#3d000000"));
-        }
-        else {
+        if (LoginUtils.isPasswordNotAllSpaces(email) &&
+                LoginUtils.isPasswordNotAllSpaces(password) &&
+                password.equals(confirmPassword)) {
             btSignUp.setClickable(true);
             btSignUp.setBackgroundColor(getResources().getColor(R.color.colorAccent));
+        }
+        else {
+            btSignUp.setClickable(false);
+            btSignUp.setBackgroundColor(Color.parseColor("#3d000000"));
         }
     }
 
