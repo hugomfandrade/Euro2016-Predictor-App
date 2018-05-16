@@ -12,14 +12,21 @@ import org.hugoandrade.euro2016.predictor.R;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
-import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils;
+import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
+import org.hugoandrade.euro2016.predictor.utils.StageUtils;
 import org.hugoandrade.euro2016.predictor.view.helper.FilterWrapper;
+import org.hugoandrade.euro2016.predictor.view.helper.FilterTheme;
+import org.hugoandrade.euro2016.predictor.view.helper.StageFilterWrapper;
 import org.hugoandrade.euro2016.predictor.view.listadapter.PredictionListAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class UsersPredictionsActivity extends SimpleActivityBase implements FilterWrapper.OnFilterSelectedListener {
+public class UsersPredictionsActivity extends SimpleActivityBase
+
+        //implements FilterWrapper.OnFilterSelectedListener
+        implements FilterWrapper.OnFilterSelectedListener
+{
 
     private static final String INTENT_EXTRA_USER = "intent_extra_user";
     private static final String INTENT_EXTRA_PREDICTION_LIST = "intent_extra_prediction_list";
@@ -29,6 +36,7 @@ public class UsersPredictionsActivity extends SimpleActivityBase implements Filt
 
     private RecyclerView rvPredictions;
     private PredictionListAdapter mPredictionsAdapter;
+    private StageFilterWrapper mFilterWrapper;
 
     public static Intent makeIntent(Context context,
                                     User selectedUser,
@@ -66,13 +74,13 @@ public class UsersPredictionsActivity extends SimpleActivityBase implements Filt
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        FilterWrapper.Builder.instance(this)
-                .setTheme(FilterWrapper.LIGHT)
+        mFilterWrapper = StageFilterWrapper.Builder.instance(this)
+                .setTheme(FilterTheme.LIGHT)
                 .setFilterText(findViewById(R.id.tv_filter_title))
                 .setPreviousButton(findViewById(R.id.iv_filter_previous))
                 .setNextButton(findViewById(R.id.iv_filter_next))
                 .setListener(this)
-                .create();
+                .build();
 
         rvPredictions = findViewById(R.id.rv_predictions);
         mPredictionsAdapter = new PredictionListAdapter(GlobalData.getInstance().getMatchList(),
@@ -80,64 +88,55 @@ public class UsersPredictionsActivity extends SimpleActivityBase implements Filt
                                                         PredictionListAdapter.VIEW_TYPE_DISPLAY_ONLY);
         rvPredictions.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         rvPredictions.setAdapter(mPredictionsAdapter);
-        rvPredictions.scrollToPosition(getStartingItemPosition());
-    }
 
-    public int getStartingItemPosition() {
-        List<Match> mMatchList = GlobalData.getInstance().getMatchList();
-        if (mMatchList != null) {
-            for (int i = 0; i < mMatchList.size(); i++) {
-                if (mMatchList.get(i).getDateAndTime().after(GlobalData.getInstance().getServerTime().getTime())) {
-                    return (i < 3)? 0 : (i - 3);
-                }
-            }
+        int startingItemPosition =
+                MatchUtils.getPositionOfFirstNotPlayedMatch(
+                        GlobalData.getInstance().getMatchList(),
+                        GlobalData.getInstance().getServerTime().getTime(),
+                        3);
+        rvPredictions.scrollToPosition(startingItemPosition);
+
+        Match match =
+                MatchUtils.getFirstMatchOfTomorrow(
+                        GlobalData.getInstance().getMatchList(),
+                        GlobalData.getInstance().getServerTime().getTime());
+
+        if (match == null) {
+            onFilterSelected(mFilterWrapper.getSelectedFilter());
         }
-        return 0;
+        else {
+            int stageNumber = StageUtils.getStageNumber(match);
+
+            mFilterWrapper.setSelectedFilter(stageNumber);
+            onFilterSelected(stageNumber);
+        }
     }
 
     @Override
     public void onFilterSelected(int stage) {
 
-        List<Match> matchList = new ArrayList<>();
-        int startingPosition = 0;
+        int minMatchNumber = StageUtils.getMinMatchNumber(stage);
+        int maxMatchNumber = StageUtils.getMaxMatchNumber(stage);
 
-        switch (stage) {
-            case 0:
-                matchList = GlobalData.getInstance().getMatchList();
-                startingPosition = getStartingItemPosition();
-                break;
-            case 1:
-                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.groupStage, 1);
-                break;
-            case 2:
-                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.groupStage, 2);
-                break;
-            case 3:
-                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.groupStage, 3);
-                break;
-            case 4:
-                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.roundOf16);
-                break;
-            case 5:
-                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.quarterFinals);
-                break;
-            case 6:
-                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.semiFinals);
-                break;
-            case 7:
-                matchList = GlobalData.getInstance().getMatchList(StaticVariableUtils.SStage.finals);
-                break;
-        }
+        List<Match> matchList = GlobalData.getInstance().getMatchList(minMatchNumber, maxMatchNumber);
+
+        int startingPosition = 0;
+        //if (stage == 0) {
+            startingPosition = MatchUtils.getPositionOfFirstNotPlayedMatch(
+                    matchList,
+                    GlobalData.getInstance().getServerTime().getTime(),
+                    3);
+        //}
 
         if (mPredictionsAdapter != null) {
             mPredictionsAdapter.setMatchList(matchList);
             mPredictionsAdapter.notifyDataSetChanged();
         }
         if (rvPredictions != null) {
-            if (stage == 0) {
+            //if (stage == 0) {
                 rvPredictions.setLayoutManager(
                         new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-            }
+            //}
             rvPredictions.scrollToPosition(startingPosition);
         }
     }

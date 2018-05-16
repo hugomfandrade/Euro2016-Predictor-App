@@ -19,14 +19,18 @@ import org.hugoandrade.euro2016.predictor.MVP;
 import org.hugoandrade.euro2016.predictor.R;
 import org.hugoandrade.euro2016.predictor.data.LeagueWrapper;
 import org.hugoandrade.euro2016.predictor.data.raw.LeagueUser;
+import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.presenter.LeagueDetailsPresenter;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
+import org.hugoandrade.euro2016.predictor.utils.StageUtils;
 import org.hugoandrade.euro2016.predictor.utils.StickyFooterUtils;
 import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
 import org.hugoandrade.euro2016.predictor.view.dialog.SimpleDialog;
 import org.hugoandrade.euro2016.predictor.view.helper.FilterWrapper;
+import org.hugoandrade.euro2016.predictor.view.helper.FilterTheme;
+import org.hugoandrade.euro2016.predictor.view.helper.StageFilterWrapper;
 import org.hugoandrade.euro2016.predictor.view.listadapter.LeagueStandingFullListAdapter;
 
 import java.util.Collections;
@@ -118,11 +122,17 @@ public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDe
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        FilterWrapper.Builder.instance(this)
-                .setTheme(FilterWrapper.DARK)
+        int maxFilter = StageUtils.getStageNumber(
+                MatchUtils.getLastPlayedMatch(
+                        GlobalData.getInstance().getMatchList(),
+                        GlobalData.getInstance().getServerTime().getTime()));
+
+        StageFilterWrapper.Builder.instance(this)
+                .setTheme(FilterTheme.DARK)
                 .setFilterText(findViewById(R.id.tv_filter_title))
                 .setPreviousButton(findViewById(R.id.iv_filter_previous))
                 .setNextButton(findViewById(R.id.iv_filter_next))
+                .setMaxFilter(maxFilter)
                 .setListener(new FilterWrapper.OnFilterSelectedListener() {
                     @Override
                     public void onFilterSelected(int stage) {
@@ -130,7 +140,7 @@ public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDe
                         getLeagueTopFive();
                     }
                 })
-                .create();
+                .build();
 
         mScrollViewContainer = findViewById(R.id.nestedScrollView);
 
@@ -197,7 +207,7 @@ public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDe
 
     private void setupFooter() {
 
-        int currentMatchNumber = MatchUtils.getMatchNumberOfFirstNotPlayedMatched(
+        int currentMatchNumber = MatchUtils.getMatchNumberOfFirstNotPlayedMatch(
                 GlobalData.getInstance().getMatchList(),
                 GlobalData.getInstance().getServerTime().getTime());
 

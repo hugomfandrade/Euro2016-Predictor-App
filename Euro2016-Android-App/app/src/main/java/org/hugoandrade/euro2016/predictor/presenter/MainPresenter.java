@@ -1,7 +1,6 @@
 package org.hugoandrade.euro2016.predictor.presenter;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.RemoteException;
 
 import org.hugoandrade.euro2016.predictor.GlobalData;
@@ -15,9 +14,7 @@ import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
 import org.hugoandrade.euro2016.predictor.utils.ErrorMessageUtils;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
-import org.hugoandrade.euro2016.predictor.utils.NetworkUtils;
 import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils.SStage;
-import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
 import org.hugoandrade.euro2016.predictor.view.LoginActivity;
 
 import java.util.ArrayList;
@@ -142,7 +139,7 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
 
             Date serverTime = GlobalData.getInstance().getServerTime().getTime();
 
-            int to = MatchUtils.getMatchNumberOfFirstNotPlayedMatched(matchList, serverTime);
+            int to = MatchUtils.getMatchNumberOfFirstNotPlayedMatch(matchList, serverTime);
             to = to == 0? 0 : to - 1;
 
             int from = (to < 4) ? 0 : to - 4;
@@ -166,7 +163,7 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
 
         if (operationResult) {
 
-            int to = MatchUtils.getMatchNumberOfFirstNotPlayedMatched(
+            int to = MatchUtils.getMatchNumberOfFirstNotPlayedMatch(
                     GlobalData.getInstance().getMatchList(),
                     GlobalData.getInstance().getServerTime().getTime());
             to = to == 0? 0 : to - 1;

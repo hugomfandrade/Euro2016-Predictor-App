@@ -29,7 +29,7 @@ public abstract class PresenterBase<ProvidedViewOps,
      * created.
      *
      * @param opsType
-     *            Class object that's used to create an model
+     *            Class object that's used to build an model
      *            object.
      * @param presenter
      *            Reference to the RequiredPresenterOps in the Presenter layer.

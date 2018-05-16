@@ -338,5 +338,9 @@ public final class ViewUtils {
     public static int setAlpha(int color, int alpha) {
         return Color.argb(alpha, Color.red(color), Color.green(color), Color.blue(color));
     }
+
+    public static int getColor(Context context, int colorRes) {
+        return context.getResources().getColor(colorRes);
+    }
 }
 

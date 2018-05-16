@@ -4,7 +4,6 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.SparseArray;
 
-import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.R;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
 
@@ -103,7 +102,7 @@ public final class MatchUtils {
         }
     }
 
-    public static int getMatchNumberOfFirstNotPlayedMatched(List<Match> matchList, Date serverTime) {
+    public static int getFirstNotPlayedMatch(List<Match> matchList, Date serverTime) {
         if (matchList != null) {
             for (int i = 0; i < matchList.size(); i++) {
                 if (matchList.get(i).getDateAndTime().after(serverTime)) {
@@ -113,6 +112,79 @@ public final class MatchUtils {
             return matchList.size() + 1;
         }
         return 0;
+    }
+
+    public static int getMatchNumberOfFirstNotPlayedMatch(List<Match> matchList, Date serverTime) {
+        if (matchList != null) {
+            for (int i = 0; i < matchList.size(); i++) {
+                if (matchList.get(i).getDateAndTime().after(serverTime)) {
+                    return matchList.get(i).getMatchNumber();
+                }
+            }
+            return matchList.size() + 1;
+        }
+        return 0;
+    }
+
+    public static int getPositionOfFirstNotPlayedMatch(List<Match> matchList, Date serverTime) {
+        return getPositionOfFirstNotPlayedMatch(matchList, serverTime, 0);
+    }
+
+    public static int getPositionOfFirstNotPlayedMatch(List<Match> matchList, Date serverTime, int offset) {
+        if (matchList != null) {
+            for (int i = 0; i < matchList.size(); i++) {
+                if (matchList.get(i).getDateAndTime().after(serverTime)) {
+                    return (i < offset)? 0 : (i - offset);
+                }
+            }
+            return (matchList.size() < offset)? 0 : (matchList.size() - offset);
+        }
+        return 0;
+    }
+
+    public static Match getLastPlayedMatch(List<Match> matchList, Date serverTime) {
+        if (matchList != null && matchList.size() != 0) {
+            Match lastMatch = null;
+            for (Match match : matchList) {
+                if (match.getDateAndTime().after(serverTime)) {
+                    return lastMatch;
+                }
+                else {
+                    lastMatch = match;
+                }
+            }
+            return matchList.get(matchList.size() - 1);
+        }
+        return null;
+    }
+
+    public static Match getFirstMatchOfTomorrow(List<Match> matchList, Date time) {
+        Calendar tomorrow = toTomorrow(toCalendar(time));
+        if (matchList != null && matchList.size() != 0) {
+            for (Match match : matchList) {
+
+                if (match.getDateAndTime().after(tomorrow.getTime())) {
+                    return match;
+                }
+            }
+            return matchList.get(matchList.size() - 1);
+        }
+        return null;
+    }
+
+    private static Calendar toCalendar(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        return calendar;
+    }
+
+    private static Calendar toTomorrow(Calendar calendar) {
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        calendar.add(Calendar.DAY_OF_MONTH, 1);
+        return calendar;
     }
 
     public static List<Match> getMatchList(List<Match> matchList, StaticVariableUtils.SStage stage, int matchday) {
@@ -127,6 +199,17 @@ public final class MatchUtils {
                 } else if (matchday == 3 && m.getMatchNumber() >= 25 && m.getMatchNumber() <= 36) {
                     mList.add(m);
                 }
+            }
+        }
+        return mList;
+    }
+
+    public static List<Match> getMatchList(List<Match> matchList, int minMatchNumber, int maxMatchNumber) {
+
+        List<Match> mList = new ArrayList<>();
+        for (Match m : matchList) {
+            if (m.getMatchNumber() >= minMatchNumber && m.getMatchNumber() <= maxMatchNumber) {
+                mList.add(m);
             }
         }
         return mList;

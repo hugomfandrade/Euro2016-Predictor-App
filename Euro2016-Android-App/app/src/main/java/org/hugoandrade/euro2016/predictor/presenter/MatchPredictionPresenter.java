@@ -1,7 +1,6 @@
 package org.hugoandrade.euro2016.predictor.presenter;
 
 import android.os.RemoteException;
-import android.util.Log;
 
 import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.MVP;
@@ -11,8 +10,6 @@ import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
 import org.hugoandrade.euro2016.predictor.utils.ErrorMessageUtils;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
-import org.hugoandrade.euro2016.predictor.utils.NetworkUtils;
-import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +31,7 @@ public class MatchPredictionPresenter extends MobileClientPresenterBase<MVP.Requ
     @Override
     public void notifyServiceIsBound() {
 
-        int currentMatchNumber = MatchUtils.getMatchNumberOfFirstNotPlayedMatched(
+        int currentMatchNumber = MatchUtils.getMatchNumberOfFirstNotPlayedMatch(
                 GlobalData.getInstance().getMatchList(),
                 GlobalData.getInstance().getServerTime().getTime()) - 1;
 
@@ -63,7 +60,7 @@ public class MatchPredictionPresenter extends MobileClientPresenterBase<MVP.Requ
         }
 
         if (getMobileClientService() == null) {
-            onGettingPredictionsOperationResult(false, ErrorMessageUtils.genNotBoundMessage());
+            onGettingPredictionsOperationFailedResult(ErrorMessageUtils.genNotBoundMessage());
             return;
         }
 
@@ -74,7 +71,7 @@ public class MatchPredictionPresenter extends MobileClientPresenterBase<MVP.Requ
 
         } catch (RemoteException e) {
             e.printStackTrace();
-            onGettingPredictionsOperationResult(false, ErrorMessageUtils.genErrorSendingMessage());
+            onGettingPredictionsOperationFailedResult(ErrorMessageUtils.genErrorSendingMessage());
         }
     }
 
@@ -91,8 +88,8 @@ public class MatchPredictionPresenter extends MobileClientPresenterBase<MVP.Requ
         }
     }
 
-    private void onGettingPredictionsOperationResult(boolean wasOperationSuccessful, String message) {
-        onGettingPredictionsOperationResult(wasOperationSuccessful, message, 0, null, null);
+    private void onGettingPredictionsOperationFailedResult(String message) {
+        onGettingPredictionsOperationResult(false, message, 0, null, null);
     }
 
     private void onGettingPredictionsOperationResult(boolean wasOperationSuccessful,

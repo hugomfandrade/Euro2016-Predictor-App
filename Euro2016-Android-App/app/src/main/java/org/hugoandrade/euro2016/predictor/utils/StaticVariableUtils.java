@@ -61,7 +61,9 @@ public final class StaticVariableUtils {
         roundOf16("Round of 16"),
         quarterFinals("Quarter Final"),
         semiFinals("Semi Final"),
-        finals("Final");
+        finals("Final"),
+        all("All"),
+        unknown("Unknown");
 
         public final String name;
 

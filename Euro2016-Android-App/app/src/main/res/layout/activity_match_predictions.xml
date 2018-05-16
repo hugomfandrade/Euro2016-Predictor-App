@@ -38,44 +38,12 @@
             android:layout_height="match_parent"
             android:layout_width="match_parent">
 
-            <LinearLayout
+            <include
                 android:id="@+id/viewGroup_match_header"
+                layout="@layout/layout_filter_stage"
+                android:layout_height="40dp"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="#aaffffff"
-                android:layout_margin="16dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                >
-
-                <ImageView
-                    android:id="@+id/iv_match_previous"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:tint="#26629e"
-                    android:src="@drawable/ic_chevron_start"/>
-
-                <TextView
-                    android:id="@+id/tv_match_title"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textAllCaps="true"
-                    android:textColor="#26629e"
-                    android:fontFamily="sans-serif-condensed"
-                    android:gravity="center"
-                    tools:text="Matchday 1"/>
-
-                <ImageView
-                    android:id="@+id/iv_match_next"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:tint="#26629e"
-                    android:src="@drawable/ic_chevron_end" />
-
-            </LinearLayout>
+                android:layout_margin="16dp" />
 
             <android.support.v7.widget.CardView
                 android:layout_below="@id/viewGroup_match_header"
@@ -103,11 +71,22 @@
                         android:padding="4dp"
                         >
 
+                        <TextView
+                            android:id="@+id/tv_match_date_time"
+                            android:layout_width="match_parent"
+                            android:layout_gravity="center_horizontal"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_horizontal"
+                            tools:text="17 July"
+                            android:textColor="@color/colorTextLight"
+                            android:textStyle="bold"/>
+
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:baselineAligned="false"
-                            android:paddingTop="16sp">
+                            android:paddingTop="8sp"
+                            android:paddingBottom="8sp">
 
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -122,6 +101,7 @@
 
                                     <ImageView
                                         android:id="@+id/iv_match_home_team"
+                                        tools:src="@drawable/ic_flag_of_portugal"
                                         style="@style/Prediction.CountryFlag"/>
 
                                 </org.hugoandrade.euro2016.predictor.customview.RoundedCornerLayout>
@@ -146,12 +126,16 @@
                                     android:enabled="false"
                                     android:background="@null"
                                     android:maxLength="3"
+                                    android:textSize="22sp"
+                                    android:textStyle="bold"
+                                    android:textColor="@color/colorTextDark"
+                                    tools:text="2"
                                     />
 
                                 <View
                                     android:layout_width="10dp"
                                     android:layout_height="2dp"
-                                    android:background="#26629e"/>
+                                    android:background="@color/colorTextDark"/>
 
                                 <EditText
                                     android:id="@+id/et_away_team_goals"
@@ -159,6 +143,10 @@
                                     android:enabled="false"
                                     android:background="@null"
                                     android:maxLength="3"
+                                    android:textSize="22sp"
+                                    android:textStyle="bold"
+                                    android:textColor="@color/colorTextDark"
+                                    tools:text="0"
                                     />
 
                             </LinearLayout>
@@ -176,6 +164,7 @@
 
                                     <ImageView
                                         android:id="@+id/iv_match_away_team"
+                                        tools:src="@drawable/ic_flag_of_spain"
                                         style="@style/Prediction.CountryFlag"/>
 
                                 </org.hugoandrade.euro2016.predictor.customview.RoundedCornerLayout>
@@ -189,14 +178,6 @@
 
                         </LinearLayout>
 
-                        <TextView
-                            android:id="@+id/tv_match_date_time"
-                            android:layout_width="match_parent"
-                            android:layout_gravity="center_horizontal"
-                            android:layout_height="wrap_content"
-                            android:gravity="center_horizontal"
-                            tools:text="17 July"
-                            android:textStyle="bold"/>
 
 
                     </LinearLayout>

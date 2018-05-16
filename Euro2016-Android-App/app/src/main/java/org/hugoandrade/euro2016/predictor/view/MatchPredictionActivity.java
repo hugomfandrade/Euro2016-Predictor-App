@@ -3,8 +3,6 @@ package org.hugoandrade.euro2016.predictor.view;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -29,7 +27,9 @@ import org.hugoandrade.euro2016.predictor.presenter.MatchPredictionPresenter;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
 import org.hugoandrade.euro2016.predictor.utils.TranslationUtils;
 import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
-import org.hugoandrade.euro2016.predictor.view.dialog.FilterPopup;
+import org.hugoandrade.euro2016.predictor.view.helper.FilterTheme;
+import org.hugoandrade.euro2016.predictor.view.helper.FilterWrapper;
+import org.hugoandrade.euro2016.predictor.view.helper.MatchFilterWrapper;
 import org.hugoandrade.euro2016.predictor.view.listadapter.MatchPredictionListAdapter;
 
 import java.util.ArrayList;
@@ -48,13 +48,10 @@ public class MatchPredictionActivity extends MainActivityBase<MVP.RequiredMatchP
 
     private String mLeagueName;
     private List<LeagueUser> mUserList;
-    private int mMaxMatchNumber;
 
-    private List<String> mMatchFilterList;
     private int mCurrentMatchNumber;
 
     private View progressBar;
-    private TextView tvMatchText;
     private MatchPredictionListAdapter mMatchPredictionsAdapter;
 
     private TextView tvHomeTeam;
@@ -68,8 +65,10 @@ public class MatchPredictionActivity extends MainActivityBase<MVP.RequiredMatchP
     private TextView tvStadium;
     private TextView tvStage;
     private TextView tvDateAndTime;
-    private ImageView ivMatchPrevious;
-    private ImageView ivMatchNext;
+
+    private FilterWrapper mFilterWrapper;
+
+    private TextView tvMatchText;
 
     public static Intent makeIntent(Context context, List<LeagueUser> userList, String leagueName) {
         return new Intent(context, MatchPredictionActivity.class)
@@ -84,13 +83,9 @@ public class MatchPredictionActivity extends MainActivityBase<MVP.RequiredMatchP
         if (getIntent() != null && getIntent() != null) {
             mLeagueName = getIntent().getStringExtra(INTENT_EXTRA_LEAGUE_NAME);
             mUserList = getIntent().getParcelableArrayListExtra(INTENT_EXTRA_USER_LIST);
-            mCurrentMatchNumber = MatchUtils.getMatchNumberOfFirstNotPlayedMatched(
+            mCurrentMatchNumber = MatchUtils.getMatchNumberOfFirstNotPlayedMatch(
                     GlobalData.getInstance().getMatchList(),
                     GlobalData.getInstance().getServerTime().getTime()) - 1;
-
-            mMaxMatchNumber = mCurrentMatchNumber;
-
-            buildMatchFilterList();
         }
         else {
             finish();
@@ -116,35 +111,28 @@ public class MatchPredictionActivity extends MainActivityBase<MVP.RequiredMatchP
 
         progressBar = findViewById(R.id.progressBar_waiting);
 
-        // Match header
-        View matchFilterHeader = findViewById(R.id.viewGroup_match_header);
-        matchFilterHeader.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                FilterPopup popup = new FilterPopup(v, mMatchFilterList, mCurrentMatchNumber - 1, 5);
-                popup.setOnFilterItemClickedListener(new FilterPopup.OnFilterItemClickedListener() {
+        int maxMatchNumber = MatchUtils.getMatchNumberOfFirstNotPlayedMatch(
+                GlobalData.getInstance().getMatchList(),
+                GlobalData.getInstance().getServerTime().getTime()) - 1;
+
+        tvMatchText = findViewById(R.id.tv_filter_title);
+
+        mFilterWrapper = MatchFilterWrapper.Builder.instance(this)
+                .setTheme(FilterTheme.LIGHT)
+                .setFilterText(tvMatchText)
+                .setPreviousButton(findViewById(R.id.iv_filter_previous))
+                .setNextButton(findViewById(R.id.iv_filter_next))
+                .setHoldEnabled(true)
+                .setInitialFilter(mCurrentMatchNumber - 1)
+                .setListener(new FilterWrapper.OnFilterSelectedListener() {
                     @Override
-                    public void onFilterItemClicked(int position) {
-                        filterSpecificMatchNumber(position + 1);
+                    public void onFilterSelected(int stage) {
+                        filterSpecificMatchNumber(stage + 1);
                     }
-                });
-            }
-        });
-        tvMatchText = findViewById(R.id.tv_match_title);
-        ivMatchNext = findViewById(R.id.iv_match_next);
-        ivMatchNext.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                filterNext();
-            }
-        });
-        ivMatchPrevious = findViewById(R.id.iv_match_previous);
-        ivMatchPrevious.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                filterPrevious();
-            }
-        });
+                })
+                .setMatchList(GlobalData.getInstance().getMatchList())
+                .setMaxMatchNumber(maxMatchNumber)
+                .build();
 
         // Match info
         tvHomeTeam = findViewById(R.id.tv_match_home_team);
@@ -157,10 +145,10 @@ public class MatchPredictionActivity extends MainActivityBase<MVP.RequiredMatchP
         tvDateAndTime = findViewById(R.id.tv_match_date_time);
 
         tvMatchNumber = findViewById(R.id.tv_match_number);
-        ImageView ivInfo = findViewById(R.id.iv_info);
         tvStadium = findViewById(R.id.tv_match_stadium);
         tvStage = findViewById(R.id.tv_stage);
         detailsInfoContainer = findViewById(R.id.viewGroup_info_details_container);
+        ImageView ivInfo = findViewById(R.id.iv_info);
         ivInfo.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -198,36 +186,11 @@ public class MatchPredictionActivity extends MainActivityBase<MVP.RequiredMatchP
         progressBar.setVisibility(ProgressBar.INVISIBLE);
     }
 
-    private void buildMatchFilterList() {
-        mMatchFilterList = new ArrayList<>();
-
-        List<Match> matchList = GlobalData.getInstance().getMatchList();
-
-        for (int i = 0 ; i < matchList.size() && matchList.get(i).getMatchNumber() <= mMaxMatchNumber ; i++) {
-            mMatchFilterList.add(TextUtils.concat(
-                    String.valueOf(matchList.get(i).getMatchNumber()),
-                    ": ",
-                    MatchUtils.getShortMatchUp(this, matchList.get(i))).toString());
-        }
-    }
-
     @Override
     protected void logout() {
         getPresenter().logout();
 
         super.logout();
-    }
-
-    private void filterNext() {
-        if (mCurrentMatchNumber < mMaxMatchNumber) {
-            filterSpecificMatchNumber(mCurrentMatchNumber + 1);
-        }
-    }
-
-    private void filterPrevious() {
-        if (mCurrentMatchNumber > 1) {
-            filterSpecificMatchNumber(mCurrentMatchNumber - 1);
-        }
     }
 
     private void filterSpecificMatchNumber(int matchNumber) {
@@ -243,16 +206,7 @@ public class MatchPredictionActivity extends MainActivityBase<MVP.RequiredMatchP
     public void setMatchPredictionList(int matchNumber, List<User> userList) {
         mCurrentMatchNumber = matchNumber;
 
-        int colorMain = getResources().getColor(R.color.colorMain);
-        ivMatchPrevious.getDrawable().setColorFilter(colorMain, PorterDuff.Mode.SRC_ATOP);
-        ivMatchNext.getDrawable().setColorFilter(colorMain, PorterDuff.Mode.SRC_ATOP);
-
-        if (matchNumber == 1) {
-            ivMatchPrevious.getDrawable().setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_ATOP);
-        }
-        if (matchNumber == mMaxMatchNumber) {
-            ivMatchNext.getDrawable().setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_ATOP);
-        }
+        mFilterWrapper.setSelectedFilter(mCurrentMatchNumber - 1);
 
         Match match = GlobalData.getInstance().getMatch(matchNumber);
 
@@ -289,7 +243,6 @@ public class MatchPredictionActivity extends MainActivityBase<MVP.RequiredMatchP
 
     @Override
     public void reportMessage(String message) {
-        //Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_SHORT).show();
         ViewUtils.showToast(this, message);
     }
 }

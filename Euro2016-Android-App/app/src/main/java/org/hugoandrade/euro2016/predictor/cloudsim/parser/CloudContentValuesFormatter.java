@@ -57,7 +57,7 @@ public class CloudContentValuesFormatter {
                 .put(SystemData.Entry.Cols.DATE_OF_CHANGE, ISO8601.fromCalendar(systemData.getDateOfChange()))
                 .put(SystemData.Entry.Cols.RULES, systemData.getRawRules())
                 .put(SystemData.Entry.Cols.APP_STATE, systemData.getAppState())
-                .create();
+                .build();
     }/**/
 
     public ContentValues getAsContentValues(Match match) {

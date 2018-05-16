@@ -9,21 +9,19 @@ import android.widget.TextView;
 
 import org.hugoandrade.euro2016.predictor.R;
 import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
-import org.hugoandrade.euro2016.predictor.view.dialog.FilterPopup;
 
 import java.util.ArrayList;
 import java.util.List;
 
-
-public class FilterWrapper {
-
-    public static final int DARK = 0;
-    public static final int LIGHT = 1;
+public abstract class FilterWrapper {
 
     private final Context mContext;
     private final int mDarkColor;
     private final int mWhiteColor;
-    private final List<String> mPredictionFilter;
+    private List<String> mPredictionFilter;
+
+    private int mMinFilter = -1;
+    private int mMaxFilter = -1;
     private int currentFilter = 0;
 
     private TextView mFilterTextView;
@@ -32,32 +30,33 @@ public class FilterWrapper {
 
     private OnFilterSelectedListener mOnFilterSelectedListener;
     private int mTheme;
+    private boolean isHoldEnabled;
 
-    FilterWrapper(Context context) {
+    protected FilterWrapper(Context context) {
         mContext = context;
-        mPredictionFilter = buildPredictionFilter();
+        mPredictionFilter = buildFilter();
 
         mDarkColor = mContext.getResources().getColor(R.color.colorMain);
         mWhiteColor = Color.WHITE;
     }
 
-    private void setViews(TextView filterText, ImageView previousButton, ImageView nextButton) {
+    void setViews(TextView filterText, ImageView previousButton, ImageView nextButton) {
         mFilterTextView = filterText;
         mPreviousButton = previousButton;
         mNextButton = nextButton;
 
         if (mFilterTextView != null) {
-            mFilterTextView.setText(mPredictionFilter.get(currentFilter));
             mFilterTextView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    FilterPopup popup = new FilterPopup(v, mPredictionFilter, currentFilter);
+                    FilterPopup popup = onCreatePopup(v);
                     popup.setOnFilterItemClickedListener(new FilterPopup.OnFilterItemClickedListener() {
                         @Override
                         public void onFilterItemClicked(int position) {
-                            setupFilter(position);
+                            onFilterSelected(position);
                         }
                     });
+                    popup.build();
                 }
             });
         }
@@ -78,46 +77,86 @@ public class FilterWrapper {
                 }
             });
         }
-        setupUI();
+        setupFilterUI();
     }
 
-    private void setListener(OnFilterSelectedListener listener) {
+    void setListener(OnFilterSelectedListener listener) {
         mOnFilterSelectedListener = listener;
     }
 
-    private void setTheme(int theme) {
+    void setTheme(int theme) {
         mTheme = theme;
-        setupUI();
+        setupFilterUI();
     }
 
-    private void setupUI() {
+    void setMaxFilter(int maxFilter) {
+        mMaxFilter = maxFilter;
 
-        if (mFilterTextView != null) {
-            mFilterTextView.setTextColor(mTheme == LIGHT ? mDarkColor : mWhiteColor);
-            ((View) mFilterTextView.getParent())
-                    .setBackgroundColor(mTheme == DARK ? mDarkColor : ViewUtils.setAlpha(mWhiteColor, 1709));
+        if (mMaxFilter != -1 && currentFilter > mMaxFilter) {
+            setupFilter(mMaxFilter);
         }
+    }
 
-        if (mPreviousButton != null) {
-            mPreviousButton.getDrawable().setColorFilter(mTheme == LIGHT ? mDarkColor : mWhiteColor,
-                    PorterDuff.Mode.SRC_ATOP);
-        }
+    void setMinFilter(int minFilter) {
+        mMinFilter = minFilter;
 
-        if (mNextButton != null) {
-            mNextButton.getDrawable().setColorFilter(mTheme == LIGHT ? mDarkColor : mWhiteColor,
-                    PorterDuff.Mode.SRC_ATOP);
+        if (mMinFilter != -1 && currentFilter < mMinFilter) {
+            setupFilter(mMinFilter);
         }
+    }
+
+    void setHoldEnabled(boolean isHoldEnabled) {
+        this.isHoldEnabled = isHoldEnabled;
+    }
+
+    FilterPopup onCreatePopup(View view) {
+        List<String> pList = new ArrayList<>();
+        for (int i = 0 ; i < mPredictionFilter.size() ; i++) {
+            if (mMinFilter != -1 && i < mMinFilter)
+                continue;
+
+            if (mMaxFilter != -1 && i > mMaxFilter)
+                continue;
+
+            pList.add(mPredictionFilter.get(i));
+        }
+        return new FilterPopup(view, pList, currentFilter, 0, mTheme);
     }
 
     private void filterNext() {
-        if ((currentFilter + 1) < mPredictionFilter.size()) {
-            setupFilter(currentFilter + 1);
-        }
+        int nextFilter = currentFilter + 1;
+
+        if (nextFilter >= mPredictionFilter.size())
+            return;
+
+        if (mMaxFilter != -1 && nextFilter > mMaxFilter)
+            return;
+
+        onFilterSelected(nextFilter);
     }
 
     private void filterPrevious() {
-        if (currentFilter != 0) {
-            setupFilter(currentFilter - 1);
+        int nextFilter = currentFilter - 1;
+
+        if (nextFilter < 0)
+            return;
+
+        if (mMinFilter != -1 && nextFilter < mMinFilter)
+            return;
+
+        onFilterSelected(nextFilter);
+    }
+
+    private void onFilterSelected(int position) {
+        if (currentFilter != position) {
+            if (!isHoldEnabled) {
+                currentFilter = position;
+                setupFilterUI();
+            }
+
+            if (mOnFilterSelectedListener != null)
+                mOnFilterSelectedListener.onFilterSelected(position);
+
         }
     }
 
@@ -126,50 +165,77 @@ public class FilterWrapper {
             currentFilter = position;
 
             setupFilterUI();
-
-            if (mOnFilterSelectedListener != null)
-                mOnFilterSelectedListener.onFilterSelected(currentFilter);
         }
     }
 
     private void setupFilterUI() {
         if (mPreviousButton != null) {
-            mPreviousButton.getDrawable().setColorFilter(mTheme == LIGHT ? mDarkColor : mWhiteColor,
+            mPreviousButton.getDrawable().setColorFilter(mTheme == FilterTheme.LIGHT ? mDarkColor : mWhiteColor,
                     PorterDuff.Mode.SRC_ATOP);
         }
         if (mNextButton != null) {
-            mNextButton.getDrawable().setColorFilter(mTheme == LIGHT ? mDarkColor : mWhiteColor,
+            mNextButton.getDrawable().setColorFilter(mTheme == FilterTheme.LIGHT ? mDarkColor : mWhiteColor,
                     PorterDuff.Mode.SRC_ATOP);
         }
         if (mFilterTextView != null) {
-            mFilterTextView.setText(mPredictionFilter.get(currentFilter));
+            mFilterTextView.setText(mPredictionFilter == null || mPredictionFilter.size() <= currentFilter ?
+                    "" :
+                    mPredictionFilter.get(currentFilter));
+            mFilterTextView.setTextColor(mTheme == FilterTheme.LIGHT ?
+                    mDarkColor :
+                    mWhiteColor);
+            ((View) mFilterTextView.getParent())
+                    .setBackgroundColor(mTheme == FilterTheme.DARK ?
+                            ViewUtils.setAlpha(mDarkColor, 230):
+                            ViewUtils.setAlpha(mWhiteColor, 170));
         }
 
-        switch (currentFilter) {
-            case 0:
-                if (mPreviousButton != null) {
-                    mPreviousButton.getDrawable().setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_ATOP);
-                }
-                break;
-            case 7:
-                if (mNextButton != null) {
-                    mNextButton.getDrawable().setColorFilter(Color.GRAY, PorterDuff.Mode.SRC_ATOP);
-                }
-                break;
+        if (currentFilter == 0 || currentFilter == mMinFilter) {
+            if (mPreviousButton != null) {
+                mPreviousButton.getDrawable().setColorFilter(
+                        ViewUtils.setAlpha(mTheme == FilterTheme.LIGHT ? mDarkColor : Color.GRAY /*mWhiteColor*/, 170),
+                        PorterDuff.Mode.SRC_ATOP);
+            }
+        }
+        if (currentFilter == (mPredictionFilter.size() - 1) || currentFilter == mMaxFilter) {
+            if (mNextButton != null) {
+                mNextButton.getDrawable().setColorFilter(
+                        ViewUtils.setAlpha(mTheme == FilterTheme.LIGHT ? mDarkColor : Color.GRAY /*mWhiteColor*/, 170),
+                        PorterDuff.Mode.SRC_ATOP);
+            }
         }
     }
 
-    private List<String> buildPredictionFilter() {
-        List<String> predictionFilter = new ArrayList<>();
-        predictionFilter.add(mContext.getString(R.string.prediction_filter_all));
-        predictionFilter.add(mContext.getString(R.string.prediction_matchday_1));
-        predictionFilter.add(mContext.getString(R.string.prediction_matchday_2));
-        predictionFilter.add(mContext.getString(R.string.prediction_matchday_3));
-        predictionFilter.add(mContext.getString(R.string.prediction_round_of_16));
-        predictionFilter.add(mContext.getString(R.string.prediction_quarter_finals));
-        predictionFilter.add(mContext.getString(R.string.prediction_semi_finals));
-        predictionFilter.add(mContext.getString(R.string.prediction_final));
-        return predictionFilter;
+    protected Context getContext() {
+        return mContext;
+    }
+
+    protected String getString(int res) {
+        return mContext.getString(res);
+    }
+
+    protected abstract List<String> buildFilter();
+
+    void rebuildFilter() {
+        mPredictionFilter = buildFilter();
+
+        setupFilterUI();
+    }
+
+    public void setSelectedFilter(int filter) {
+        if (mMinFilter != -1 && filter < mMinFilter) {
+            return;
+        }
+        if (mMaxFilter != -1 && filter > mMaxFilter) {
+            return;
+        }
+        if (filter < 0) {
+            return;
+        }
+        if (filter >= mPredictionFilter.size()) {
+            return;
+        }
+        setupFilter(filter);
     }
 
     public int getSelectedFilter() {
@@ -180,60 +246,88 @@ public class FilterWrapper {
         void onFilterSelected(int stage);
     }
 
-    public static class Builder {
+    public abstract static class AbstractBuilder<T extends FilterWrapper,
+                                                 B extends AbstractBuilder<T, B>> {
 
-        private final Context mContext;
+        private final T mFilterWrapper;
+        private final B thisObj;
+
         private int mTheme;
         private TextView mFilterText;
         private ImageView mPreviousButton;
         private ImageView mNextButton;
+        private int mMinFilter = -1;
+        private int mMaxFilter = -1;
+        private int mInitialFilter = -1;
         private OnFilterSelectedListener mOnFilterSelectedListener;
+        private boolean mIsHoldEnabled;
 
-        public Builder(Context context) {
-            mContext = context;
+        AbstractBuilder(T filterWrapper) {
+            mFilterWrapper = filterWrapper;
+            thisObj = getThis();
         }
 
-        public static Builder instance(Context context) {
-            return new Builder(context);
-        }
-
-        public Builder setTheme(int theme) {
+        public B setTheme(int theme) {
             mTheme = theme;
-            return this;
+            return thisObj;
         }
 
-        public Builder setFilterText(View filterText) {
+        public B setFilterText(View filterText) {
             if (filterText != null && filterText instanceof TextView) {
                 mFilterText = (TextView) filterText;
             }
-            return this;
+            return thisObj;
         }
 
-        public Builder setPreviousButton(View previousButton) {
+        public B setPreviousButton(View previousButton) {
             if (previousButton != null && previousButton instanceof ImageView) {
                 mPreviousButton = (ImageView) previousButton;
             }
-            return this;
+            return thisObj;
         }
 
-        public Builder setNextButton(View nextButton) {
+        public B setNextButton(View nextButton) {
             if (nextButton != null && nextButton instanceof ImageView) {
                 mNextButton = (ImageView) nextButton;
             }
-            return this;
+            return thisObj;
         }
 
-        public Builder setListener(OnFilterSelectedListener listener) {
+        public B setListener(OnFilterSelectedListener listener) {
             mOnFilterSelectedListener = listener;
-            return this;
+            return thisObj;
         }
 
-        public FilterWrapper create() {
-            FilterWrapper filterWrapper = new FilterWrapper(mContext);
-            filterWrapper.setViews(mFilterText, mPreviousButton, mNextButton);
-            filterWrapper.setTheme(mTheme);
-            filterWrapper.setListener(mOnFilterSelectedListener);
-            return filterWrapper;
+        public B setHoldEnabled(boolean isEnabled) {
+            mIsHoldEnabled = isEnabled;
+            return thisObj;
         }
+
+        public B setMaxFilter(int max) {
+            mMaxFilter = max;
+            return thisObj;
+        }
+
+        public B setMinFilter(int min) {
+            mMinFilter = min;
+            return thisObj;
+        }
+
+        public B setInitialFilter(int initialFilter) {
+            mInitialFilter = initialFilter;
+            return thisObj;
+        }
+
+        public T build() {
+            mFilterWrapper.setViews(mFilterText, mPreviousButton, mNextButton);
+            mFilterWrapper.setTheme(mTheme);
+            mFilterWrapper.setMaxFilter(mMaxFilter);
+            mFilterWrapper.setMinFilter(mMinFilter);
+            mFilterWrapper.setSelectedFilter(mInitialFilter);
+            mFilterWrapper.setHoldEnabled(mIsHoldEnabled);
+            mFilterWrapper.setListener(mOnFilterSelectedListener);
+            return mFilterWrapper;
+        }
+        protected abstract B getThis();
     }
 }

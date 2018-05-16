@@ -218,7 +218,7 @@ public class GlobalData {
             latestPerformancePredictionList = new ArrayList<>();
         }
 
-        int finalMatchNumber = MatchUtils.getMatchNumberOfFirstNotPlayedMatched(mMatchList, getServerTime().getTime());
+        int finalMatchNumber = MatchUtils.getMatchNumberOfFirstNotPlayedMatch(mMatchList, getServerTime().getTime());
 
         // 2
         // 7
@@ -274,6 +274,10 @@ public class GlobalData {
             }
         }
         return matchList;
+    }
+
+    public List<Match> getMatchList(int minMatchNumber, int maxMatchNumber) {
+        return MatchUtils.getMatchList(mMatchList, minMatchNumber, maxMatchNumber);
     }
 
     public List<Match> getMatchList(StaticVariableUtils.SStage stage) {

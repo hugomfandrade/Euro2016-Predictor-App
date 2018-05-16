@@ -43,7 +43,7 @@ public abstract class ActivityBase<RequiredViewOps,
      * called *after* the onCreate(Bundle saveInstanceState) method.
      *
      * @param opsType
-     *            Class object that's used to create a Presenter object.
+     *            Class object that's used to build a Presenter object.
      * @param view
      *            Reference to the RequiredViewOps object in the View layer.
      */

@@ -6,4 +6,8 @@
     <!--color name="colorPrimaryDark">#303F9F</color-->
     <color name="colorPrimaryDark">@color/colorMain</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="colorTextDark">#222222</color>
+    <color name="colorText">#444444</color>
+    <color name="colorTextLight">#666666</color>
+    <color name="colorTextVeryLight">#888888</color>
 </resources>

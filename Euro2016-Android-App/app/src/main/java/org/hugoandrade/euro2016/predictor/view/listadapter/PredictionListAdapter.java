@@ -52,6 +52,7 @@ public class PredictionListAdapter extends RecyclerView.Adapter<PredictionListAd
     private static final int COLOR_CORRECT_PREDICTION = Color.parseColor("#aa00AA00");
 
     private static final int TEXT_COLOR = Color.parseColor("#222222");
+    private static final int TEXT_COLOR_2 = Color.parseColor("#444444");
     private static final int TEXT_COLOR_DEFAULT = Color.WHITE;//parseColor("#c0d7ed");
 
     private final int mViewType;
@@ -136,7 +137,8 @@ public class PredictionListAdapter extends RecyclerView.Adapter<PredictionListAd
         holder.tvDayMonth.setText(DateFormat.format(DAY_MONTH_TEMPLATE, match.getDateAndTime()).toString());
         holder.tvDayMonth.setVisibility(isSameDayAsPrevious? View.GONE : View.VISIBLE);
         holder.tvTime.setText(DateFormat.format(TIME_TEMPLATE, match.getDateAndTime()).toString());
-        holder.tvTime.setTextColor(isPast ? TEXT_COLOR_DEFAULT : TEXT_COLOR);
+        holder.tvTime.setTextColor(isPast ? TEXT_COLOR_DEFAULT : TEXT_COLOR_2);
+        holder.tvTime.setVisibility(isPast ? View.INVISIBLE : View.VISIBLE);
         holder.tvMatchUpResult.setText(MatchUtils.getShortDescription(match));
 
         holder.detailsContainer.setVisibility(isPast ? View.VISIBLE: View.GONE);

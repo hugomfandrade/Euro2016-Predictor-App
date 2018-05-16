@@ -125,7 +125,7 @@ public class StandingsFragment extends FragmentBase<FragComm.RequiredActivityBas
             @Override
             public void run() {
 
-                int currentMatchNumber = MatchUtils.getMatchNumberOfFirstNotPlayedMatched(
+                int currentMatchNumber = MatchUtils.getMatchNumberOfFirstNotPlayedMatch(
                         GlobalData.getInstance().getMatchList(),
                         GlobalData.getInstance().getServerTime().getTime());
 

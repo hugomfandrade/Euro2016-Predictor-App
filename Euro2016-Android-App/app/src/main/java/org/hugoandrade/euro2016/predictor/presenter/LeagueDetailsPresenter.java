@@ -11,7 +11,6 @@ import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
 import org.hugoandrade.euro2016.predictor.utils.ErrorMessageUtils;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
-import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,7 +84,7 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
     @Override
     public void fetchRemainingPredictions(User user) {
 
-        int to = MatchUtils.getMatchNumberOfFirstNotPlayedMatched(
+        int to = MatchUtils.getMatchNumberOfFirstNotPlayedMatch(
                 GlobalData.getInstance().getMatchList(),
                 GlobalData.getInstance().getServerTime().getTime());
         to = to == 0? 0 : to - 1;
@@ -233,7 +232,7 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
         if (isOk) {
 
             int from = 1;
-            int to = MatchUtils.getMatchNumberOfFirstNotPlayedMatched(
+            int to = MatchUtils.getMatchNumberOfFirstNotPlayedMatch(
                     GlobalData.getInstance().getMatchList(),
                     GlobalData.getInstance().getServerTime().getTime());
             to = to == 0? 0 : to - 1;
