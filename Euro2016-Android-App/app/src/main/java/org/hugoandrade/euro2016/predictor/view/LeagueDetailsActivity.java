@@ -70,8 +70,7 @@ public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDe
             mLeagueWrapper = getIntent().getParcelableExtra(INTENT_EXTRA_LEAGUE);
 
             initializeUI();
-        }
-        else {
+        } else {
             finish();
         }
 
@@ -152,14 +151,14 @@ public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDe
         TextView tvLeagueCode = findViewById(R.id.tv_league_code);
         TextView tvLeagueCodeHeader = findViewById(R.id.tv_league_code_header);
 
-        tvLeagueName.setText(isOverall? getString(R.string.app_name) : mLeagueWrapper.getLeague().getName());
+        tvLeagueName.setText(isOverall ? getString(R.string.app_name) : mLeagueWrapper.getLeague().getName());
         tvLeagueCode.setText(mLeagueWrapper.getLeague().getCode());
-        tvLeagueCodeHeader.setVisibility(isOverall? View.GONE : View.VISIBLE);
-        tvLeagueCode.setVisibility(isOverall? View.GONE : View.VISIBLE);
+        tvLeagueCodeHeader.setVisibility(isOverall ? View.GONE : View.VISIBLE);
+        tvLeagueCode.setVisibility(isOverall ? View.GONE : View.VISIBLE);
         tvLeagueMembers.setText(TextUtils.concat("(",
                 String.valueOf(mLeagueWrapper.getLeague().getNumberOfMembers()),
                 " ",
-                getString(mLeagueWrapper.getLeague().getNumberOfMembers() == 1? R.string.member : R.string.members),
+                getString(mLeagueWrapper.getLeague().getNumberOfMembers() == 1 ? R.string.member : R.string.members),
                 ")"));
 
 
@@ -174,15 +173,14 @@ public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDe
             public void onMoreClicked() {
                 if (mSelectedStage == 0) {
                     getPresenter().fetchMoreUsers(mLeagueWrapper.getLeague().getID(), mLeagueWrapper.getLeagueUserList().size());
-                }
-                else {
+                } else {
 
                     getPresenter().fetchMoreUsers(
                             mLeagueWrapper.getLeague().getID(),
                             leagueStandingListAdapter.get().getLeagueUserList().size(),
                             mSelectedStage,
-                            getMinMatchNumber(mSelectedStage),
-                            getMaxMatchNumber(mSelectedStage));
+                            StageUtils.getMinMatchNumber(mSelectedStage),
+                            StageUtils.getMaxMatchNumber(mSelectedStage));
                 }
             }
         });
@@ -216,8 +214,7 @@ public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDe
         if (isOverall) {
             tvLatestMatch.setVisibility(View.GONE);
             tvLatestMatchFixed.setVisibility(View.GONE);
-        }
-        else {
+        } else {
             tvLatestMatch.setVisibility(currentMatchNumber <= 1 ? View.GONE : View.VISIBLE);
             tvLatestMatchFixed.setVisibility(currentMatchNumber <= 1 ? View.GONE : View.VISIBLE);
             View.OnClickListener listener = new View.OnClickListener() {
@@ -289,8 +286,8 @@ public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDe
         getPresenter().fetchUsers(
                 mLeagueWrapper.getLeague().getID(),
                 mSelectedStage,
-                getMinMatchNumber(mSelectedStage),
-                getMaxMatchNumber(mSelectedStage));
+                StageUtils.getMinMatchNumber(mSelectedStage),
+                StageUtils.getMaxMatchNumber(mSelectedStage));
     }
 
     @Override
@@ -360,52 +357,5 @@ public class LeagueDetailsActivity extends MainActivityBase<MVP.RequiredLeagueDe
         getPresenter().logout();
 
         super.logout();
-    }
-
-    private int getMinMatchNumber(int stage) {
-
-        switch (stage) {
-            case 0:
-            case 1: // Matchday 1
-                return 1;
-            case 2: // Matchday 2
-                return 13;
-            case 3: // Matchday 3
-                return 25;
-            case 4: // Round of 16
-                return 37;
-            case 5: // QuarterFinals
-                return 45;
-            case 6: // SemiFinal
-                return 49;
-            case 7: // Final
-                return 51;
-            default:
-                return 1;
-        }
-    }
-
-    private int getMaxMatchNumber(int stage) {
-
-        switch (stage) {
-            case 0:
-                return 51;
-            case 1: // Matchday 1
-                return 12;
-            case 2: // Matchday 2
-                return 24;
-            case 3: // Matchday 3
-                return 36;
-            case 4: // Round of 16
-                return 44;
-            case 5: // QuarterFinals
-                return 48;
-            case 6: // SemiFinal
-                return 50;
-            case 7: // Final
-                return 51;
-            default:
-                return 51;
-        }
     }
 }

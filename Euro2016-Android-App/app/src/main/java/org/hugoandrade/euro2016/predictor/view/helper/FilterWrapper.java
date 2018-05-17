@@ -32,7 +32,7 @@ public abstract class FilterWrapper {
     private int mTheme;
     private boolean isHoldEnabled;
 
-    protected FilterWrapper(Context context) {
+    FilterWrapper(Context context) {
         mContext = context;
         mPredictionFilter = buildFilter();
 
@@ -93,7 +93,12 @@ public abstract class FilterWrapper {
         mMaxFilter = maxFilter;
 
         if (mMaxFilter != -1 && currentFilter > mMaxFilter) {
-            setupFilter(mMaxFilter);
+
+            int newFilter = mMaxFilter;
+            if (mMinFilter != -1 && mMinFilter > mMaxFilter)
+                newFilter = -1;
+
+            setupFilter(newFilter);
         }
     }
 
@@ -101,7 +106,12 @@ public abstract class FilterWrapper {
         mMinFilter = minFilter;
 
         if (mMinFilter != -1 && currentFilter < mMinFilter) {
-            setupFilter(mMinFilter);
+
+            int newFilter = mMinFilter;
+            if (mMaxFilter != -1 && mMinFilter > mMaxFilter)
+                newFilter = -1;
+
+            setupFilter(newFilter);
         }
     }
 
@@ -120,7 +130,10 @@ public abstract class FilterWrapper {
 
             pList.add(mPredictionFilter.get(i));
         }
-        return new FilterPopup(view, pList, currentFilter, 0, mTheme);
+        FilterPopup filterPopup = new FilterPopup(view, mPredictionFilter, currentFilter, 0, mTheme);
+        filterPopup.setMax(mMaxFilter);
+        filterPopup.setMin(mMinFilter);
+        return filterPopup;
     }
 
     private void filterNext() {
@@ -178,7 +191,7 @@ public abstract class FilterWrapper {
                     PorterDuff.Mode.SRC_ATOP);
         }
         if (mFilterTextView != null) {
-            mFilterTextView.setText(mPredictionFilter == null || mPredictionFilter.size() <= currentFilter ?
+            mFilterTextView.setText(currentFilter == -1 || mPredictionFilter == null || mPredictionFilter.size() <= currentFilter ?
                     "" :
                     mPredictionFilter.get(currentFilter));
             mFilterTextView.setTextColor(mTheme == FilterTheme.LIGHT ?
@@ -190,14 +203,14 @@ public abstract class FilterWrapper {
                             ViewUtils.setAlpha(mWhiteColor, 170));
         }
 
-        if (currentFilter == 0 || currentFilter == mMinFilter) {
+        if (currentFilter == -1 || currentFilter == 0 || currentFilter == mMinFilter) {
             if (mPreviousButton != null) {
                 mPreviousButton.getDrawable().setColorFilter(
                         ViewUtils.setAlpha(mTheme == FilterTheme.LIGHT ? mDarkColor : Color.GRAY /*mWhiteColor*/, 170),
                         PorterDuff.Mode.SRC_ATOP);
             }
         }
-        if (currentFilter == (mPredictionFilter.size() - 1) || currentFilter == mMaxFilter) {
+        if (currentFilter == -1 || currentFilter == (mPredictionFilter.size() - 1) || currentFilter == mMaxFilter) {
             if (mNextButton != null) {
                 mNextButton.getDrawable().setColorFilter(
                         ViewUtils.setAlpha(mTheme == FilterTheme.LIGHT ? mDarkColor : Color.GRAY /*mWhiteColor*/, 170),

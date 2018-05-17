@@ -84,8 +84,6 @@ public class LeagueStandingFullListAdapter extends RecyclerView.Adapter<LeagueSt
     private boolean doesItContainSelf() {
 
         for (LeagueUser user : mLeagueWrapper.getLeagueUserList()) {
-            android.util.Log.e(getClass().getSimpleName(), "doesItContainSelf::" + user.getUser().getEmail());
-
             if (GlobalData.getInstance().user.getID().equals(user.getUser().getID())) {
                 return true;
             }

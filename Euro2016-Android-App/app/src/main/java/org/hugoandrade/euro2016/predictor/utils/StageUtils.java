@@ -68,6 +68,7 @@ public final class StageUtils {
     public static int getMinMatchNumber(int stage) {
 
         switch (stage) {
+            case 0:
             case 1:
                 return 1;
             case 2:
@@ -90,6 +91,8 @@ public final class StageUtils {
     public static int getMaxMatchNumber(int stage) {
 
         switch (stage) {
+            case 0:
+                return 51;
             case 1:
                 return 12;
             case 2:

@@ -27,6 +27,8 @@ public class FilterPopup extends PopupWindow {
     private final int mTheme;
     private int mStartingPosition;
     private int mMaxRows;
+    private int mMinFilter = -1;
+    private int mMaxFilter = -1;
 
     private OnFilterItemClickedListener mListener;
 
@@ -86,6 +88,14 @@ public class FilterPopup extends PopupWindow {
         initializeUI(mStartingPosition);
     }
 
+    public void setMax(int maxFilter) {
+        mMaxFilter = maxFilter;
+    }
+
+    public void setMin(int minFilter) {
+        mMinFilter = minFilter;
+    }
+
     public interface OnFilterItemClickedListener {
         void onFilterItemClicked(int position);
     }
@@ -104,7 +114,7 @@ public class FilterPopup extends PopupWindow {
         @Override
         public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
 
-            String filter = mFilterList.get(holder.getAdapterPosition());
+            String filter = mFilterList.get(holder.getAdjustedAdapterPosition());
 
             holder.tvFilter.setText(filter);
 
@@ -114,7 +124,33 @@ public class FilterPopup extends PopupWindow {
 
         @Override
         public int getItemCount() {
-            return mFilterList.size();
+            int size = mFilterList.size();
+
+            if (mMinFilter != -1) {
+                if (mMinFilter >= mFilterList.size()) {
+                    return 0;
+                }
+                else
+                    size = size - mMinFilter;
+            }
+
+            if (mMaxFilter != -1) {
+                if (mMaxFilter >= mFilterList.size()) {
+                    return size;
+                }
+                if (mMinFilter != -1) {
+                    if (mMinFilter > mMaxFilter) {
+                        return 0;
+                    } else {
+                        return mMaxFilter - mMinFilter + 1;
+                    }
+                }
+                else {
+                    return mMaxFilter + 1;
+                }
+            }
+
+            return size;
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {
@@ -130,10 +166,17 @@ public class FilterPopup extends PopupWindow {
                     @Override
                     public void onClick(View v) {
                         if (mListener != null)
-                            mListener.onFilterItemClicked(getAdapterPosition());
+                            mListener.onFilterItemClicked(getAdjustedAdapterPosition());
                         dismiss();
                     }
                 });
+            }
+
+            private int getAdjustedAdapterPosition() {
+                int pos = getAdapterPosition();
+                if (mMinFilter != -1)
+                    pos = pos + mMinFilter;
+                return pos;
             }
         }
     }
