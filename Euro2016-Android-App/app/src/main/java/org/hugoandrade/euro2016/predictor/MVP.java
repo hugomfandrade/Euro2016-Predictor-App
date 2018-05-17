@@ -1,5 +1,6 @@
 package org.hugoandrade.euro2016.predictor;
 
+
 import java.util.List;
 
 import org.hugoandrade.euro2016.predictor.common.ContextView;
