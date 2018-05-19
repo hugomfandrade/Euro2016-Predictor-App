@@ -3,7 +3,8 @@ var GetSystemData = require('../utils_scripts/GetSystemData');
 var ComputePredictionScore = require('./ComputePredictionScore');
 
 module.exports = function (azureMobile, match) {
-	console.log("--UpdateScoresOfPRedictionsOfMatch-- " + match);
+	console.log("--UpdateScoresOfPRedictionsOfMatch-- ");
+	console.log(match.MatchNumber);
 	
 	var defer = Q.defer();		
     

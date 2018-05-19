@@ -8,7 +8,7 @@ table.read.use(ValidateToken, table.operation);
 table.read(function (context) {
     
     var query = buildReadQuery(context.req.query);
-	console.log(query);
+	//console.log(query);
     
     return context.data.execute({sql: query});
 });
