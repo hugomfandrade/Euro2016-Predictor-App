@@ -2,6 +2,7 @@ package org.hugoandrade.euro2016.predictor.presenter;
 
 import android.content.BroadcastReceiver;
 import android.os.RemoteException;
+import android.util.Log;
 
 import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.MVP;
@@ -29,6 +30,7 @@ public class LoginPresenter extends MobileClientPresenterBase<MVP.RequiredLoginV
     @Override
     public void onCreate(MVP.RequiredLoginViewOps view) {
 
+        Log.e(TAG, "startService");
         // Start service
         view.getApplicationContext()
                 .startService(MobileService.makeIntent(view.getApplicationContext()));
@@ -63,9 +65,11 @@ public class LoginPresenter extends MobileClientPresenterBase<MVP.RequiredLoginV
 
         getModel().onDestroy(isChangingConfiguration);
 
-        if (!isChangingConfiguration && !isMovingToNextActivity)
+        if (!isChangingConfiguration && !isMovingToNextActivity) {
+            Log.e(TAG, "stopService");
             getApplicationContext().stopService(
                     MobileService.makeIntent(getActivityContext()));
+        }
     }
 
     @Override

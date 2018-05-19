@@ -20,7 +20,6 @@ import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.R;
 import org.hugoandrade.euro2016.predictor.data.raw.Country;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
-import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
 import org.hugoandrade.euro2016.predictor.utils.TranslationUtils;
 
@@ -51,7 +50,6 @@ public class KnockoutListAdapter extends RecyclerView.Adapter<KnockoutListAdapte
         return new ViewHolder(vi.inflate(R.layout.list_item_knockout, parent, false));
     }
 
-    @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull final KnockoutListAdapter.ViewHolder holder, int position) {
         Context context = holder.itemView.getContext();

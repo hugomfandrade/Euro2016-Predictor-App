@@ -20,8 +20,9 @@ import org.hugoandrade.euro2016.predictor.network.MobileServiceAdapter;
 import org.hugoandrade.euro2016.predictor.network.MobileServiceCallback;
 import org.hugoandrade.euro2016.predictor.network.MobileServiceData;
 import org.hugoandrade.euro2016.predictor.network.MultipleCloudStatus;
+import org.hugoandrade.euro2016.predictor.utils.ErrorMessageUtils;
+import org.hugoandrade.euro2016.predictor.utils.SharedPreferencesUtils;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -48,6 +49,14 @@ public class MobileService extends LifecycleLoggingService {
 
         try {
             MobileServiceAdapter.Initialize(getApplicationContext());
+
+            LoginData loginData
+                    = SharedPreferencesUtils.getLastAuthenticatedLoginData(getApplicationContext());
+
+            MobileServiceUser mobileServiceUser = new MobileServiceUser(loginData.getUserID());
+            mobileServiceUser.setAuthenticationToken(loginData.getToken());
+            MobileServiceAdapter.getInstance().setMobileServiceUser(mobileServiceUser);
+
         }
         catch (IllegalStateException e) {
             Log.e(TAG, e.getMessage());
@@ -91,6 +100,7 @@ public class MobileService extends LifecycleLoggingService {
         @Override
         public void getSystemData() {
 
+            MobileServiceAdapter.getInstance().setMobileServiceUser(null);
             MobileServiceCallback i = MobileServiceAdapter.getInstance().getSystemData();
             MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
 
@@ -115,6 +125,8 @@ public class MobileService extends LifecycleLoggingService {
         @Override
         public void logout() {
 
+            SharedPreferencesUtils.resetLastAuthenticatedLoginData(getApplicationContext());
+
             MobileServiceCallback i = MobileServiceAdapter.getInstance().logOut();
             MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
 
@@ -137,6 +149,9 @@ public class MobileService extends LifecycleLoggingService {
 
         @Override
         public void login(final LoginData loginData) {
+
+            MobileServiceAdapter.getInstance().setMobileServiceUser(null);
+            SharedPreferencesUtils.resetLastAuthenticatedLoginData(getApplicationContext());
 
             MobileServiceCallback i = MobileServiceAdapter.getInstance().login(loginData);
             MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
@@ -204,6 +219,10 @@ public class MobileService extends LifecycleLoggingService {
 
         @Override
         public void getInfo(String userID) {
+            getInfo(userID, true);
+        }
+
+        private void getInfo(final String userID, final boolean tryRefresh) {
 
             final MobileClientData m = MobileClientData.makeMessage(
                     MobileClientData.OperationType.GET_INFO.ordinal(),
@@ -234,7 +253,21 @@ public class MobileService extends LifecycleLoggingService {
                         } else {
                             n.abort();
                             Log.e(TAG, "sendErrorMessage: (" + 1 + ") " + data.getMessage());
-                            sendErrorMessage(MobileClientData.OperationType.GET_INFO.ordinal(), data.getMessage());
+                            if (tryRefresh && ErrorMessageUtils.isErrorValidatingAccessTokenError(data.getMessage())) {
+                                MobileServiceCallback i = refreshToken();
+                                MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
+
+                                    @Override
+                                    public void onResult(MobileServiceData data) {
+                                        if (data.wasSuccessful()) {
+                                            getInfo(userID, false);
+                                        }
+                                    }
+                                });
+                            }
+                            else {
+                                sendErrorMessage(MobileClientData.OperationType.GET_INFO.ordinal(), data.getMessage());
+                            }
                         }
                     }
                 }
@@ -263,7 +296,21 @@ public class MobileService extends LifecycleLoggingService {
                         } else {
                             n.abort();
                             Log.e(TAG, "sendErrorMessage: (" + 2 + ") " + data.getMessage());
-                            sendErrorMessage(MobileClientData.OperationType.GET_INFO.ordinal(), data.getMessage());
+                            if (tryRefresh && ErrorMessageUtils.isErrorValidatingAccessTokenError(data.getMessage())) {
+                                MobileServiceCallback i = refreshToken();
+                                MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
+
+                                    @Override
+                                    public void onResult(MobileServiceData data) {
+                                        if (data.wasSuccessful()) {
+                                            getInfo(userID, false);
+                                        }
+                                    }
+                                });
+                            }
+                            else {
+                                sendErrorMessage(MobileClientData.OperationType.GET_INFO.ordinal(), data.getMessage());
+                            }
                         }
                     }
                 }
@@ -288,8 +335,22 @@ public class MobileService extends LifecycleLoggingService {
 
                         } else {
                             n.abort();
-                            Log.e(TAG, "sendErrorMessage: (" + 4 + ") " + data.getMessage());
-                            sendErrorMessage(MobileClientData.OperationType.GET_INFO.ordinal(), data.getMessage());
+                            Log.e(TAG, "sendErrorMessage: (" + 3 + ") " + data.getMessage());
+                            if (tryRefresh && ErrorMessageUtils.isErrorValidatingAccessTokenError(data.getMessage())) {
+                                MobileServiceCallback i = refreshToken();
+                                MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
+
+                                    @Override
+                                    public void onResult(MobileServiceData data) {
+                                        if (data.wasSuccessful()) {
+                                            getInfo(userID, false);
+                                        }
+                                    }
+                                });
+                            }
+                            else {
+                                sendErrorMessage(MobileClientData.OperationType.GET_INFO.ordinal(), data.getMessage());
+                            }
                         }
                     }
                 }
@@ -314,8 +375,20 @@ public class MobileService extends LifecycleLoggingService {
 
                         } else {
                             n.abort();
-                            Log.e(TAG, "sendErrorMessage: (" + 5 + ") " + data.getMessage());
-                            sendErrorMessage(MobileClientData.OperationType.GET_INFO.ordinal(), data.getMessage());
+                            Log.e(TAG, "sendErrorMessage: (" + 4 + ") " + data.getMessage());
+                            if (tryRefresh && ErrorMessageUtils.isErrorValidatingAccessTokenError(data.getMessage())) {
+                                MobileServiceCallback i = refreshToken();
+                                MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
+
+                                    @Override
+                                    public void onResult(MobileServiceData data) {
+                                        if (data.wasSuccessful()) getInfo(userID, false);
+                                    }
+                                });
+                            }
+                            else {
+                                sendErrorMessage(MobileClientData.OperationType.GET_INFO.ordinal(), data.getMessage());
+                            }
                         }
                     }
                 }
@@ -324,79 +397,95 @@ public class MobileService extends LifecycleLoggingService {
 
         @Override
         public void putPrediction(final Prediction prediction) {
+            putPrediction(prediction, true);
+        }
+
+        private void putPrediction(final Prediction prediction, final boolean tryRefresh) {
 
             MobileServiceCallback i = MobileServiceAdapter.getInstance().insertPrediction(prediction);
             MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
                 @Override
                 public void onResult(MobileServiceData data) {
 
-                    int requestResult = data.wasSuccessful() ?
-                            MobileClientData.REQUEST_RESULT_SUCCESS:
-                            MobileClientData.REQUEST_RESULT_FAILURE;
+                    if (!data.wasSuccessful()
+                            && tryRefresh
+                            && ErrorMessageUtils.isErrorValidatingAccessTokenError(data.getMessage())) {
 
-                    MobileClientData m = MobileClientData.makeMessage(
-                            MobileClientData.OperationType.PUT_PREDICTION.ordinal(),
-                            requestResult);
+                        MobileServiceCallback i = refreshToken();
+                        MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
 
-                    Log.e(TAG, "data.getPrediction::" + data.getPrediction());
-                    m.setPrediction(data.getPrediction());
-                    m.setErrorMessage(data.getMessage());
+                            @Override
+                            public void onResult(MobileServiceData data) {
+                                if (data.wasSuccessful()) putPrediction(prediction, false);
+                            }
+                        });
+                    }
+                    else {
+                        int requestResult = data.wasSuccessful() ?
+                                MobileClientData.REQUEST_RESULT_SUCCESS :
+                                MobileClientData.REQUEST_RESULT_FAILURE;
 
-                    sendMobileDataMessage(m);
+                        MobileClientData m = MobileClientData.makeMessage(
+                                MobileClientData.OperationType.PUT_PREDICTION.ordinal(),
+                                requestResult);
+
+                        m.setPrediction(data.getPrediction());
+                        m.setErrorMessage(data.getMessage());
+
+                        sendMobileDataMessage(m);
+                    }
                 }
             });
         }
 
         @Override
         public void getPredictions(final User user) {
+            getPredictions(user, true);
+        }
+
+        private void getPredictions(final User user, final boolean tryRefresh) {
             MobileServiceCallback i = MobileServiceAdapter.getInstance().getPredictions(user.getID());
             MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
                 @Override
                 public void onResult(MobileServiceData data) {
 
-                    int requestResult = data.wasSuccessful() ?
-                        MobileClientData.REQUEST_RESULT_SUCCESS:
-                        MobileClientData.REQUEST_RESULT_FAILURE;
+                    if (!data.wasSuccessful()
+                            && tryRefresh
+                            && ErrorMessageUtils.isErrorValidatingAccessTokenError(data.getMessage())) {
 
-                    MobileClientData m = MobileClientData.makeMessage(
-                            MobileClientData.OperationType.GET_PREDICTIONS.ordinal(),
-                            requestResult);
-                    m.setUser(user);
-                    m.setPredictionList(data.getPredictionList());
-                    m.setErrorMessage(data.getMessage());
+                        MobileServiceCallback i = refreshToken();
+                        MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
 
-                    sendMobileDataMessage(m);
-                }
-            });
-        }
+                            @Override
+                            public void onResult(MobileServiceData data) {
+                                if (data.wasSuccessful()) getPredictions(user, false);
+                            }
+                        });
+                    }
+                    else {
+                        int requestResult = data.wasSuccessful() ?
+                                MobileClientData.REQUEST_RESULT_SUCCESS :
+                                MobileClientData.REQUEST_RESULT_FAILURE;
 
-        @Override
-        public void getLatestPerformanceOfUsers(final List<User> userList, int firstMatchNumber, int lastMatchNumber) {
+                        MobileClientData m = MobileClientData.makeMessage(
+                                MobileClientData.OperationType.GET_PREDICTIONS.ordinal(),
+                                requestResult);
+                        m.setUser(user);
+                        m.setPredictionList(data.getPredictionList());
+                        m.setErrorMessage(data.getMessage());
 
-            String[] userIDs = new String[userList.size()];
-            for (int i = 0 ; i < userList.size() ; i++) {
-                userIDs[i] = userList.get(i).getID();
-            }
-
-            MobileServiceCallback i = MobileServiceAdapter.getInstance().getPredictions(userIDs, firstMatchNumber, lastMatchNumber);
-            MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
-                @Override
-                public void onResult(MobileServiceData data) {
-
-                    MobileClientData m = MobileClientData.makeMessage(
-                            MobileClientData.OperationType.GET_LATEST_PERFORMANCE.ordinal(),
-                            MobileClientData.REQUEST_RESULT_SUCCESS);
-                    m.setUsers(userList);
-                    m.setPredictionList(data.getPredictionList());
-                    m.setErrorMessage(data.getMessage());
-
-                    sendMobileDataMessage(m);
+                        sendMobileDataMessage(m);
+                    }
                 }
             });
         }
 
         @Override
         public void getPredictionsOfUsers(final List<User> userList, final int matchNumber) {
+            getPredictionsOfUsers(userList, matchNumber, true);
+        }
+
+        private void getPredictionsOfUsers(final List<User> userList, final int matchNumber, final boolean tryRefresh) {
 
             String[] userIDs = new String[userList.size()];
             for (int i = 0 ; i < userList.size() ; i++) {
@@ -408,21 +497,40 @@ public class MobileService extends LifecycleLoggingService {
                 @Override
                 public void onResult(MobileServiceData data) {
 
-                    MobileClientData m = MobileClientData.makeMessage(
-                            MobileClientData.OperationType.GET_PREDICTIONS_OF_USERS.ordinal(),
-                            MobileClientData.REQUEST_RESULT_SUCCESS);
-                    m.setInteger(matchNumber);
-                    m.setUsers(userList);
-                    m.setPredictionList(data.getPredictionList());
-                    m.setErrorMessage(data.getMessage());
+                    if (!data.wasSuccessful()
+                            && tryRefresh
+                            && ErrorMessageUtils.isErrorValidatingAccessTokenError(data.getMessage())) {
 
-                    sendMobileDataMessage(m);
+                        MobileServiceCallback i = refreshToken();
+                        MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
+
+                            @Override
+                            public void onResult(MobileServiceData data) {
+                                if (data.wasSuccessful()) getPredictionsOfUsers(userList, matchNumber, false);
+                            }
+                        });
+                    }
+                    else {
+                        MobileClientData m = MobileClientData.makeMessage(
+                                MobileClientData.OperationType.GET_PREDICTIONS_OF_USERS.ordinal(),
+                                MobileClientData.REQUEST_RESULT_SUCCESS);
+                        m.setInteger(matchNumber);
+                        m.setUsers(userList);
+                        m.setPredictionList(data.getPredictionList());
+                        m.setErrorMessage(data.getMessage());
+
+                        sendMobileDataMessage(m);
+                    }
                 }
             });
         }
 
         @Override
         public void createLeague(String userID, String leagueName) {
+            createLeague(userID, leagueName, true);
+        }
+
+        private void createLeague(final String userID, final String leagueName, final boolean tryRefresh) {
 
             MobileServiceCallback i = MobileServiceAdapter.getInstance().createLeague(userID, leagueName);
             MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
@@ -430,23 +538,42 @@ public class MobileService extends LifecycleLoggingService {
                 @Override
                 public void onResult(MobileServiceData data) {
 
-                    int requestResult = data.wasSuccessful() ?
-                            MobileClientData.REQUEST_RESULT_SUCCESS:
-                            MobileClientData.REQUEST_RESULT_FAILURE;
+                    if (!data.wasSuccessful()
+                            && tryRefresh
+                            && ErrorMessageUtils.isErrorValidatingAccessTokenError(data.getMessage())) {
 
-                    MobileClientData m = MobileClientData.makeMessage(
-                            MobileClientData.OperationType.CREATE_LEAGUE.ordinal(),
-                            requestResult);
-                    m.setLeague(data.getLeague());
-                    m.setErrorMessage(data.getMessage());
+                        MobileServiceCallback i = refreshToken();
+                        MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
 
-                    sendMobileDataMessage(m);
+                            @Override
+                            public void onResult(MobileServiceData data) {
+                                if (data.wasSuccessful()) createLeague(userID, leagueName, false);
+                            }
+                        });
+                    }
+                    else {
+                        int requestResult = data.wasSuccessful() ?
+                                MobileClientData.REQUEST_RESULT_SUCCESS :
+                                MobileClientData.REQUEST_RESULT_FAILURE;
+
+                        MobileClientData m = MobileClientData.makeMessage(
+                                MobileClientData.OperationType.CREATE_LEAGUE.ordinal(),
+                                requestResult);
+                        m.setLeague(data.getLeague());
+                        m.setErrorMessage(data.getMessage());
+
+                        sendMobileDataMessage(m);
+                    }
                 }
             });
         }
 
         @Override
         public void joinLeague(String userID, String leagueCode) {
+            joinLeague(userID, leagueCode, true);
+        }
+
+        private void joinLeague(final String userID, final String leagueCode, final boolean tryRefresh) {
 
             MobileServiceCallback i = MobileServiceAdapter.getInstance().joinLeague(userID, leagueCode);
             MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
@@ -454,23 +581,42 @@ public class MobileService extends LifecycleLoggingService {
                 @Override
                 public void onResult(MobileServiceData data) {
 
-                    int requestResult = data.wasSuccessful() ?
-                            MobileClientData.REQUEST_RESULT_SUCCESS:
-                            MobileClientData.REQUEST_RESULT_FAILURE;
+                    if (!data.wasSuccessful()
+                            && tryRefresh
+                            && ErrorMessageUtils.isErrorValidatingAccessTokenError(data.getMessage())) {
 
-                    MobileClientData m = MobileClientData.makeMessage(
-                            MobileClientData.OperationType.JOIN_LEAGUE.ordinal(),
-                            requestResult);
-                    m.setLeagueWrapper(data.getLeagueWrapper());
-                    m.setErrorMessage(data.getMessage());
+                        MobileServiceCallback i = refreshToken();
+                        MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
 
-                    sendMobileDataMessage(m);
+                            @Override
+                            public void onResult(MobileServiceData data) {
+                                if (data.wasSuccessful()) joinLeague(userID, leagueCode, false);
+                            }
+                        });
+                    }
+                    else {
+                        int requestResult = data.wasSuccessful() ?
+                                MobileClientData.REQUEST_RESULT_SUCCESS :
+                                MobileClientData.REQUEST_RESULT_FAILURE;
+
+                        MobileClientData m = MobileClientData.makeMessage(
+                                MobileClientData.OperationType.JOIN_LEAGUE.ordinal(),
+                                requestResult);
+                        m.setLeagueWrapper(data.getLeagueWrapper());
+                        m.setErrorMessage(data.getMessage());
+
+                        sendMobileDataMessage(m);
+                    }
                 }
             });
         }
 
         @Override
         public void leaveLeague(String userID, String leagueID) {
+            leaveLeague(userID, leagueID, true);
+        }
+
+        private void leaveLeague(final String userID, final String leagueID, final boolean tryRefresh) {
 
             MobileServiceCallback i = MobileServiceAdapter.getInstance().leaveLeague(userID, leagueID);
             MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
@@ -478,22 +624,41 @@ public class MobileService extends LifecycleLoggingService {
                 @Override
                 public void onResult(MobileServiceData data) {
 
-                    int requestResult = data.wasSuccessful() ?
-                            MobileClientData.REQUEST_RESULT_SUCCESS:
-                            MobileClientData.REQUEST_RESULT_FAILURE;
+                    if (!data.wasSuccessful()
+                            && tryRefresh
+                            && ErrorMessageUtils.isErrorValidatingAccessTokenError(data.getMessage())) {
 
-                    MobileClientData m = MobileClientData.makeMessage(
-                            MobileClientData.OperationType.LEAVE_LEAGUE.ordinal(),
-                            requestResult);
-                    m.setErrorMessage(data.getMessage());
+                        MobileServiceCallback i = refreshToken();
+                        MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
 
-                    sendMobileDataMessage(m);
+                            @Override
+                            public void onResult(MobileServiceData data) {
+                                if (data.wasSuccessful()) leaveLeague(userID, leagueID, false);
+                            }
+                        });
+                    }
+                    else {
+                        int requestResult = data.wasSuccessful() ?
+                                MobileClientData.REQUEST_RESULT_SUCCESS :
+                                MobileClientData.REQUEST_RESULT_FAILURE;
+
+                        MobileClientData m = MobileClientData.makeMessage(
+                                MobileClientData.OperationType.LEAVE_LEAGUE.ordinal(),
+                                requestResult);
+                        m.setErrorMessage(data.getMessage());
+
+                        sendMobileDataMessage(m);
+                    }
                 }
             });
         }
 
         @Override
         public void deleteLeague(String userID, String leagueID)  {
+            deleteLeague(userID, leagueID, true);
+        }
+
+        private void deleteLeague(final String userID, final String leagueID, final boolean tryRefresh)  {
 
             MobileServiceCallback i = MobileServiceAdapter.getInstance().deleteLeague(userID, leagueID);
             MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
@@ -501,22 +666,41 @@ public class MobileService extends LifecycleLoggingService {
                 @Override
                 public void onResult(MobileServiceData data) {
 
-                    int requestResult = data.wasSuccessful() ?
-                            MobileClientData.REQUEST_RESULT_SUCCESS:
-                            MobileClientData.REQUEST_RESULT_FAILURE;
+                    if (!data.wasSuccessful()
+                            && tryRefresh
+                            && ErrorMessageUtils.isErrorValidatingAccessTokenError(data.getMessage())) {
 
-                    MobileClientData m = MobileClientData.makeMessage(
-                            MobileClientData.OperationType.DELETE_LEAGUE.ordinal(),
-                            requestResult);
-                    m.setErrorMessage(data.getMessage());
+                        MobileServiceCallback i = refreshToken();
+                        MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
 
-                    sendMobileDataMessage(m);
+                            @Override
+                            public void onResult(MobileServiceData data) {
+                                if (data.wasSuccessful()) deleteLeague(userID, leagueID, false);
+                            }
+                        });
+                    }
+                    else {
+                        int requestResult = data.wasSuccessful() ?
+                                MobileClientData.REQUEST_RESULT_SUCCESS :
+                                MobileClientData.REQUEST_RESULT_FAILURE;
+
+                        MobileClientData m = MobileClientData.makeMessage(
+                                MobileClientData.OperationType.DELETE_LEAGUE.ordinal(),
+                                requestResult);
+                        m.setErrorMessage(data.getMessage());
+
+                        sendMobileDataMessage(m);
+                    }
                 }
             });
         }
 
         @Override
         public void fetchMoreUsers(String leagueID, int skip, int top) {
+            fetchMoreUsers(leagueID, skip, top, true);
+        }
+
+        private void fetchMoreUsers(final String leagueID, final int skip, final int top, final boolean tryRefresh) {
 
             MobileServiceCallback i = MobileServiceAdapter.getInstance().fetchMoreUsers(leagueID, skip, top);
             MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
@@ -524,25 +708,54 @@ public class MobileService extends LifecycleLoggingService {
                 @Override
                 public void onResult(MobileServiceData data) {
 
-                    int requestResult = data.wasSuccessful() ?
-                            MobileClientData.REQUEST_RESULT_SUCCESS:
-                            MobileClientData.REQUEST_RESULT_FAILURE;
+                    if (!data.wasSuccessful()
+                            && tryRefresh
+                            && ErrorMessageUtils.isErrorValidatingAccessTokenError(data.getMessage())) {
 
-                    MobileClientData m = MobileClientData.makeMessage(
-                            MobileClientData.OperationType.FETCH_MORE_USERS.ordinal(),
-                            requestResult);
-                    m.setLeagueUserList(data.getLeagueUserList());
-                    m.setString(data.getString());
-                    m.setErrorMessage(data.getMessage());
+                        MobileServiceCallback i = refreshToken();
+                        MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
 
-                    sendMobileDataMessage(m);
+                            @Override
+                            public void onResult(MobileServiceData data) {
+                                if (data.wasSuccessful()) fetchMoreUsers(leagueID, skip, top, false);
+                            }
+                        });
+                    }
+                    else {
+                        int requestResult = data.wasSuccessful() ?
+                                MobileClientData.REQUEST_RESULT_SUCCESS :
+                                MobileClientData.REQUEST_RESULT_FAILURE;
+
+                        MobileClientData m = MobileClientData.makeMessage(
+                                MobileClientData.OperationType.FETCH_MORE_USERS.ordinal(),
+                                requestResult);
+                        m.setLeagueUserList(data.getLeagueUserList());
+                        m.setString(data.getString());
+                        m.setErrorMessage(data.getMessage());
+
+                        sendMobileDataMessage(m);
+                    }
                 }
             });
         }
 
         @Override
-        public void fetchMoreUsersByStage(String leagueID, int skip, int top, final int stage,
-                                          int minMatchNumber, int maxMatchNumber) {
+        public void fetchMoreUsersByStage(final String leagueID,
+                                          final int skip,
+                                          final int top,
+                                          final int stage,
+                                          final int minMatchNumber,
+                                          final int maxMatchNumber) {
+            fetchMoreUsersByStage(leagueID, skip, top, stage, minMatchNumber, maxMatchNumber, true);
+        }
+
+        private void fetchMoreUsersByStage(final String leagueID,
+                                           final int skip,
+                                           final int top,
+                                           final int stage,
+                                           final int minMatchNumber,
+                                           final int maxMatchNumber,
+                                           final boolean tryRefresh) {
 
             MobileServiceCallback i = MobileServiceAdapter.getInstance().fetchMoreUsers(leagueID, skip, top, minMatchNumber, maxMatchNumber);
             MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
@@ -550,26 +763,58 @@ public class MobileService extends LifecycleLoggingService {
                 @Override
                 public void onResult(MobileServiceData data) {
 
-                    int requestResult = data.wasSuccessful() ?
-                            MobileClientData.REQUEST_RESULT_SUCCESS:
-                            MobileClientData.REQUEST_RESULT_FAILURE;
+                    if (!data.wasSuccessful()
+                            && tryRefresh
+                            && ErrorMessageUtils.isErrorValidatingAccessTokenError(data.getMessage())) {
 
-                    MobileClientData m = MobileClientData.makeMessage(
-                            MobileClientData.OperationType.FETCH_MORE_USERS_BY_STAGE.ordinal(),
-                            requestResult);
-                    m.setLeagueUserList(data.getLeagueUserList());
-                    m.setString(data.getString());
-                    m.setInteger(stage);
-                    m.setErrorMessage(data.getMessage());
+                        MobileServiceCallback i = refreshToken();
+                        MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
 
-                    sendMobileDataMessage(m);
+                            @Override
+                            public void onResult(MobileServiceData data) {
+                                if (data.wasSuccessful()) fetchMoreUsersByStage(leagueID, skip, top, stage, minMatchNumber, maxMatchNumber, false);
+                            }
+                        });
+                    }
+                    else {
+                        int requestResult = data.wasSuccessful() ?
+                                MobileClientData.REQUEST_RESULT_SUCCESS :
+                                MobileClientData.REQUEST_RESULT_FAILURE;
+
+                        MobileClientData m = MobileClientData.makeMessage(
+                                MobileClientData.OperationType.FETCH_MORE_USERS_BY_STAGE.ordinal(),
+                                requestResult);
+                        m.setLeagueUserList(data.getLeagueUserList());
+                        m.setString(data.getString());
+                        m.setInteger(stage);
+                        m.setErrorMessage(data.getMessage());
+
+                        sendMobileDataMessage(m);
+                    }
                 }
             });
         }
 
         @Override
-        public void fetchUsersByStage(String leagueID, String userID, int skip, int top, final int stage,
-                                      int minMatchNumber, int maxMatchNumber) {
+        public void fetchUsersByStage(final String leagueID,
+                                      final String userID,
+                                      final int skip,
+                                      final int top,
+                                      final int stage,
+                                      final int minMatchNumber,
+                                      final int maxMatchNumber) {
+
+            fetchUsersByStage(leagueID, userID, skip, top, stage, minMatchNumber, maxMatchNumber, true);
+        }
+
+        private void fetchUsersByStage(final String leagueID,
+                                      final String userID,
+                                      final int skip,
+                                      final int top,
+                                      final int stage,
+                                      final int minMatchNumber,
+                                      final int maxMatchNumber,
+                                      final boolean tryRefresh) {
 
             MobileServiceCallback i = MobileServiceAdapter.getInstance().fetchUsers(leagueID, userID, skip, top, minMatchNumber, maxMatchNumber);
             MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
@@ -577,20 +822,75 @@ public class MobileService extends LifecycleLoggingService {
                 @Override
                 public void onResult(MobileServiceData data) {
 
-                    int requestResult = data.wasSuccessful() ?
-                            MobileClientData.REQUEST_RESULT_SUCCESS:
-                            MobileClientData.REQUEST_RESULT_FAILURE;
+                    if (!data.wasSuccessful()
+                            && tryRefresh
+                            && ErrorMessageUtils.isErrorValidatingAccessTokenError(data.getMessage())) {
 
-                    MobileClientData m = MobileClientData.makeMessage(
-                            MobileClientData.OperationType.FETCH_USERS_BY_STAGE.ordinal(),
-                            requestResult);
-                    m.setLeagueWrapper(data.getLeagueWrapper());
-                    m.setInteger(stage);
-                    m.setErrorMessage(data.getMessage());
+                        MobileServiceCallback i = refreshToken();
+                        MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
 
-                    sendMobileDataMessage(m);
+                            @Override
+                            public void onResult(MobileServiceData data) {
+                                if (data.wasSuccessful()) fetchUsersByStage(leagueID, userID, skip, top, stage, minMatchNumber, maxMatchNumber, false);
+                            }
+                        });
+                    }
+                    else {
+
+                        int requestResult = data.wasSuccessful() ?
+                                MobileClientData.REQUEST_RESULT_SUCCESS :
+                                MobileClientData.REQUEST_RESULT_FAILURE;
+
+                        MobileClientData m = MobileClientData.makeMessage(
+                                MobileClientData.OperationType.FETCH_USERS_BY_STAGE.ordinal(),
+                                requestResult);
+                        m.setLeagueWrapper(data.getLeagueWrapper());
+                        m.setInteger(stage);
+                        m.setErrorMessage(data.getMessage());
+
+                        sendMobileDataMessage(m);
+                    }
                 }
             });
+        }
+
+        private MobileServiceCallback refreshToken() {
+            Log.e(TAG, "refreshToken");
+
+            final MobileServiceCallback callback = new MobileServiceCallback();
+
+            final LoginData loginData = SharedPreferencesUtils.getLastAuthenticatedLoginData(getApplicationContext());
+
+            MobileServiceCallback i = MobileServiceAdapter.getInstance().login(loginData);
+            MobileServiceCallback.addCallback(i, new MobileServiceCallback.OnResult() {
+
+                @Override
+                public void onResult(MobileServiceData data) {
+                    Log.e(TAG, "refreshToken::successful=" + data.wasSuccessful());
+
+                    int requestResult = data.wasSuccessful() ?
+                            MobileServiceData.REQUEST_RESULT_SUCCESS:
+                            MobileServiceData.REQUEST_RESULT_FAILURE;
+
+                    if (data.wasSuccessful()) {
+                        LoginData resultLoginData = data.getLoginData();
+                        resultLoginData.setPassword(loginData.getPassword());
+
+                        MobileServiceUser mobileServiceUser = new MobileServiceUser(resultLoginData.getUserID());
+                        mobileServiceUser.setAuthenticationToken(resultLoginData.getToken());
+                        MobileServiceAdapter.getInstance().setMobileServiceUser(mobileServiceUser);
+                    }
+                    else {
+                        sendLogOutMessage();
+                    }
+
+                    callback.set(MobileServiceData.Builder
+                            .instance(MobileServiceData.REFRESH_TOKEN, requestResult)
+                            .create());
+                }
+            });
+
+            return callback;
         }
     };
 
@@ -607,7 +907,15 @@ public class MobileService extends LifecycleLoggingService {
         sendMobileDataMessage(m);
     }
 
-    public void sendMobileDataMessage(MobileClientData mobileClientData) {
+    private void sendLogOutMessage() {
+        MobileClientData m = MobileClientData.makeMessage(
+                MobileClientData.OperationType.LOGOUT.ordinal(),
+                MobileClientData.REQUEST_RESULT_SUCCESS);
+
+        sendMobileDataMessage(m);
+    }
+
+    private void sendMobileDataMessage(MobileClientData mobileClientData) {
         try {
             if (mCallback != null)
                 mCallback.sendResults(mobileClientData);

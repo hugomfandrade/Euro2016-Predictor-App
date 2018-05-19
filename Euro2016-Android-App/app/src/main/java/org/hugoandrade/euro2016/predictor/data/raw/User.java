@@ -71,4 +71,13 @@ public class User implements Parcelable {
         dest.writeString(mEmail);
         dest.writeInt(mScore);
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "mID='" + mID + '\'' +
+                ", mEmail='" + mEmail + '\'' +
+                ", mScore=" + mScore +
+                '}';
+    }
 }

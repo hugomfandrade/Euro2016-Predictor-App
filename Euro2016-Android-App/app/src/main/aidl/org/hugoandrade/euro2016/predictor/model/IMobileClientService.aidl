@@ -28,8 +28,6 @@ interface IMobileClientService {
 
     void getPredictions(in User user);
 
-    void getLatestPerformanceOfUsers(in List<User> userList, int firstMatchNumber, int lastMatchNumber);
-
     void getPredictionsOfUsers(in List<User> userList, int matchNumber);
 
     void createLeague(in String userID, in String leagueName);

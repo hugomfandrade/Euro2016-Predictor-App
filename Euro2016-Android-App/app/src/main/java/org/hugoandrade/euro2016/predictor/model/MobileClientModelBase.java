@@ -55,6 +55,7 @@ public abstract class MobileClientModelBase<RequiredPresenterOps extends MVP.Req
 
     private void bindService() {
         if (!isServiceBound) {
+            Log.e(TAG, "bindService");
             mPresenter.get().getApplicationContext().bindService(
                     MobileService.makeIntent(mPresenter.get().getActivityContext()),
                     mServiceConnection,
@@ -73,6 +74,7 @@ public abstract class MobileClientModelBase<RequiredPresenterOps extends MVP.Req
                     // has crashed.
                 }
             }
+            Log.e(TAG, "unbindService");
             mPresenter.get().getApplicationContext().unbindService(mServiceConnection);
             isServiceBound = false;
         }
@@ -86,6 +88,7 @@ public abstract class MobileClientModelBase<RequiredPresenterOps extends MVP.Req
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder binder) {
+            Log.e(TAG, "onServiceConnected");
             mService = IMobileClientService.Stub.asInterface(binder);
             try {
                 mService.registerCallback(mCallback);
@@ -98,6 +101,7 @@ public abstract class MobileClientModelBase<RequiredPresenterOps extends MVP.Req
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
+            Log.e(TAG, "onServiceDisconnected");
             mService = null;
             isServiceBound = false;
         }

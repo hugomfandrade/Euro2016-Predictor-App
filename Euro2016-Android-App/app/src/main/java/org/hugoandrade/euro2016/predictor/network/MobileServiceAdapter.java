@@ -104,7 +104,12 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
     }
 
     public void setMobileServiceUser(MobileServiceUser mobileServiceUser) {
+        Log.e(TAG, "setMobileServiceUser::" + (mobileServiceUser == null ? "null" : mobileServiceUser.getUserId()));
         mClient.setCurrentUser(mobileServiceUser);
+    }
+
+    public MobileServiceUser getMobileServiceUser() {
+        return mClient.getCurrentUser();
     }
 
     public MobileServiceCallback logOut() {
@@ -462,7 +467,6 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
 
             @Override
             public void onSuccess(JsonElement jsonElement) {
-                Log.e(TAG, "getLeague::" + jsonElement.toString());
 
                 leagueList = parser.parseLeagueList(jsonElement);
 
@@ -519,16 +523,12 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
 
             @Override
             public void onFailure(@NonNull Throwable throwable) {
-                Log.e(TAG, "getLeague::" + throwable.getMessage());
                 sendErrorMessage(callback, MobileServiceData.GET_LEAGUES, throwable.getMessage());
             }
 
             private void tryOnFinished() {
 
                 if (leagueWrapperList.size() == leagueList.size()) {
-                    for (LeagueWrapper leagueWrapper : leagueWrapperList) {
-                        Log.e(TAG, "league::" + leagueWrapper.toString());
-                    }
                     callback.set(MobileServiceData.Builder
                             .instance(MobileServiceData.GET_LEAGUES, MobileServiceData.REQUEST_RESULT_SUCCESS)
                             .setLeagueWrapperList(leagueWrapperList)
@@ -559,7 +559,6 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
         Futures.addCallback(future, new FutureCallback<JsonElement>() {
             @Override
             public void onSuccess(JsonElement jsonObject) {
-                Log.e(TAG, "createLeague::s::" + jsonObject.toString());
                 callback.set(MobileServiceData.Builder
                         .instance(MobileServiceData.CREATE_LEAGUE, MobileServiceData.REQUEST_RESULT_SUCCESS)
                         .setLeague(parser.parseLeague(jsonObject.getAsJsonObject()))
@@ -568,7 +567,6 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
 
             @Override
             public void onFailure(@NonNull Throwable t) {
-                Log.e(TAG, "createLeague::e::" + t.getMessage());
                 sendErrorMessage(callback, MobileServiceData.CREATE_LEAGUE, t.getMessage());
             }
         });
@@ -716,6 +714,7 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
         if (!LeagueWrapper.OVERALL_ID.equals(leagueID))
             t.parameters(LeagueUser.Entry.Cols.LEAGUE_ID, leagueID);
 
+        Log.e(TAG, "fetchMoreUsers::");
         ListenableFuture<JsonElement> i = t
                 .top(top)
                 .skip(skip)
@@ -724,8 +723,8 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
         Futures.addCallback(i, new FutureCallback<JsonElement>() {
             @Override
             public void onSuccess(JsonElement jsonElement) {
+                Log.e(TAG, "fetchMoreUsers::onSuccess");
 
-                Log.e(TAG, "fetchMoreUsers::" + jsonElement.toString());
                 callback.set(MobileServiceData.Builder
                         .instance(MobileServiceData.FETCH_MORE_USERS, MobileServiceData.REQUEST_RESULT_SUCCESS)
                         .setLeagueUserList(parser.parseLeagueUserList(jsonElement))
@@ -735,7 +734,8 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
 
             @Override
             public void onFailure(@NonNull Throwable throwable) {
-                Log.e(TAG, "fetchMoreUsers::error::" + throwable.toString());
+                Log.e(TAG, "fetchMoreUsers::onError");
+
                 callback.set(MobileServiceData.Builder
                         .instance(MobileServiceData.FETCH_MORE_USERS, MobileServiceData.REQUEST_RESULT_FAILURE)
                         .setLeagueUserList(new ArrayList<LeagueUser>())
@@ -830,7 +830,6 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
 
             @Override
             public void onSuccess(JsonElement jsonElement) {
-                Log.e(TAG, "getLeague::" + jsonElement.toString());
 
                 List<League> leagueList = parser.parseLeagueList(jsonElement);
 
@@ -885,7 +884,6 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
 
             @Override
             public void onFailure(@NonNull Throwable throwable) {
-                Log.e(TAG, "getLeague::" + throwable.getMessage());
                 sendErrorMessage(callback, MobileServiceData.FETCH_USERS_BY_STAGE, throwable.getMessage());
             }
 
@@ -927,7 +925,6 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
         Futures.addCallback(i, new FutureCallback<JsonElement>() {
             @Override
             public void onSuccess(JsonElement jsonElement) {
-                Log.e(TAG, "fetchRankOfUser::" + jsonElement.toString());
                 callback.set(MobileServiceData.Builder
                         .instance(MobileServiceData.FETCH_RANK_OF_USER, MobileServiceData.REQUEST_RESULT_SUCCESS)
                         .setLeagueUserList(parser.parseLeagueUserList(jsonElement))
@@ -937,7 +934,6 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
 
             @Override
             public void onFailure(@NonNull Throwable throwable) {
-                Log.e(TAG, "fetchRankOfUser::error::" + throwable.toString());
                 callback.set(MobileServiceData.Builder
                         .instance(MobileServiceData.FETCH_RANK_OF_USER, MobileServiceData.REQUEST_RESULT_FAILURE)
                         .setLeagueUserList(new ArrayList<LeagueUser>())
@@ -981,7 +977,6 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
         Futures.addCallback(i, new FutureCallback<JsonElement>() {
             @Override
             public void onSuccess(JsonElement jsonElement) {
-                Log.e(TAG, "fetchRankOfUser::" + jsonElement.toString());
                 callback.set(MobileServiceData.Builder
                         .instance(MobileServiceData.FETCH_RANK_OF_USER, MobileServiceData.REQUEST_RESULT_SUCCESS)
                         .setLeagueUserList(parser.parseLeagueUserList(jsonElement))
@@ -991,7 +986,6 @@ public class MobileServiceAdapter implements NetworkBroadcastReceiverUtils.INetw
 
             @Override
             public void onFailure(@NonNull Throwable throwable) {
-                Log.e(TAG, "fetchRankOfUser::error::" + throwable.toString());
                 callback.set(MobileServiceData.Builder
                         .instance(MobileServiceData.FETCH_RANK_OF_USER, MobileServiceData.REQUEST_RESULT_FAILURE)
                         .setLeagueUserList(new ArrayList<LeagueUser>())

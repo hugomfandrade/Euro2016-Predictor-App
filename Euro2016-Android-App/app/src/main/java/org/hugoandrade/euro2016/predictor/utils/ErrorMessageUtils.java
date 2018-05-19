@@ -108,9 +108,24 @@ public final class ErrorMessageUtils {
     public static String genNotBoundMessage() {
         return sNotBoundErrorMessage;
     }
+
     private static final String sErrorSendingMessage = "Error sending message";
 
     public static String genErrorSendingMessage() {
         return sErrorSendingMessage;
+    }
+
+
+    private static final String sMustBeLoggedInError = "You must be logged in to use this application";
+    private static final String sErrorValidatingAccessToken = "Error validating access token";
+
+    public static String genMustBeLoggedInError() {
+        return sMustBeLoggedInError;
+    }
+    public static String genErrorValidatingAccessTokenError() {
+        return sErrorValidatingAccessToken;
+    }
+    public static boolean isErrorValidatingAccessTokenError(String message) {
+        return sErrorValidatingAccessToken.equals(message);
     }
 }

@@ -14,6 +14,7 @@ import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
 import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
 import org.hugoandrade.euro2016.predictor.utils.StageUtils;
+import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
 import org.hugoandrade.euro2016.predictor.view.helper.FilterWrapper;
 import org.hugoandrade.euro2016.predictor.view.helper.FilterTheme;
 import org.hugoandrade.euro2016.predictor.view.helper.StageFilterWrapper;
@@ -97,7 +98,7 @@ public class UsersPredictionsActivity extends SimpleActivityBase
         rvPredictions.scrollToPosition(startingItemPosition);
 
         Match match =
-                MatchUtils.getFirstMatchOfTomorrow(
+                MatchUtils.getFirstMatchOfYesterday(
                         GlobalData.getInstance().getMatchList(),
                         GlobalData.getInstance().getServerTime().getTime());
 
@@ -125,8 +126,14 @@ public class UsersPredictionsActivity extends SimpleActivityBase
             startingPosition = MatchUtils.getPositionOfFirstNotPlayedMatch(
                     matchList,
                     GlobalData.getInstance().getServerTime().getTime(),
-                    3);
+                    2);
         //}
+
+        /*if (startingPosition != 0 && startingPosition == matchList.size()) {
+            startingPosition--;
+        }/**/
+
+        ViewUtils.showToast(this, "Starting::" + startingPosition);
 
         if (mPredictionsAdapter != null) {
             mPredictionsAdapter.setMatchList(matchList);

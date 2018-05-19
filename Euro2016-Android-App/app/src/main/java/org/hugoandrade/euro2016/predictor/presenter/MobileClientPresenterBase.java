@@ -11,8 +11,8 @@ import org.hugoandrade.euro2016.predictor.model.MobileClientModel;
 public abstract class MobileClientPresenterBase<RequiredMainOps extends ContextView>
 
         extends PresenterBase<RequiredMainOps,
-        MVP.RequiredMobileClientPresenterOps,
-        MVP.ProvidedMobileClientModelOps,
+                              MVP.RequiredMobileClientPresenterOps,
+                              MVP.ProvidedMobileClientModelOps,
                               MobileClientModel>
 
         implements PresenterOps<RequiredMainOps>,

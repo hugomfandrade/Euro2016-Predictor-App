@@ -2,6 +2,7 @@ package org.hugoandrade.euro2016.predictor.presenter;
 
 import android.app.Activity;
 import android.os.RemoteException;
+import android.util.Log;
 
 import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.MVP;
@@ -10,17 +11,15 @@ import org.hugoandrade.euro2016.predictor.data.LeagueWrapper;
 import org.hugoandrade.euro2016.predictor.data.raw.Country;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.data.raw.Prediction;
-import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
 import org.hugoandrade.euro2016.predictor.utils.ErrorMessageUtils;
-import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
+import org.hugoandrade.euro2016.predictor.utils.SharedPreferencesUtils;
 import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils.SStage;
 import org.hugoandrade.euro2016.predictor.view.LoginActivity;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -73,7 +72,10 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
         mServiceManager = new ServiceManager(getModel().getService());
         getView().notifyServiceIsBound();
 
-        getInfo();
+        Log.e(TAG, "notifyServiceIsBound");
+        if (!GlobalData.getInstance().hasFetchedInfo()) {
+            getInfo();
+        }
     }
 
     private void onInfoFetched(boolean isOk, String message) {
@@ -136,47 +138,16 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
             });
             GlobalData.getInstance().setLeagues(leagueWrapperList);
 
-
-            Date serverTime = GlobalData.getInstance().getServerTime().getTime();
-
-            int to = MatchUtils.getMatchNumberOfFirstNotPlayedMatch(matchList, serverTime);
-            to = to == 0? 0 : to - 1;
-
-            int from = (to < 4) ? 0 : to - 4;
-
-            // TODO getLatestPerformanceOfUsers(userList, from, to);
             GlobalData.getInstance().setHasFetchedInfo(true);
 
         } else {
+            //getView().reportMessage(message);
             //getView().reportMessage(ErrorMessageUtils.handleErrorMessage(getActivityContext(), message));
 
             getView().showGettingInfoErrorMessage();
         }
 
         getView().enableUI();
-    }
-
-    private void onLatestPerformanceFetched(boolean operationResult,
-                                           String message,
-                                           List<User> userList,
-                                           List<Prediction> predictionList) {
-
-        if (operationResult) {
-
-            int to = MatchUtils.getMatchNumberOfFirstNotPlayedMatch(
-                    GlobalData.getInstance().getMatchList(),
-                    GlobalData.getInstance().getServerTime().getTime());
-            to = to == 0? 0 : to - 1;
-
-            int from = (to <= 4) ? 1 : to - 4;
-
-            GlobalData.getInstance().setPredictionsOfUsers(userList, predictionList, from, to);
-
-            GlobalData.getInstance().setLatestPerformanceOfUsers(predictionList);
-
-        } else {
-            getView().reportMessage(ErrorMessageUtils.handleErrorMessage(getActivityContext(), message));
-        }
     }
 
     @Override
@@ -229,6 +200,7 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
         return matchesMap;
     }
 
+    @Override
     public void getInfo() {
         if (GlobalData.getInstance().user == null) {
 
@@ -256,20 +228,6 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
         }
     }
 
-    public void getLatestPerformanceOfUsers(List<User> userList, int firstMatchNumber, int lastMatchNumber) {
-        if (getMobileClientService() == null) {
-            onLatestPerformanceFetched(false, ErrorMessageUtils.genNotBoundMessage(), null, null);
-            return;
-        }
-
-        try {
-            getMobileClientService().getLatestPerformanceOfUsers(userList, firstMatchNumber, lastMatchNumber);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-            onLatestPerformanceFetched(false, ErrorMessageUtils.genErrorSendingMessage(), null, null);
-        }
-    }
-
     @Override
     public void sendResults(MobileClientData data) {
         mServiceManager.sendResults(data);
@@ -286,12 +244,18 @@ public class MainPresenter extends MobileClientPresenterBase<MVP.RequiredMainVie
                     data.getPredictionList(),
                     data.getLeagueWrapperList());
         }
-        else if (operationType == MobileClientData.OperationType.GET_LATEST_PERFORMANCE.ordinal()) {
-            onLatestPerformanceFetched(
-                    isOperationSuccessful,
-                    data.getErrorMessage(),
-                    data.getUserList(),
-                    data.getPredictionList());
+        else if (operationType == MobileClientData.OperationType.LOGOUT.ordinal()) {
+
+            if (getActivityContext() != null
+                    && getApplicationContext() instanceof Activity) {
+                Activity activity = (Activity) getActivityContext();
+
+                if (!activity.isDestroyed() && !activity.isFinishing()) {
+                    SharedPreferencesUtils.resetLastAuthenticatedLoginData(activity);
+                    activity.startActivity(LoginActivity.makeIntent(activity));
+                    activity.finish();
+                }
+            }
         }
     }
 }

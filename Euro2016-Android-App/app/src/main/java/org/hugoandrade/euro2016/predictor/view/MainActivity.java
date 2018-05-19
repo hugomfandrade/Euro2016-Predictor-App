@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 
 import org.hugoandrade.euro2016.predictor.GlobalData;
@@ -183,6 +184,7 @@ public class MainActivity extends MainActivityBase<MVP.RequiredMainViewOps,
     protected void notifyNetworkIsAvailable() {
         if (!GlobalData.getInstance().hasFetchedInfo()) {
             errorContainer.setVisibility(View.GONE);
+            Log.e(TAG, "getInfo::notifyNetworkIsAvailable");
             getPresenter().getInfo();
         }
     }
@@ -196,6 +198,7 @@ public class MainActivity extends MainActivityBase<MVP.RequiredMainViewOps,
                 if (NetworkUtils.isNetworkAvailable(MainActivity.this)) {
                     errorContainer.setVisibility(View.GONE);
                     tvTryAgain.setOnClickListener(null);
+                    Log.e(TAG, "getInfo::showGettingInfoErrorMessage");
                     getPresenter().getInfo();
                 }
                 else {

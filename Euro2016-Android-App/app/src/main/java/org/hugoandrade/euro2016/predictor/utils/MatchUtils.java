@@ -30,7 +30,7 @@ public final class MatchUtils {
     }
 
     public static boolean isMatchPlayed(Match match) {
-        return match.getHomeTeamGoals() != -1 && match.getAwayTeamGoals() != -1;
+        return match != null && match.getHomeTeamGoals() != -1 && match.getAwayTeamGoals() != -1;
     }
 
     public static boolean didHomeTeamWin(Match match) {
@@ -102,16 +102,27 @@ public final class MatchUtils {
         }
     }
 
-    public static int getFirstNotPlayedMatch(List<Match> matchList, Date serverTime) {
+    public static Match getFirstNotPlayedMatch(List<Match> matchList, Date serverTime) {
+        if (matchList != null) {
+            for (Match match : matchList) {
+                if (match.getDateAndTime().after(serverTime)) {
+                    return match;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static boolean isPastAllMatches(List<Match> matchList, Date serverTime) {
         if (matchList != null) {
             for (int i = 0; i < matchList.size(); i++) {
                 if (matchList.get(i).getDateAndTime().after(serverTime)) {
-                    return matchList.get(i).getMatchNumber();
+                    return false;
                 }
             }
-            return matchList.size() + 1;
+            return true;
         }
-        return 0;
+        return false;
     }
 
     public static int getMatchNumberOfFirstNotPlayedMatch(List<Match> matchList, Date serverTime) {
@@ -172,6 +183,20 @@ public final class MatchUtils {
         return null;
     }
 
+    public static Match getFirstMatchOfYesterday(List<Match> matchList, Date time) {
+        Calendar tomorrow = toYesterday(toCalendar(time));
+        if (matchList != null && matchList.size() != 0) {
+            for (Match match : matchList) {
+
+                if (match.getDateAndTime().after(tomorrow.getTime())) {
+                    return match;
+                }
+            }
+            return null;//matchList.get(matchList.size() - 1);
+        }
+        return null;
+    }
+
     private static Calendar toCalendar(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -184,6 +209,15 @@ public final class MatchUtils {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         calendar.add(Calendar.DAY_OF_MONTH, 1);
+        return calendar;
+    }
+
+    private static Calendar toYesterday(Calendar calendar) {
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        calendar.add(Calendar.DAY_OF_MONTH, -1);
         return calendar;
     }
 
@@ -294,7 +328,8 @@ public final class MatchUtils {
 
     public static String tryGetTemporaryAwayTeam(Context context, SparseArray<Match> matchSet, Match match) {
 
-        if (!isValidToGetPreviousMatches(matchSet, match)) {
+        if (isMatchPlayed(getParentMatch(matchSet, match, false)) ||
+                !isValidToGetPreviousMatches(matchSet, match)) {
             return TranslationUtils.translateCountryName(context, match.getAwayTeamName());
         }
 
@@ -303,11 +338,27 @@ public final class MatchUtils {
 
     public static String tryGetTemporaryHomeTeam(Context context, SparseArray<Match> matchSet, Match match) {
 
-        if (!isValidToGetPreviousMatches(matchSet, match)) {
+        if (isMatchPlayed(getParentMatch(matchSet, match, true)) ||
+                !isValidToGetPreviousMatches(matchSet, match)) {
             return TranslationUtils.translateCountryName(context, match.getHomeTeamName());
         }
 
         return getTemporaryHomeTeam(context, matchSet, match);
+    }
+
+    public static Match getParentMatch(SparseArray<Match> matchSet, Match match, boolean forHomeTeam) {
+
+        switch (match.getMatchNumber()) {
+            case 51: return forHomeTeam? matchSet.get(49) : matchSet.get(50);
+            case 50: return forHomeTeam? matchSet.get(47) : matchSet.get(48);
+            case 49: return forHomeTeam? matchSet.get(45) : matchSet.get(46);
+            case 48: return forHomeTeam? matchSet.get(40) : matchSet.get(44);
+            case 47: return forHomeTeam? matchSet.get(41) : matchSet.get(43);
+            case 46: return forHomeTeam? matchSet.get(38) : matchSet.get(42);
+            case 45: return forHomeTeam? matchSet.get(37) : matchSet.get(39);
+
+        }
+        return null;
     }
 
     public static String getTemporaryHomeTeam(Context context, SparseArray<Match> matchSet, Match match) {

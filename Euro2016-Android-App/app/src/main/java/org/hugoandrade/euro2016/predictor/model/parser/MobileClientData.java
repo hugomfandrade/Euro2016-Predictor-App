@@ -58,7 +58,6 @@ public class MobileClientData implements Parcelable {
         REGISTER,
         GET_INFO,
         GET_PREDICTIONS,
-        GET_LATEST_PERFORMANCE,
         GET_PREDICTIONS_OF_USERS,
         PUT_PREDICTION,
         CREATE_LEAGUE,

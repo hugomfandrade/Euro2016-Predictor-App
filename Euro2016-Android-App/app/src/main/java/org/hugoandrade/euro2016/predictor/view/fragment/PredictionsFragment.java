@@ -23,6 +23,7 @@ import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
 import org.hugoandrade.euro2016.predictor.utils.ErrorMessageUtils;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
 import org.hugoandrade.euro2016.predictor.utils.StageUtils;
+import org.hugoandrade.euro2016.predictor.utils.ViewUtils;
 import org.hugoandrade.euro2016.predictor.view.CountryDetailsActivity;
 import org.hugoandrade.euro2016.predictor.view.helper.FilterWrapper;
 import org.hugoandrade.euro2016.predictor.view.helper.FilterTheme;
@@ -98,7 +99,7 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
 
 
         Match match =
-                MatchUtils.getFirstMatchOfTomorrow(
+                MatchUtils.getFirstMatchOfYesterday(
                         GlobalData.getInstance().getMatchList(),
                         GlobalData.getInstance().getServerTime().getTime());
 
@@ -160,7 +161,7 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
         public void onMatchesChanged() {
 
             Match match =
-                    MatchUtils.getFirstMatchOfTomorrow(
+                    MatchUtils.getFirstMatchOfYesterday(
                             GlobalData.getInstance().getMatchList(),
                             GlobalData.getInstance().getServerTime().getTime());
 
@@ -247,8 +248,13 @@ public class PredictionsFragment extends FragmentBase<FragComm.RequiredActivityO
             startingPosition = MatchUtils.getPositionOfFirstNotPlayedMatch(
                     matchList,
                     GlobalData.getInstance().getServerTime().getTime());
-        //}
+            //}
 
+        if (startingPosition != 0 && startingPosition == matchList.size()) {
+            startingPosition--;
+        }
+
+        ViewUtils.showToast(getActivity(), "Starting::" + startingPosition);
         if (mPredictionsAdapter != null) {
             mPredictionsAdapter.setMatchList(matchList);
             mPredictionsAdapter.notifyDataSetChanged();

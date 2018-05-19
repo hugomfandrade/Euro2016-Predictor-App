@@ -1,6 +1,8 @@
 package org.hugoandrade.euro2016.predictor.presenter;
 
+import android.app.Activity;
 import android.os.RemoteException;
+import android.util.Log;
 
 import org.hugoandrade.euro2016.predictor.GlobalData;
 import org.hugoandrade.euro2016.predictor.MVP;
@@ -11,6 +13,8 @@ import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
 import org.hugoandrade.euro2016.predictor.utils.ErrorMessageUtils;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
+import org.hugoandrade.euro2016.predictor.utils.SharedPreferencesUtils;
+import org.hugoandrade.euro2016.predictor.view.LoginActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,6 +83,19 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
                     data.getString(),
                     data.getLeagueUserList());
         }
+        else if (operationType == MobileClientData.OperationType.LOGOUT.ordinal()) {
+
+            if (getActivityContext() != null
+                    && getApplicationContext() instanceof Activity) {
+                Activity activity = (Activity) getActivityContext();
+
+                if (!activity.isDestroyed() && !activity.isFinishing()) {
+                    SharedPreferencesUtils.resetLastAuthenticatedLoginData(activity);
+                    activity.startActivity(LoginActivity.makeIntent(activity));
+                    activity.finish();
+                }
+            }
+        }
     }
 
     @Override
@@ -95,7 +112,8 @@ public class LeagueDetailsPresenter extends MobileClientPresenterBase<MVP.Requir
         else {
             List<Prediction> predictionList = GlobalData.getInstance().getPredictionsOfUser(user.getID());
 
-            if (predictionList.size() == to) {
+            Log.e(TAG, predictionList.size() + " = " + to);
+            if (predictionList.size() >= to) {
                 getView().startUserPredictionsActivity(user, predictionList);
             }
             else {

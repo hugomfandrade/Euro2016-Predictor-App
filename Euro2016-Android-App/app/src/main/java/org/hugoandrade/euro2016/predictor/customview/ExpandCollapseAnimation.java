@@ -24,7 +24,6 @@ public class ExpandCollapseAnimation extends Animation {
 
     // Constructor
     public ExpandCollapseAnimation(View view, int fromDimension, int toDimension) {
-        android.util.Log.e(getClass().getSimpleName(), "init:: " + toDimension);
         // Setup references
         // the view to animate
         this.view = view;

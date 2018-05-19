@@ -1,5 +1,6 @@
 package org.hugoandrade.euro2016.predictor.presenter;
 
+import android.app.Activity;
 import android.os.RemoteException;
 
 import org.hugoandrade.euro2016.predictor.GlobalData;
@@ -10,6 +11,8 @@ import org.hugoandrade.euro2016.predictor.data.raw.User;
 import org.hugoandrade.euro2016.predictor.model.parser.MobileClientData;
 import org.hugoandrade.euro2016.predictor.utils.ErrorMessageUtils;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
+import org.hugoandrade.euro2016.predictor.utils.SharedPreferencesUtils;
+import org.hugoandrade.euro2016.predictor.view.LoginActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -128,6 +131,18 @@ public class MatchPredictionPresenter extends MobileClientPresenterBase<MVP.Requ
                     data.getInteger(),
                     data.getUserList(),
                     data.getPredictionList());
+        }
+        else if (operationType == MobileClientData.OperationType.LOGOUT.ordinal()) {
+
+            if (getActivityContext() != null && getApplicationContext() instanceof Activity) {
+                Activity activity = (Activity) getActivityContext();
+
+                if (!activity.isDestroyed() && !activity.isFinishing()) {
+                    SharedPreferencesUtils.resetLastAuthenticatedLoginData(activity);
+                    activity.startActivity(LoginActivity.makeIntent(activity));
+                    activity.finish();
+                }
+            }
         }
     }
 }

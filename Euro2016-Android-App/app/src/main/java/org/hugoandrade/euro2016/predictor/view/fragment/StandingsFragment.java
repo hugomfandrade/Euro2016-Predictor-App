@@ -1,5 +1,6 @@
 package org.hugoandrade.euro2016.predictor.view.fragment;
 
+import android.graphics.Point;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -9,7 +10,9 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.ViewTreeObserver;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import org.hugoandrade.euro2016.predictor.GlobalData;
@@ -18,6 +21,7 @@ import org.hugoandrade.euro2016.predictor.data.raw.Country;
 import org.hugoandrade.euro2016.predictor.data.raw.Group;
 import org.hugoandrade.euro2016.predictor.data.raw.Match;
 import org.hugoandrade.euro2016.predictor.utils.MatchUtils;
+import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils;
 import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils.SGroup;
 import org.hugoandrade.euro2016.predictor.utils.StaticVariableUtils.SStage;
 import org.hugoandrade.euro2016.predictor.view.CountryDetailsActivity;
@@ -27,16 +31,17 @@ import org.hugoandrade.euro2016.predictor.view.listadapter.KnockoutListAdapter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
 public class StandingsFragment extends FragmentBase<FragComm.RequiredActivityBaseOps> {
 
-    // Views
+    private NestedScrollView nestedScrollView;
+    private View tvGroupStageTitle;
     private HashMap<SGroup, GroupViewStruct> mGroupViewStructMap = buildGroupViewStructMap();
     private HashMap<SStage, KnockOutViewStruct> mKnockOutViewStructMap = buildKnockOutViewStructMap();
 
-    private NestedScrollView nestedScrollView;
 
     private HashMap<SGroup, GroupViewStruct> buildGroupViewStructMap() {
         HashMap<SGroup, GroupViewStruct> viewStructMap = new HashMap<>();
@@ -73,6 +78,8 @@ public class StandingsFragment extends FragmentBase<FragComm.RequiredActivityBas
 
         nestedScrollView = view.findViewById(R.id.nsv_standings);
 
+        tvGroupStageTitle = view.findViewById(R.id.tv_group_stage_title);
+
         setupGroupLayout(view.findViewById(R.id.layout_group_a),
                 mGroupViewStructMap.get(SGroup.A));
         setupGroupLayout(view.findViewById(R.id.layout_group_b),
@@ -102,74 +109,59 @@ public class StandingsFragment extends FragmentBase<FragComm.RequiredActivityBas
     }
 
     private void setupInitialScrollPosition() {
+        List<Match> matchList = GlobalData.getInstance().getMatchList();
+        Date serverTime = GlobalData.getInstance().getServerTime().getTime();
 
-        if (nestedScrollView == null)
-            return;
+        if (MatchUtils.isPastAllMatches(matchList, serverTime)) {
+            requestFocusOn(SStage.finals);
+        }
+        else {
+            Match match = MatchUtils.getFirstNotPlayedMatch(matchList, serverTime);
 
-        if (true)
-            return;
-
-        nestedScrollView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-
-                nestedScrollView.post(setupInitialScrollPositionRunnable());
-                //nestedScrollView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            if (match == null) {
+                requestFocusOn(SStage.groupStage);
             }
-        });
+            else {
+                switch (match.getStage()) {
+                    case "Group Stage": requestFocusOn(SStage.groupStage); break;
+                    case "Round of 16": requestFocusOn(SStage.roundOf16); break;
+                    case "Quarter Final": requestFocusOn(SStage.quarterFinals); break;
+                    case "Semi Final": requestFocusOn(SStage.semiFinals); break;
+                    case "Final": requestFocusOn(SStage.finals); break;
+                    default: requestFocusOn(SStage.groupStage);
+                }
+            }
+        }
     }
 
-    private Runnable setupInitialScrollPositionRunnable() {
-
-        return new Runnable() {
-            @Override
-            public void run() {
-
-                int currentMatchNumber = MatchUtils.getMatchNumberOfFirstNotPlayedMatch(
-                        GlobalData.getInstance().getMatchList(),
-                        GlobalData.getInstance().getServerTime().getTime());
-
-                if (currentMatchNumber == 0) {
-                    nestedScrollView.smoothScrollTo(0, 0);
+    private void requestFocusOn(SStage stage) {
+        if (nestedScrollView != null) {
+            if (stage.name.equals(SStage.groupStage.name)) {
+                if (tvGroupStageTitle != null) {
+                    scrollToView(nestedScrollView, tvGroupStageTitle);
+                    //tvGroupStageTitle.getParent().requestChildFocus(tvGroupStageTitle, tvGroupStageTitle);
                 }
-                else if (currentMatchNumber == 52) {
-                    nestedScrollView.smoothScrollTo(0, 0);
-                }
-                else {
-                    Match match = GlobalData.getInstance().getMatch(currentMatchNumber);
-                    SStage stage = null;
-
-                    android.util.Log.e(TAG, "match number::" + currentMatchNumber);
-                    android.util.Log.e(TAG, "match ::" + match);
-
-                    if (match == null)
-                        return;
-
-                    if (SStage.roundOf16.name.equals(match.getStage())) {
-                        stage = SStage.roundOf16;
-                    }
-                    else if (SStage.quarterFinals.name.equals(match.getStage())) {
-                        stage = SStage.quarterFinals;
-                    }
-                    else if (SStage.semiFinals.name.equals(match.getStage())) {
-                        stage = SStage.semiFinals;
-                    }
-                    else if (SStage.finals.name.equals(match.getStage())) {
-                        stage = SStage.finals;
-                    }
-
-                    if (stage != null && mKnockOutViewStructMap.containsKey(stage)) {
-                        int scrollTo = mKnockOutViewStructMap.get(stage).tvTitle.getTop();
-                        android.util.Log.e(TAG, "scrollTo::" + scrollTo);
-                        nestedScrollView.smoothScrollTo(0, //nestedScrollView.getTop() -
-                                scrollTo);
-                    }
-                    else {
-                        nestedScrollView.smoothScrollTo(0, 0);
-                    }
+            } else {
+                if (mKnockOutViewStructMap != null && mKnockOutViewStructMap.get(stage) != null) {
+                    View v = mKnockOutViewStructMap.get(stage).tvTitle;
+                    scrollToView(nestedScrollView, v);
+                    //v.getParent().requestChildFocus(v, v);
                 }
             }
-        };
+        }
+
+        /*if (true) return;
+        if (stage.name.equals(SStage.groupStage.name)) {
+            if (tvGroupStageTitle != null) {
+                tvGroupStageTitle.getParent().requestChildFocus(tvGroupStageTitle, tvGroupStageTitle);
+            }
+        }
+        else {
+            if (mKnockOutViewStructMap != null && mKnockOutViewStructMap.get(stage) != null) {
+                View v = mKnockOutViewStructMap.get(stage).tvTitle;
+                v.getParent().requestChildFocus(v, v);
+            }
+        }/**/
     }
 
     @Override
@@ -201,6 +193,55 @@ public class StandingsFragment extends FragmentBase<FragComm.RequiredActivityBas
             setupInitialScrollPosition();
         }
     };
+
+    /**
+     * Used to scroll to the given view.
+     *
+     * @param scrollViewParent Parent ScrollView
+     * @param view View to which we need to scroll.
+     */
+    private void scrollToView(final NestedScrollView scrollViewParent, final View view) {
+        // Get deepChild Offset
+        Point childOffset = new Point();
+        getDeepChildOffset(scrollViewParent, view.getParent(), view, childOffset);
+        // Scroll to child.
+        scrollViewParent.smoothScrollTo(0, childOffset.y);
+    }
+
+    /**
+     * Used to scroll to the given view.
+     *
+     * @param scrollViewParent Parent ScrollView
+     * @param view View to which we need to scroll.
+     */
+    private void scrollToView(final ScrollView scrollViewParent, final View view) {
+        // Get deepChild Offset
+        Point childOffset = new Point();
+        getDeepChildOffset(scrollViewParent, view.getParent(), view, childOffset);
+        // Scroll to child.
+        scrollViewParent.smoothScrollTo(0, childOffset.y);
+    }
+
+    /**
+     * Used to get deep child offset.
+     * <p/>
+     * 1. We need to scroll to child in scrollview, but the child may not the direct child to scrollview.
+     * 2. So to get correct child position to scroll, we need to iterate through all of its parent views till the main parent.
+     *
+     * @param mainParent        Main Top parent.
+     * @param parent            Parent.
+     * @param child             Child.
+     * @param accumulatedOffset Accumulated Offset.
+     */
+    private void getDeepChildOffset(final ViewGroup mainParent, final ViewParent parent, final View child, final Point accumulatedOffset) {
+        ViewGroup parentGroup = (ViewGroup) parent;
+        accumulatedOffset.x += child.getLeft();
+        accumulatedOffset.y += child.getTop();
+        if (parentGroup.equals(mainParent)) {
+            return;
+        }
+        getDeepChildOffset(mainParent, parentGroup.getParent(), parentGroup, accumulatedOffset);
+    }
 
     private void updateGroupView() {
         HashMap<SGroup, Group> groupsMap = setupGroups(GlobalData.getInstance().getCountryList());
