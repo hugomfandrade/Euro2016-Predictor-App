@@ -1,4 +1,4 @@
-package org.hugoandrade.euro2016.predictor.admin.cloudsim;
+package org.hugoandrade.euro2016.predictor.cloudsim;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -6,16 +6,16 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.util.Log;
 
-import org.hugoandrade.euro2016.predictor.admin.cloudsim.parser.CloudContentValuesFormatter;
-import org.hugoandrade.euro2016.predictor.admin.cloudsim.parser.CloudPOJOFormatter;
-import org.hugoandrade.euro2016.predictor.admin.data.League;
-import org.hugoandrade.euro2016.predictor.admin.data.LeagueUser;
-import org.hugoandrade.euro2016.predictor.admin.data.Match;
-import org.hugoandrade.euro2016.predictor.admin.data.Prediction;
-import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
-import org.hugoandrade.euro2016.predictor.admin.data.User;
-import org.hugoandrade.euro2016.predictor.admin.utils.MatchUtils;
-import org.hugoandrade.euro2016.predictor.admin.utils.PredictionUtils;
+import org.hugoandrade.euro2016.predictor.cloudsim.parser.CloudContentValuesFormatter;
+import org.hugoandrade.euro2016.predictor.cloudsim.parser.CloudPOJOFormatter;
+import org.hugoandrade.euro2016.predictor.cloudsim.data.League;
+import org.hugoandrade.euro2016.predictor.cloudsim.data.LeagueUser;
+import org.hugoandrade.euro2016.predictor.cloudsim.data.Match;
+import org.hugoandrade.euro2016.predictor.cloudsim.data.Prediction;
+import org.hugoandrade.euro2016.predictor.cloudsim.data.SystemData;
+import org.hugoandrade.euro2016.predictor.cloudsim.data.User;
+import org.hugoandrade.euro2016.predictor.cloudsim.utils.MatchUtils;
+import org.hugoandrade.euro2016.predictor.cloudsim.utils.PredictionUtils;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -270,7 +270,7 @@ class CloudDatabaseSimHelper {
         if (c.getCount() > 0 && c.moveToFirst()) {
             // Generate another one
             c.close();
-            return generateCode(CODE_LENGTH);
+            return generateUniqueLeagueCode(dbHelper);
         }
         c.close();
 

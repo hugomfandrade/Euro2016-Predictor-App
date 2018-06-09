@@ -1,8 +1,10 @@
-package org.hugoandrade.euro2016.predictor.admin.data;
+package org.hugoandrade.euro2016.predictor.cloudsim.data;
 
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import org.hugoandrade.euro2016.predictor.cloudsim.CloudDatabaseSimProvider;
 
 public class League implements Parcelable {
 
@@ -28,6 +30,33 @@ public class League implements Parcelable {
 
             public static final String USER_ID = "UserID";
         }
+
+        // SQLite table mName
+        // PATH_LOGIN & TOKEN for entire table
+        public static final String PATH = TABLE_NAME;
+        public static final int PATH_TOKEN = 230;
+
+        // PATH_LOGIN & TOKEN for single row of table
+        public static final String PATH_FOR_ID = PATH + "/#";
+        public static final int PATH_FOR_ID_TOKEN = 240;
+
+        // URI for this content.
+        public static final Uri CONTENT_URI = CloudDatabaseSimProvider.BASE_URI.buildUpon()
+                .appendPath(PATH).build();
+
+        public static final String PATH_CREATE_LEAGUE = API_NAME_CREATE_LEAGUE;
+        public static final int PATH_CREATE_LEAGUE_TOKEN = 250;
+
+        // PATH & TOKEN for single row of table
+        public static final String PATH_JOIN_LEAGUE = API_NAME_JOIN_LEAGUE;
+        public static final int PATH_JOIN_LEAGUE_TOKEN = 260;
+
+        public static final String PATH_LEAVE_LEAGUE = API_NAME_LEAVE_LEAGUE;
+        public static final int PATH_LEAVE_LEAGUE_TOKEN = 270;
+
+        // PATH & TOKEN for single row of table
+        public static final String PATH_DELETE_LEAGUE = API_NAME_DELETE_LEAGUE;
+        public static final int PATH_DELETE_LEAGUE_TOKEN = 280;
     }
 
     public League(String id, String name, String adminID, String code) {

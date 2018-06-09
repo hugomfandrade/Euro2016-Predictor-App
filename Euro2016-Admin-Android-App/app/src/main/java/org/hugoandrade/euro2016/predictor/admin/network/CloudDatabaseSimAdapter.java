@@ -1,4 +1,4 @@
-package org.hugoandrade.euro2016.predictor.admin.cloudsim;
+package org.hugoandrade.euro2016.predictor.admin.network;
 
 import android.content.ContentResolver;
 import android.content.Context;
@@ -14,11 +14,9 @@ import org.hugoandrade.euro2016.predictor.admin.data.LoginData;
 import org.hugoandrade.euro2016.predictor.admin.data.Match;
 import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
 import org.hugoandrade.euro2016.predictor.admin.data.WaitingLeagueUser;
-import org.hugoandrade.euro2016.predictor.admin.network.MobileServiceCallback;
-import org.hugoandrade.euro2016.predictor.admin.network.MobileServiceData;
 import org.hugoandrade.euro2016.predictor.admin.model.parser.MobileClientDataJsonFormatter;
 import org.hugoandrade.euro2016.predictor.admin.model.parser.MobileClientDataJsonParser;
-import org.hugoandrade.euro2016.predictor.admin.network.HttpConstants;
+import org.hugoandrade.euro2016.predictor.cloudsim.CloudDatabaseSimImpl;
 
 public class CloudDatabaseSimAdapter {
 

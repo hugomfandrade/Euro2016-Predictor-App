@@ -1,7 +1,10 @@
-package org.hugoandrade.euro2016.predictor.admin.data;
+package org.hugoandrade.euro2016.predictor.cloudsim.data;
 
+import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import org.hugoandrade.euro2016.predictor.cloudsim.CloudDatabaseSimProvider;
 
 import java.util.Calendar;
 
@@ -29,6 +32,18 @@ public class SystemData implements Parcelable {
             public static final String SYSTEM_DATE = "SystemDate";
             public static final String DATE_OF_CHANGE = "DateOfChange";
         }
+
+        // SQLite table mName
+        // PATH & TOKEN for entire table
+        public static final String PATH = API_NAME;
+        public static final int PATH_TOKEN = 190;
+
+        public static final String PATH_UPDATE_SCORES = API_NAME_UPDATE_SCORES;
+        public static final int PATH_UPDATE_SCORES_TOKEN = 200;
+
+        // URI for this content.
+        public static final Uri CONTENT_URI = CloudDatabaseSimProvider.BASE_URI.buildUpon()
+                .appendPath(PATH).build();
     }
 
     public SystemData(String id, String rules, boolean appState, Calendar systemDate, Calendar dateOfChange) {

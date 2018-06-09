@@ -1,4 +1,4 @@
-package org.hugoandrade.euro2016.predictor.admin.cloudsim;
+package org.hugoandrade.euro2016.predictor.cloudsim;
 
 public final class CloudDatabaseSimVariables {
 

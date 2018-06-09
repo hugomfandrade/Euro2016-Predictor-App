@@ -1,7 +1,10 @@
-package org.hugoandrade.euro2016.predictor.admin.data;
+package org.hugoandrade.euro2016.predictor.cloudsim.data;
 
+import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import org.hugoandrade.euro2016.predictor.cloudsim.CloudDatabaseSimProvider;
 
 public class User implements Parcelable {
 
@@ -20,6 +23,19 @@ public class User implements Parcelable {
             public final static String PASSWORD = "Password";
             public final static String SCORE = "Score";
         }
+
+        // SQLite table mName
+        // PATH_LOGIN & TOKEN for entire table
+        public static final String PATH = TABLE_NAME;
+        public static final int PATH_TOKEN = 170;
+
+        // PATH_LOGIN & TOKEN for single row of table
+        public static final String PATH_FOR_ID = PATH + "/#";
+        public static final int PATH_FOR_ID_TOKEN = 180;
+
+        // URI for this content.
+        public static final Uri CONTENT_URI = CloudDatabaseSimProvider.BASE_URI.buildUpon()
+                .appendPath(PATH).build();
     }
 
     public User(String id, String email, String password, int score) {

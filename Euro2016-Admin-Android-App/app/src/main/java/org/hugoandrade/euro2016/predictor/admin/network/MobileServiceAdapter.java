@@ -15,7 +15,6 @@ import com.microsoft.windowsazure.mobileservices.authentication.MobileServiceUse
 import com.microsoft.windowsazure.mobileservices.table.MobileServiceJsonTable;
 
 import org.hugoandrade.euro2016.predictor.admin.DevConstants;
-import org.hugoandrade.euro2016.predictor.admin.cloudsim.CloudDatabaseSimAdapter;
 import org.hugoandrade.euro2016.predictor.admin.data.Country;
 import org.hugoandrade.euro2016.predictor.admin.data.League;
 import org.hugoandrade.euro2016.predictor.admin.data.LoginData;

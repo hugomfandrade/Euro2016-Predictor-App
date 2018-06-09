@@ -1,11 +1,11 @@
-package org.hugoandrade.euro2016.predictor.admin.cloudsim.parser;
+package org.hugoandrade.euro2016.predictor.cloudsim.parser;
 
 import android.database.Cursor;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
+import org.hugoandrade.euro2016.predictor.cloudsim.data.SystemData;
 
 /**
  * Parses the objects to Json data.

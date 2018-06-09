@@ -1,4 +1,4 @@
-package org.hugoandrade.euro2016.predictor.admin.data;
+package org.hugoandrade.euro2016.predictor.cloudsim.data;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -16,6 +16,15 @@ public class LoginData implements Parcelable {
             public final static String PASSWORD = "Password";
             public final static String TOKEN = "Token";
         }
+
+        // SQLite table mName
+        // PATH & TOKEN for entire table
+        public static final String PATH_LOGIN = API_NAME_LOGIN;
+        public static final int PATH_LOGIN_TOKEN = 210;
+
+        // PATH & TOKEN for single row of table
+        public static final String PATH_REGISTER = API_NAME_REGISTER;
+        public static final int PATH_REGISTER_TOKEN = 220;
     }
 
     private String mUserID;

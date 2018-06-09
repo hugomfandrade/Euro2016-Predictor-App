@@ -1,18 +1,18 @@
-package org.hugoandrade.euro2016.predictor.admin.cloudsim.parser;
+package org.hugoandrade.euro2016.predictor.cloudsim.parser;
 
 import android.content.ContentValues;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import org.hugoandrade.euro2016.predictor.admin.data.Country;
-import org.hugoandrade.euro2016.predictor.admin.data.League;
-import org.hugoandrade.euro2016.predictor.admin.data.LeagueUser;
-import org.hugoandrade.euro2016.predictor.admin.data.Match;
-import org.hugoandrade.euro2016.predictor.admin.data.User;
-import org.hugoandrade.euro2016.predictor.admin.data.Prediction;
-import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
-import org.hugoandrade.euro2016.predictor.admin.utils.ISO8601;
+import org.hugoandrade.euro2016.predictor.cloudsim.data.Country;
+import org.hugoandrade.euro2016.predictor.cloudsim.data.League;
+import org.hugoandrade.euro2016.predictor.cloudsim.data.LeagueUser;
+import org.hugoandrade.euro2016.predictor.cloudsim.data.Match;
+import org.hugoandrade.euro2016.predictor.cloudsim.data.User;
+import org.hugoandrade.euro2016.predictor.cloudsim.data.Prediction;
+import org.hugoandrade.euro2016.predictor.cloudsim.data.SystemData;
+import org.hugoandrade.euro2016.predictor.cloudsim.utils.ISO8601;
 
 import java.util.Map;
 

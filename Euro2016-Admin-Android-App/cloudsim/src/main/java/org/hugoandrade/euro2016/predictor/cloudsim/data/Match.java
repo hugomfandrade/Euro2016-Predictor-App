@@ -1,12 +1,14 @@
-package org.hugoandrade.euro2016.predictor.admin.data;
+package org.hugoandrade.euro2016.predictor.cloudsim.data;
 
+import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
-import java.util.Date;
+import org.hugoandrade.euro2016.predictor.cloudsim.CloudDatabaseSimProvider;
+import org.hugoandrade.euro2016.predictor.cloudsim.utils.ISO8601;
 
-import org.hugoandrade.euro2016.predictor.admin.utils.ISO8601;
+import java.util.Date;
 
 public class Match implements Comparable<Match>, Parcelable {
 
@@ -43,6 +45,18 @@ public class Match implements Comparable<Match>, Parcelable {
             public static final String STADIUM = "Stadium";
             public static final String DATE_AND_TIME = "DateAndTime";
         }
+
+        // SQLite table mName
+        // PATH_LOGIN & TOKEN for entire table
+        public static final String PATH = TABLE_NAME;
+        public static final int PATH_TOKEN = 110;
+
+        // PATH_LOGIN & TOKEN for single row of table
+        public static final String PATH_FOR_ID = PATH + "/#";
+        public static final int PATH_FOR_ID_TOKEN = 120;
+
+        public static final Uri CONTENT_URI = CloudDatabaseSimProvider.BASE_URI.buildUpon()
+                .appendPath(PATH).build();
     }
 
     public Match(String id,

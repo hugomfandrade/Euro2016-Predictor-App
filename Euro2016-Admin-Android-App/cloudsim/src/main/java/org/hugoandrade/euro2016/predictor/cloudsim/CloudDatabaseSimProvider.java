@@ -1,4 +1,4 @@
-package org.hugoandrade.euro2016.predictor.admin.cloudsim;
+package org.hugoandrade.euro2016.predictor.cloudsim;
 
 import android.accounts.Account;
 import android.app.Activity;
@@ -15,19 +15,19 @@ import android.util.Log;
 
 import com.google.common.collect.Sets;
 
-import org.hugoandrade.euro2016.predictor.admin.cloudsim.parser.CloudContentValuesFormatter;
-import org.hugoandrade.euro2016.predictor.admin.cloudsim.parser.CloudPOJOFormatter;
-import org.hugoandrade.euro2016.predictor.admin.data.Country;
-import org.hugoandrade.euro2016.predictor.admin.data.League;
-import org.hugoandrade.euro2016.predictor.admin.data.LeagueUser;
-import org.hugoandrade.euro2016.predictor.admin.data.LoginData;
-import org.hugoandrade.euro2016.predictor.admin.data.Match;
-import org.hugoandrade.euro2016.predictor.admin.data.Prediction;
-import org.hugoandrade.euro2016.predictor.admin.data.SystemData;
-import org.hugoandrade.euro2016.predictor.admin.data.User;
-import org.hugoandrade.euro2016.predictor.admin.data.WaitingLeagueUser;
-import org.hugoandrade.euro2016.predictor.admin.utils.ISO8601;
-import org.hugoandrade.euro2016.predictor.admin.utils.InitConfigUtils;
+import org.hugoandrade.euro2016.predictor.cloudsim.parser.CloudContentValuesFormatter;
+import org.hugoandrade.euro2016.predictor.cloudsim.parser.CloudPOJOFormatter;
+import org.hugoandrade.euro2016.predictor.cloudsim.data.Country;
+import org.hugoandrade.euro2016.predictor.cloudsim.data.League;
+import org.hugoandrade.euro2016.predictor.cloudsim.data.LeagueUser;
+import org.hugoandrade.euro2016.predictor.cloudsim.data.LoginData;
+import org.hugoandrade.euro2016.predictor.cloudsim.data.Match;
+import org.hugoandrade.euro2016.predictor.cloudsim.data.Prediction;
+import org.hugoandrade.euro2016.predictor.cloudsim.data.SystemData;
+import org.hugoandrade.euro2016.predictor.cloudsim.data.User;
+import org.hugoandrade.euro2016.predictor.cloudsim.data.WaitingLeagueUser;
+import org.hugoandrade.euro2016.predictor.cloudsim.utils.ISO8601;
+import org.hugoandrade.euro2016.predictor.cloudsim.utils.InitConfigUtils;
 
 import java.util.Calendar;
 import java.util.List;
@@ -612,7 +612,7 @@ public class CloudDatabaseSimProvider extends ContentProvider {
                 ContentValues cvLeagueUser = cvFormatter.getAsContentValues(newLeagueUser);
                 cvLeagueUser.remove("_" + LeagueUser.Entry.Cols.ID);
 
-                android.util.Log.e(TAG, "joinLeague::" + cvLeagueUser.toString());
+                Log.e(TAG, "joinLeague::" + cvLeagueUser.toString());
 
                 // Insert
                 long rowID = insert(LeagueUser.Entry.TABLE_NAME, null, cvLeagueUser);
